@@ -73,7 +73,7 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
 .num-row input::-webkit-input-placeholder,
 .price-wrap input::-webkit-input-placeholder { color: #C4C9D4; }
 .quick-amount-row { display: flex; gap: 8px; margin-top: 12px; }
-.quick-amount-btn { flex: 1; padding: 12px 4px; border-radius: 10px; border: 1.5px solid var(--purple); background: rgba(107,53,207,0.05); color: var(--purple); font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.quick-amount-btn { flex: 1; padding: 12px 4px; border-radius: 10px; border: 1.5px solid var(--purple); background: rgba(49,130,246,0.05); color: var(--purple); font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
 .quick-amount-btn:active { transform: scale(0.95); }
 
 /* 진행 바 */
@@ -87,7 +87,7 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
 /* 단계 안내 배너 */
 .wiz-guide-banner {
   background: var(--blue), rgba(49,130,246,0.02));
-  border: 1px solid rgba(107,53,207,0.15);
+  border: 1px solid rgba(49,130,246,0.1);
   border-radius: 14px; padding: 14px 16px;
   margin-bottom: 20px; font-size: 14px;
   color: var(--purple-text); line-height: 1.65;
@@ -188,21 +188,15 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
 .hidden { display: none !important; }
 
 
-    /* ── 포털 뒤로가기 ── */
-    .portal-back {
-      display: flex; align-items: center; gap: 6px;
-      position: fixed; top: 0; left: 0; right: 0;
-      padding: max(14px, env(safe-area-inset-top)) 20px 10px;
-      background: rgba(255,255,255,0.95);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: none; cursor: pointer;
+    /* ── 홈으로 버튼 ── */
+    .home-top-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: none; border: none; cursor: pointer;
       font-size: 14px; font-weight: 600; color: #4e5968;
-      font-family: inherit; z-index: 300;
-      border-bottom: 1px solid #f2f4f6;
+      font-family: inherit; padding: 0;
     }
-    .portal-back svg { width: 18px; height: 18px; fill: none; stroke: #4e5968; stroke-width: 2.5; }
-    #landing-screen { padding-top: 60px !important; }
+    .home-top-btn svg { width: 18px; height: 18px; fill: none; stroke: #4e5968; stroke-width: 2.5; }
+    .home-top-btn:active { opacity: 0.7; }
 
     /* ── AI 챗 ── */
     .ai-chat-section { background: #fff; border-radius: 16px; padding: 20px; margin: 12px 0; box-shadow: 0 1px 4px rgba(0,0,0,0.05); }
@@ -232,10 +226,7 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
 </style>
 </head>
 <body>
-<button class="portal-back" onclick="location.href='index.html'">
-  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-  홈으로
-</button>
+
 
 <div id="landing-screen">
   <div class="app-container">
@@ -252,21 +243,21 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
 
     <!-- Step 0: 시작 -->
     <div id="wiz-step-0" class="wiz-step active" style="padding-top:20px">
-      <div style="text-align:center; padding:40px 0 20px;">
-        <div style="font-size:56px; margin-bottom:16px;">🎁</div>
+      <div style="padding:8px 0 4px;">
+        <button class="home-top-btn" onclick="location.href='index.html'">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          홈으로
+        </button>
+      </div>
+      <div style="text-align:center; padding:24px 0 20px;">
         <h1 class="header-title">증여세 계산기</h1>
         <p style="font-size:15px; color:var(--toss-subtext); margin-top:12px; line-height:1.6;">
           살아계실 때 미리 증여할 때<br>내야 할 세금을 계산해 드려요
         </p>
       </div>
-      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g1')" style="margin-top:20px">
-        🚀 계산 시작하기
+      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g1')" style="margin-top:4px">
+        계산 시작하기
       </button>
-      <div style="text-align:center; margin-top:16px;">
-        <a href="상속세.html" style="font-size:14px; color:var(--toss-subtext); text-decoration:none;">
-          🏛️ 상속세 계산하러 가기 →
-        </a>
-      </div>
     </div>
 
     
@@ -333,7 +324,7 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
           <button type="button" class="quick-amount-btn" onclick="giftAddAmt(50000)">+5억</button>
         </div>
       </div>
-      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g4')">다음 단계 →</button>
+      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g4')">다음</button>
     </div>
 
     <!-- g4: 채무 부담부증여 여부 -->
@@ -361,7 +352,7 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
         <div id="gift-debt-prev" class="korean-price-preview"></div>
         <div class="field-caption">전세보증금·금융권 대출 등 수증자가 인수하는 채무 총액</div>
       </div>
-      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g6')">다음 단계 →</button>
+      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g6')">다음</button>
     </div>
 
     <!-- g6: 혼인·출산 공제 여부 (직계비속) -->
@@ -396,7 +387,7 @@ body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD G
         <div class="num-row"><input type="number" id="gift-prior" placeholder="0" min="0" oninput="giftSubPreview(this,'gift-prior-prev')"><span>만원</span></div>
         <div id="gift-prior-prev" class="korean-price-preview"></div>
       </div>
-      <button type="button" class="wiz-primary-btn" onclick="doGiftCalculate()">✨ 증여세 계산하기</button>
+      <button type="button" class="wiz-primary-btn" onclick="doGiftCalculate()">증여세 계산하기</button>
     </div>
 
   </div>
