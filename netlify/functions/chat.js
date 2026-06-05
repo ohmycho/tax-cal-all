@@ -1,4 +1,3 @@
-
 exports.handler = async function(event, context) {
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -38,4 +37,9 @@ exports.handler = async function(event, context) {
 
   } catch (err) {
     return {
-      statusCode
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: err.message })
+    };
+  }
+};
