@@ -6,29 +6,31 @@
 <title>부동산 취득세 계산기</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #F4F3EF; --surface: #FFFFFF; --surface2: #EEEDE8;
-  --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.14);
-  --text: #1A1917; --text-2: #65635E; --text-3: #A09F9A;
-  --accent: #1845D4; --accent-light: #EBF0FF; --accent-text: #1235A8;
-  --warn-bg: #FFF8EC; --warn-border: #EFA030; --warn-text: #7A4F00;
-  --danger-bg: #FFF0F0; --danger-border: #E04040; --danger-text: #8A1010;
-  --radius: 10px; --radius-lg: 16px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --bg: #f2f4f6; --surface: #ffffff; --surface2: #f8f9fa;
+  --border: #e5e8eb; --border-med: #d1d6db;
+  --text: #191f28; --text-2: #4e5968; --text-3: #8b95a1;
+  --accent: #3182f6; --accent-light: #eff6ff; --accent-text: #1b64da;
+  --warn-bg: #fff8ec; --warn-border: #f5a623; --warn-text: #7a4f00;
+  --danger-bg: #fff0f1; --danger-border: #f04452; --danger-text: #8a1010;
+  --radius: 12px; --radius-lg: 16px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
 html { font-size: 16px; -webkit-text-size-adjust: 100%; }
-body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2.5rem 1rem 5rem; }
+body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2.5rem 1rem 5rem; }
 .page { max-width: 520px; margin: 0 auto; }
 
 .header { margin-bottom: 2rem; }
-.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--accent-text); background: var(--accent-light); padding: 4px 10px; border-radius: 100px; margin-bottom: 14px; }
-.header h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.6px; line-height: 1.2; margin-bottom: 8px; }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: var(--accent-text); background: var(--accent-light); padding: 4px 10px; border-radius: 100px; margin-bottom: 14px; }
+.header h1 { font-size: 28px; font-weight: 600; line-height: 1.2; margin-bottom: 8px; }
 .header p { font-size: 13px; color: var(--text-2); line-height: 1.65; }
 
 .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 10px; box-shadow: var(--shadow); }
-.card-title { font-size: 10px; font-weight: 600; letter-spacing: 0.09em; text-transform: uppercase; color: var(--text-3); margin-bottom: 1.25rem; }
+.card-title { font-size: 10px; font-weight: 600; color: var(--text-3); margin-bottom: 1.25rem; }
 
 .field { margin-bottom: 1.25rem; }
 .field:last-child { margin-bottom: 0; }
@@ -36,7 +38,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 .field-hint { font-size: 11px; color: var(--text-3); margin-top: 5px; line-height: 1.5; }
 
 .price-wrap { position: relative; }
-.price-wrap input { width: 100%; padding: 13px 52px 13px 16px; font-size: 22px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif; background: var(--surface2); border: 1.5px solid transparent; border-radius: var(--radius); color: var(--text); outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
+.price-wrap input { width: 100%; padding: 13px 52px 13px 16px; font-size: 22px; font-weight: 600; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: var(--surface2); border: 1.5px solid transparent; border-radius: var(--radius); color: var(--text); outline: none; transition: border-color 0.15s; -moz-appearance: textfield; }
 .price-wrap input::-webkit-outer-spin-button, .price-wrap input::-webkit-inner-spin-button { -webkit-appearance: none; }
 .price-wrap input:focus { border-color: var(--accent); background: #fff; }
 .price-unit { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 13px; font-weight: 500; color: var(--text-3); pointer-events: none; }
@@ -74,9 +76,9 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
 
 /* 결과 카드 */
 .result-card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 10px; box-shadow: var(--shadow); }
-.result-top { padding: 1.5rem 1.5rem 1.25rem; background: var(--text); color: #fff; }
-.result-top-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.45); margin-bottom: 6px; letter-spacing: 0.05em; text-transform: uppercase; }
-.result-total-num { font-size: 38px; font-weight: 600; letter-spacing: -1px; color: #fff; line-height: 1.1; min-height: 46px; }
+.result-top { padding: 1.5rem 1.5rem 1.25rem; background: #191f28; color: #fff; }
+.result-top-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.45); margin-bottom: 6px; }
+.result-total-num { font-size: 38px; font-weight: 600; color: #fff; line-height: 1.1; min-height: 46px; }
 .result-total-num.empty { font-size: 17px; color: rgba(255,255,255,0.28); font-weight: 400; padding-top: 8px; }
 .result-meta { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
 .meta-badge { font-size: 11px; padding: 3px 9px; border-radius: 100px; background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.55); }

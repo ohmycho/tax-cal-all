@@ -9,6 +9,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 
 /* ==========================================================================
@@ -16,26 +18,27 @@
    ========================================================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #F4F3EF; --surface: #fff; --surface2: #EEEDE8;
-  --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.14);
-  --text: #1A1917; --text-2: #65635E; --text-3: #A09F9A;
-  --purple: #6B35CF; --purple-light: #F0EBFF; --purple-text: #4A1FA8;
-  --radius: 10px; --radius-lg: 16px;
-  --shadow: 0 4px 16px rgba(0,0,0,0.06);
+  --bg: #f2f4f6; --surface: #ffffff; --surface2: #f8f9fa;
+  --border: #e5e8eb; --border-med: #d1d6db;
+  --text: #191f28; --text-2: #4e5968; --text-3: #8b95a1;
+  --blue: #3182f6; --blue-lt: #eff6ff; --blue-dk: #1b64da;
+  --purple: #3182f6; --purple-light: #eff6ff; --purple-text: #1b64da;
+  --radius: 12px; --radius-lg: 16px;
+  --shadow: 0 1px 4px rgba(0,0,0,0.06);
   --toss-blue: #3182f6; --toss-gray: #f2f4f6; --toss-text: #191f28; --toss-subtext: #4e5968;
 }
-body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(--text); min-height: 100vh; padding: 2.5rem 1rem 8rem; }
+body { font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 2.5rem 1rem 8rem; }
 
 /* 위저드 및 랜딩 레이아웃 */
-#landing-screen { position: fixed; inset: 0; z-index: 200; background: #ffffff; display: flex; justify-content: center; padding: 20px; padding-top: max(24px, env(safe-area-inset-top)); overflow-y: auto; }
+#landing-screen { position: fixed; inset: 0; z-index: 200; background: var(--bg); display: flex; justify-content: center; padding: 20px; padding-top: max(24px, env(safe-area-inset-top)); overflow-y: auto; }
 .app-container { width: 100%; max-width: 500px; margin: 0 auto; }
-.header-title { font-size: 26px; font-weight: 700; line-height: 1.4; margin-bottom: 30px; color: var(--toss-text); letter-spacing: -0.5px; }
+.header-title { font-size: 26px; font-weight: 700; line-height: 1.4; margin-bottom: 30px; color: var(--toss-text); }
 
 /* 선택 버튼 UI */
 .choice-list { display: flex; flex-direction: column; gap: 12px; }
 .choice-btn { display: flex; align-items: center; width: 100%; padding: 24px 20px; background: var(--toss-gray); border: none; border-radius: 20px; text-align: left; cursor: pointer; transition: 0.2s; }
-.choice-btn:hover { background: #e5e8eb; transform: translateY(-1px); }
-.choice-btn.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(107,53,207,0.25); }
+.choice-btn:hover { background: #e5e8eb; }
+.choice-btn.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(49,130,246,0.2); }
 .choice-btn.on strong, .choice-btn.on small { color: #fff; }
 .choice-btn .icon { font-size: 32px; margin-right: 16px; }
 .choice-btn strong { display: block; font-size: 18px; color: var(--toss-text); margin-bottom: 4px; font-weight: 600; }
@@ -43,8 +46,8 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .choice-btn.yn-btn { flex: 1; justify-content: center; flex-direction: column; text-align: center; min-height: 100px; }
 
 .split-card { width: 100%; padding: 24px 20px; background: var(--toss-gray); border: 2px solid transparent; border-radius: 20px; text-align: left; cursor: pointer; margin-bottom: 12px; transition: 0.2s; }
-.split-card:hover { border-color: var(--purple); transform: translateY(-1px); }
-.split-card.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(107,53,207,0.25); }
+.split-card:hover { border-color: var(--purple); }
+.split-card.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(49,130,246,0.2); }
 .split-card.on div { color: rgba(255,255,255,0.8); }
 .split-card strong { font-size: 18px; font-weight: 700; display: block; margin-bottom: 8px; }
 .split-card div { font-size: 14px; color: var(--toss-subtext); line-height: 1.5; }
@@ -54,14 +57,14 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .wiz-step.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .wiz-back { border: none; background: none; color: var(--toss-subtext); font-size: 14px; font-weight: 500; margin-bottom: 20px; cursor: pointer; padding: 0; }
-.wiz-primary-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--purple); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: 0.2s; box-shadow: 0 4px 12px rgba(107,53,207,0.2); }
-.wiz-primary-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+.wiz-primary-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--purple); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: 0.2s; box-shadow: 0 4px 12px rgba(49,130,246,0.15); }
+.wiz-primary-btn:hover { opacity: 0.9; }
 
 .field { margin-bottom: 24px; }
 .field-label { font-size: 14px; font-weight: 600; color: var(--toss-subtext); margin-bottom: 10px; display: block; }
 .price-wrap { position: relative; }
-.price-wrap input { width: 100%; padding: 16px 52px 16px 20px; font-size: 24px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; color: var(--toss-text); outline: none; transition: 0.2s; }
-.price-wrap input:focus { border-color: var(--purple); background: #fff; box-shadow: 0 0 0 4px rgba(107,53,207,0.1); }
+.price-wrap input { width: 100%; padding: 16px 52px 16px 20px; font-size: 24px; font-weight: 700; font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; color: var(--toss-text); outline: none; transition: 0.2s; }
+.price-wrap input:focus { border-color: var(--purple); background: #fff; box-shadow: 0 0 0 4px rgba(49,130,246,0.08); }
 .price-unit { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 600; color: var(--toss-subtext); }
 .num-row { display: flex; align-items: center; gap: 10px; }
 .num-row input { flex: 1; padding: 16px 20px; font-size: 20px; font-weight: 600; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; outline: none; transition: 0.2s;}
@@ -83,7 +86,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 
 /* 단계 안내 배너 */
 .wiz-guide-banner {
-  background: linear-gradient(135deg, rgba(107,53,207,0.07), rgba(107,53,207,0.03));
+  background: var(--blue), rgba(49,130,246,0.02));
   border: 1px solid rgba(107,53,207,0.15);
   border-radius: 14px; padding: 14px 16px;
   margin-bottom: 20px; font-size: 14px;
@@ -94,7 +97,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 
 /* 거의 끝나감 배너 */
 .wiz-almost-done {
-  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  background: #191f28;
   border-radius: 14px; padding: 14px 16px;
   margin-bottom: 20px; color: #fff; font-size: 14px; line-height: 1.6;
 }
@@ -112,16 +115,16 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .hidden { display: none !important; }
 
 /* [요구사항 3] 실시간 한글 금액 프리뷰 (예: 2억 1천 324만원) */
-.korean-price-preview { font-size: 16px; font-weight: 700; color: var(--purple); margin-top: 10px; min-height: 24px; padding-left: 4px; letter-spacing: -0.3px; }
+.korean-price-preview { font-size: 16px; font-weight: 700; color: var(--purple); margin-top: 10px; min-height: 24px; padding-left: 4px; }
 
 /* ==========================================================================
    2. [요구사항 1] 웹 결과 화면 (세부 공제 항목 100% 투명 노출)
    ========================================================================== */
 .page { max-width: 500px; margin: 0 auto; }
 .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); }
-.result-top { padding: 30px 24px; background: linear-gradient(135deg, #6B35CF, #4A1FA8); color: #fff; text-align: center; }
+.result-top { padding: 30px 24px; background: var(--blue); color: #fff; text-align: center; }
 .result-top-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
-.result-total-num { font-size: 38px; font-weight: 800; color: #fff; line-height: 1.2; letter-spacing: -1px; margin-bottom: 4px;}
+.result-total-num { font-size: 38px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 4px;}
 .result-meta { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .meta-badge { font-size: 13px; padding: 6px 12px; border-radius: 100px; background: rgba(255,255,255,0.15); color: #fff; font-weight: 500; }
 
@@ -133,7 +136,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .web-deduct-row.bold span.val { color: var(--purple); font-size: 16px; }
 
 .result-actions { padding: 0 24px 24px 24px; background: #fff; }
-.action-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; border: none; box-shadow: 0 4px 12px rgba(107,53,207,0.25); transition: 0.2s;}
+.action-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; border: none; box-shadow: 0 4px 12px rgba(49,130,246,0.2); transition: 0.2s;}
 .action-btn:hover { transform: translateY(-2px); }
 .btn-restart-main { width: 100%; padding: 18px; border-radius: 16px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; background: var(--toss-gray); color: var(--toss-text); margin-top: 10px; transition: 0.2s;}
 .btn-restart-main:hover { background: #e5e8eb; }
@@ -143,8 +146,8 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
    ========================================================================== */
 #pdf-report-template { position: absolute; top: -9999px; left: -9999px; width: 820px; background: #ffffff; padding: 55px; color: #191F28; box-sizing: border-box; }
 .pr-header { border-bottom: 3px solid #191F28; padding-bottom: 20px; margin-bottom: 30px; }
-.pr-logo { font-size: 12px; font-weight: 800; color: #6B35CF; letter-spacing: 0.1em; margin-bottom: 8px; }
-.pr-title { font-size: 30px; font-weight: 800; color: #191F28; letter-spacing: -0.5px; }
+.pr-logo { font-size: 12px; font-weight: 700; color: #3182f6; margin-bottom: 8px; }
+.pr-title { font-size: 30px; font-weight: 700; color: #191F28; }
 .pr-section { margin-bottom: 28px; background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid #E5E8EB; page-break-inside: avoid; }
 
 /* PDF 캡처 전용 모드 - scrollY 버그 방지 */
@@ -173,9 +176,9 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
   margin: 0 !important;
 }
 .pr-section.not-applicable { background: #FFF8F8; border-color: #FEE5E5; color: #7A7A7A; }
-.pr-sec-num { font-size: 13px; font-weight: 800; color: #6B35CF; margin-bottom: 6px; letter-spacing: 0.05em; }
+.pr-sec-num { font-size: 13px; font-weight: 700; color: #3182f6; margin-bottom: 6px; }
 .pr-section.not-applicable .pr-sec-num { color: #D93A3A; }
-.pr-sec-title { font-size: 18px; font-weight: 800; color: #191F28; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+.pr-sec-title { font-size: 18px; font-weight: 700; color: #191F28; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
 .pr-sec-body { font-size: 15px; line-height: 1.7; color: #4E5968; word-break: keep-all; }
 .pr-section.not-applicable .pr-sec-body { color: #8B95A1; }
 .pr-na-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #D93A3A; color: #fff; font-weight: 700; }
@@ -755,13 +758,13 @@ function renderGiftResult(r, d){
   function row(label, sub, val, type){
     var color = type==='deduct'?'#0F7A45':type==='add'?'#D93A3A':'#191F28';
     var prefix= type==='deduct'?'(-) ':type==='add'?'(+) ':'';
-    var subHtml= sub?'<div style="font-size:11px;color:#A09F9A;margin-top:1px;">'+sub+'</div>':'';
+    var subHtml= sub?'<div style="font-size:11px;color:#8b95a1;margin-top:1px;">'+sub+'</div>':'';
     return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid #F2F4F6;">'+
       '<div style="flex:1;font-size:14px;color:#4E5968;">'+label+subHtml+'</div>'+
       '<div style="font-size:14px;font-weight:700;color:'+color+';white-space:nowrap;margin-left:12px;">'+prefix+formatKoreanCurrency(val)+'</div></div>';
   }
   function totalBox(label, val, bg, textColor){
-    return '<div style="background:'+(bg||'linear-gradient(135deg,#1e3a5f,#3182f6)')+';border-radius:12px;padding:14px 18px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;">'+
+    return '<div style="background:'+(bg||'#3182f6')+';border-radius:12px;padding:14px 18px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;">'+
       '<span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">'+label+'</span>'+
       '<span style="font-size:20px;font-weight:700;color:'+(textColor||'#fff')+';font-family:\'Noto Sans KR\',sans-serif;">'+formatKoreanCurrency(val)+'</span></div>';
   }
@@ -769,16 +772,16 @@ function renderGiftResult(r, d){
   var breakdown =
     row('증여재산 가액', '', d.assetValue, '')+
     (r.debt>0?row('(-) 채무 공제','부담부증여',r.debt,'deduct'):'')+
-    (r.debt>0?totalBox('순 증여재산',r.netAsset,'linear-gradient(135deg,#1845D4,#3182f6)'):'')+
+    (r.debt>0?totalBox('순 증여재산',r.netAsset,'#3182f6'):'')+
     (r.prior>0?row('(+) 10년 내 기증여액','합산 과세',r.prior,'add'):'')+
     row('(-) 증여재산공제', deductLabel+(r.isMarriage?'+혼인출산 추가':''), r.appliedDeduct, 'deduct')+
-    totalBox('과세표준', r.totalBase, 'linear-gradient(135deg,#0F7A45,#059669)')+
+    totalBox('과세표준', r.totalBase, '#3182f6')+
     row('산출세액','세율 '+((r.totalTax.rate||0)*100).toFixed(0)+'%',r.totalTax.tax,'')+
     (r.priorTaxPaid>0?row('(-) 기납부 증여세','과거 납부분 공제',r.priorTaxPaid,'deduct'):'')+
     (r.grandSurcharge>0?row('(+) 세대생략 할증','30%',r.grandSurcharge,'add'):'')+
     row('(-) 신고세액공제','자진신고 3%',r.discount,'deduct')+
     totalBox('최종 납부 예상 증여세', r.finalTax,
-      r.finalTax<=0?'linear-gradient(135deg,#0F7A45,#059669)':'linear-gradient(135deg,#1e3a5f,#6B35CF)',
+      r.finalTax<=0?'#3182f6':'#3182f6',
       r.finalTax<=0?'#fff':'#fbbf24');
 
   var ctaUrl = 'consulting.html?type=gift&asset='+encodeURIComponent(d.assetValue)+'&tax='+encodeURIComponent(r.finalTax);
@@ -798,14 +801,14 @@ function renderGiftResult(r, d){
     '<div style="padding:20px 24px;">'+breakdown+'</div>'+
     '<div class="result-actions">'+
     '<div style="display:flex;gap:8px;margin-bottom:10px;">'+
-    '<button id="btn-download-pdf" class="action-btn" style="flex:2;background:linear-gradient(135deg,#3182f6,#1845D4);color:#fff;font-size:15px;" onclick="downloadPDF()">📄 AI 리포트 PDF 저장</button>'+
+    '<button id="btn-download-pdf" class="action-btn" style="flex:2;background: var(--blue);color:#fff;font-size:15px;" onclick="downloadPDF()">📄 AI 리포트 PDF 저장</button>'+
     '<button id="btn-share-pdf" class="action-btn" style="flex:1;background:#191F28;color:#fff;font-size:15px;" onclick="sharePDF()">📤 공유</button>'+
     '</div>'+
-    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;line-height:1.65;">'+
+    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#4e5968;line-height:1.65;">'+
     '※ 카카오톡 인앱 브라우저에서는 저장이 제한될 수 있습니다. 우측 메뉴(⋯) → 다른 브라우저로 열기를 권장합니다.'+
     '</div></div></div>'+
     '<button onclick="location.href=\''+ctaUrl+'\'" style="width:100%;padding:18px;background:var(--toss-blue);color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;margin:12px 0;font-family:\'Noto Sans KR\',sans-serif;">📊 맞춤형 절세 플랜 신청하기</button>'+
-    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;margin-bottom:12px;">'+
+    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#4e5968;margin-bottom:12px;">'+
     '신고기한: 증여받은 날이 속하는 달의 말일로부터 <strong>3개월 이내</strong>'+
     (r.debt>0?'<br>⚠️ 부담부증여: 증여자에게 양도세가 별도 발생할 수 있어요.':'')+
     '</div>'+
