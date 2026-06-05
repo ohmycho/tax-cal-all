@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>부동산 세금 계산센터</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --blue:    #3182f6;
+      --blue-lt: #eff6ff;
+      --blue-dk: #1b64da;
+      --green:   #03b26c;
+      --red:     #f04452;
+      --bg:      #f2f4f6;
+      --white:   #ffffff;
+      --t1:      #191f28;
+      --t2:      #4e5968;
+      --t3:      #8b95a1;
+      --border:  #e5e8eb;
+      --radius-card: 20px;
+      --radius-btn:  12px;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif;
+      background: var(--bg);
+      color: var(--t1);
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── 상단 헤더 ── */
+    .header {
+      background: var(--white);
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 1px solid var(--border);
+    }
+    .header-logo {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--t1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-logo .logo-badge {
+      width: 28px; height: 28px;
+      background: var(--blue);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header-logo .logo-badge svg { width: 16px; height: 16px; fill: none; stroke: #fff; stroke-width: 2; }
+    .header-menu { display: flex; gap: 4px; }
+    .header-menu button {
+      background: none; border: none;
+      font-size: 13px; font-weight: 500;
+      color: var(--t3); padding: 6px 10px;
+      border-radius: 8px; cursor: pointer;
+    }
+    .header-menu button:active { background: var(--bg); }
+
+    /* ── 히어로 ── */
+    .hero {
+      background: var(--white);
+      padding: 32px 20px 28px;
+      margin-bottom: 8px;
+    }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: var(--blue-lt);
+      color: var(--blue);
+      font-size: 12px; font-weight: 600;
+      padding: 5px 10px; border-radius: 100px;
+      margin-bottom: 16px;
+    }
+    .hero-tag .dot { width: 6px; height: 6px; background: var(--blue); border-radius: 50%; }
+    .hero h1 {
+      font-size: 24px; font-weight: 700;
+      color: var(--t1); line-height: 1.35;
+      margin-bottom: 10px;
+      word-break: keep-all;
+    }
+    .hero h1 span { color: var(--blue); }
+    .hero p {
+      font-size: 14px; color: var(--t2);
+      line-height: 1.6; margin-bottom: 24px;
+      word-break: keep-all;
+    }
+    .btn-hero {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 16px;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: var(--radius-btn);
+      font-size: 16px; font-weight: 700; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-hero:active { background: var(--blue-dk); }
+    .btn-hero svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.5; }
+    .hero-sub {
+      text-align: center; font-size: 12px; color: var(--t3);
+      margin-top: 12px;
+    }
+
+    /* ── 섹션 타이틀 ── */
+    .section { padding: 24px 20px 8px; }
+    .section-title { font-size: 17px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
+    .section-sub   { font-size: 13px; color: var(--t3); margin-bottom: 16px; }
+
+    /* ── 계산기 카드 ── */
+    .card-list { display: flex; flex-direction: column; gap: 10px; padding: 0 20px 8px; }
+
+    .calc-card {
+      background: var(--white);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex; flex-direction: column; gap: 14px;
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+      position: relative;
+      overflow: hidden;
+    }
+    .calc-card::before {
+      content: '';
+      position: absolute; top: 0; left: 0;
+      width: 4px; height: 100%;
+      border-radius: 4px 0 0 4px;
+    }
+    .calc-card:active { transform: scale(0.985); box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+
+    .calc-card.c1::before { background: var(--blue); }
+    .calc-card.c2::before { background: var(--green); }
+    .calc-card.c3::before { background: #f5a623; }
+    .calc-card.c4::before { background: #8b5cf6; }
+
+    .card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+    .card-icon {
+      width: 44px; height: 44px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 20px;
+    }
+    .c1 .card-icon { background: #eff6ff; }
+    .c2 .card-icon { background: #edfbf4; }
+    .c3 .card-icon { background: #fff8ec; }
+    .c4 .card-icon { background: #f3f0ff; }
+
+    .card-title-wrap { flex: 1; }
+    .card-title { font-size: 16px; font-weight: 700; color: var(--t1); margin-bottom: 4px; }
+    .card-desc  { font-size: 13px; color: var(--t2); line-height: 1.5; word-break: keep-all; }
+
+    .card-arrow {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--bg); display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; align-self: center;
+    }
+    .card-arrow svg { width: 16px; height: 16px; fill: none; stroke: var(--t3); stroke-width: 2; }
+
+    .card-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag {
+      font-size: 11px; font-weight: 500; color: var(--t3);
+      background: var(--bg); padding: 4px 10px;
+      border-radius: 100px;
+    }
+
+    .card-btn {
+      width: 100%; padding: 13px;
+      border: none; border-radius: var(--radius-btn);
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .card-btn:active { opacity: 0.85; }
+    .c1 .card-btn { background: var(--blue-lt); color: var(--blue); }
+    .c2 .card-btn { background: #edfbf4; color: var(--green); }
+    .c3 .card-btn { background: #fff8ec; color: #d4820a; }
+    .c4 .card-btn { background: #f3f0ff; color: #7c3aed; }
+
+    /* ── 이용안내 ── */
+    .how-section {
+      background: var(--white);
+      margin: 8px 20px;
+      border-radius: var(--radius-card);
+      padding: 24px 20px;
+      box-shadow: var(--shadow);
+    }
+    .how-title { font-size: 15px; font-weight: 700; color: var(--t1); margin-bottom: 20px; }
+    .how-steps { display: flex; flex-direction: column; gap: 0; }
+    .how-step  { display: flex; align-items: flex-start; gap: 14px; padding-bottom: 20px; position: relative; }
+    .how-step:last-child { padding-bottom: 0; }
+    .how-step::after {
+      content: '';
+      position: absolute; left: 15px; top: 34px;
+      width: 2px; height: calc(100% - 14px);
+      background: var(--border);
+    }
+    .how-step:last-child::after { display: none; }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--blue-lt); color: var(--blue);
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; z-index: 1;
+    }
+    .step-text .st { font-size: 14px; font-weight: 600; color: var(--t1); margin-bottom: 2px; }
+    .step-text .sd { font-size: 13px; color: var(--t3); }
+
+    /* ── 주의 안내 ── */
+    .notice-section {
+      margin: 8px 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .notice-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .notice-text { font-size: 12px; color: var(--t3); line-height: 1.7; word-break: keep-all; }
+    .notice-text strong { color: var(--t2); font-weight: 600; }
+
+    /* ── 상담 섹션 ── */
+    .consult-section {
+      margin: 8px 20px 24px;
+      background: linear-gradient(135deg, #1a56db 0%, #3182f6 100%);
+      border-radius: var(--radius-card);
+      padding: 24px 20px;
+      color: #fff;
+    }
+    .consult-label {
+      font-size: 11px; font-weight: 600;
+      background: rgba(255,255,255,0.2);
+      display: inline-block; padding: 4px 10px;
+      border-radius: 100px; margin-bottom: 12px;
+    }
+    .consult-title { font-size: 18px; font-weight: 700; margin-bottom: 8px; line-height: 1.4; word-break: keep-all; }
+    .consult-desc  { font-size: 13px; opacity: 0.8; line-height: 1.6; margin-bottom: 20px; word-break: keep-all; }
+    .btn-consult {
+      width: 100%; padding: 14px;
+      background: #fff; color: var(--blue);
+      border: none; border-radius: var(--radius-btn);
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .btn-consult:active { opacity: 0.9; }
+
+    /* ── 하단 탭바 ── */
+    .tab-bar {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 100%; max-width: 480px;
+      background: var(--white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      z-index: 50;
+    }
+    .tab-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 10px 0 8px;
+      gap: 4px; cursor: pointer;
+      background: none; border: none;
+    }
+    .tab-item svg { width: 22px; height: 22px; fill: none; stroke: var(--t3); stroke-width: 2; }
+    .tab-item span { font-size: 10px; font-weight: 500; color: var(--t3); }
+    .tab-item.active svg { stroke: var(--blue); }
+    .tab-item.active span { color: var(--blue); font-weight: 700; }
+
+    /* 탭바 높이만큼 하단 여백 */
+    .tab-spacer { height: 72px; }
+
+    /* ── 모달 ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.45);
+      z-index: 100;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--white);
+      width: 100%; max-width: 480px;
+      border-radius: 24px 24px 0 0;
+      padding: 0 0 calc(env(safe-area-inset-bottom, 0px) + 24px);
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(30px); opacity: 0; }
+      to   { transform: translateY(0);    opacity: 1; }
+    }
+    .modal-handle {
+      width: 36px; height: 4px; background: var(--border);
+      border-radius: 2px; margin: 12px auto 20px;
+    }
+    .modal-body { padding: 0 20px; }
+    .modal-icon {
+      width: 52px; height: 52px; border-radius: 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px; margin-bottom: 14px;
+    }
+    .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .modal-desc  { font-size: 14px; color: var(--t2); line-height: 1.6; margin-bottom: 20px; word-break: keep-all; }
+    .modal-items-label { font-size: 12px; font-weight: 600; color: var(--t3); margin-bottom: 10px; }
+    .modal-items { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 24px; }
+    .modal-tag {
+      font-size: 13px; font-weight: 500;
+      background: var(--bg); color: var(--t2);
+      padding: 7px 14px; border-radius: 100px;
+    }
+    .modal-btn {
+      width: 100%; padding: 16px;
+      border: none; border-radius: var(--radius-btn);
+      font-size: 16px; font-weight: 700;
+      color: #fff; cursor: pointer;
+      transition: opacity .15s;
+    }
+    .modal-btn:active { opacity: 0.85; }
+
+    /* 스크롤 시 헤더 그림자 */
+    .header.scrolled { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header class="header" id="header">
+  <div class="header-logo">
+    <div class="logo-badge">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    세금 계산센터
+  </div>
+  <div class="header-menu">
+    <button>이용안내</button>
+    <button>문의</button>
+  </div>
+</header>
+
+<!-- 히어로 -->
+<section class="hero">
+  <div class="hero-tag"><div class="dot"></div>부동산 세금 계산기</div>
+  <h1>복잡한 부동산 세금,<br><span>쉽게 계산</span>하세요</h1>
+  <p>취득세, 증여세, 상속세, 양도세를<br>한곳에서 빠르게 확인할 수 있어요.</p>
+  <button class="btn-hero" onclick="scrollToCards()">
+    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
+    계산기 선택하기
+  </button>
+  <p class="hero-sub">입력은 간단하게, 결과는 빠르게 확인해요.</p>
+</section>
+
+<!-- 계산기 카드 섹션 -->
+<div class="section" id="cards-section">
+  <div class="section-title">세금 계산기</div>
+  <div class="section-sub">필요한 계산기를 선택하세요</div>
+</div>
+<div class="card-list" id="card-list"></div>
+
+<!-- 이용 안내 -->
+<div class="section">
+  <div class="section-title">이용 방법</div>
+  <div class="section-sub">3단계로 간단하게</div>
+</div>
+<div class="how-section">
+  <div class="how-steps">
+    <div class="how-step">
+      <div class="step-num">1</div>
+      <div class="step-text">
+        <div class="st">계산기를 선택해요</div>
+        <div class="sd">취득·증여·상속·양도 중 필요한 항목을 고르세요</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="step-num">2</div>
+      <div class="step-text">
+        <div class="st">기본 정보를 입력해요</div>
+        <div class="sd">가액, 기간, 주택 수 등 몇 가지만 입력하면 돼요</div>
+      </div>
+    </div>
+    <div class="how-step">
+      <div class="step-num">3</div>
+      <div class="step-text">
+        <div class="st">예상 세금을 확인해요</div>
+        <div class="sd">계산 결과와 절세 가이드를 바로 확인할 수 있어요</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 주의 문구 -->
+<div class="notice-section">
+  <div class="notice-icon">💡</div>
+  <div class="notice-text">
+    <strong>참고용 계산 결과입니다.</strong><br>
+    실제 세액은 보유 조건, 지역, 주택 수, 세법 개정에 따라 달라질 수 있어요. 정확한 세액은 전문가 상담을 권장합니다.
+  </div>
+</div>
+
+<!-- 상담 섹션 -->
+<div class="consult-section">
+  <div class="consult-label">전문가 연결</div>
+  <div class="consult-title">정확한 검토가<br>필요하신가요?</div>
+  <div class="consult-desc">계산 결과를 바탕으로 전문가 상담 또는 중개 상담을 연결해 드립니다.</div>
+  <button class="btn-consult" onclick="location.href='consulting.html'">상담 문의하기</button>
+</div>
+
+<div class="tab-spacer"></div>
+
+<!-- 하단 탭바 -->
+<nav class="tab-bar">
+  <button class="tab-item active">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span>홈</span>
+  </button>
+  <button class="tab-item">
+    <svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="15" x2="13" y2="15"/></svg>
+    <span>계산기</span>
+  </button>
+  <button class="tab-item">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    <span>이용안내</span>
+  </button>
+  <button class="tab-item">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span>문의</span>
+  </button>
+</nav>
+
+<!-- 모달 -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-body">
+      <div class="modal-icon" id="modal-icon"></div>
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-desc"  id="modal-desc"></div>
+      <div class="modal-items-label">주요 입력 항목</div>
+      <div class="modal-items" id="modal-items"></div>
+      <button class="modal-btn" id="modal-btn">계산하러 가기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CALCULATORS = [
+  {
+    id: 'acquisition',
+    cls: 'c1',
+    icon: '🏠',
+    iconBg: '#eff6ff',
+    color: '#3182f6',
+    title: '취득세 계산기',
+    short: '부동산을 살 때 내야 할 세금을 확인해요.',
+    desc: '주택·상가·토지 등 부동산 취득 시 부과되는 취득세를 간편하게 계산해요. 주택 수와 조정대상지역 여부에 따라 세율이 달라집니다.',
+    tags: ['취득가액', '주택 수', '조정대상지역', '매매·증여·상속'],
+    btnLabel: '취득세 계산하기',
+    link: 'acquisition.html',
+  },
+  {
+    id: 'gift',
+    cls: 'c2',
+    icon: '🎁',
+    iconBg: '#edfbf4',
+    color: '#03b26c',
+    title: '증여세 계산기',
+    short: '부동산을 증여할 때 예상 세금을 계산해요.',
+    desc: '배우자·자녀·기타친족 등 수증자 관계에 따른 공제 금액이 다르게 적용돼요. 10년 합산 증여재산도 고려해서 계산합니다.',
+    tags: ['증여가액', '증여자 관계', '공제금액', '10년 합산'],
+    btnLabel: '증여세 계산하기',
+    link: 'gift.html',
+  },
+  {
+    id: 'inheritance',
+    cls: 'c3',
+    icon: '📋',
+    iconBg: '#fff8ec',
+    color: '#d4820a',
+    title: '상속세 계산기',
+    short: '상속 재산 기준 예상 세금을 확인해요.',
+    desc: '배우자공제, 일괄공제, 금융재산공제 등 다양한 공제 항목을 반영해서 상속세를 계산해요. 상속인 구성에 따라 결과가 달라집니다.',
+    tags: ['상속재산', '배우자 유무', '공제항목', '상속인 수'],
+    btnLabel: '상속세 계산하기',
+    link: 'https://inherit-template.netlify.app/inheritance.html',
+  },
+  {
+    id: 'capital',
+    cls: 'c4',
+    icon: '📈',
+    iconBg: '#f3f0ff',
+    color: '#7c3aed',
+    title: '양도세 계산기',
+    short: '부동산을 팔 때 발생하는 세금을 계산해요.',
+    desc: '취득가·양도가·보유기간·거주기간을 기반으로 양도소득세를 계산해요. 조정대상지역 여부와 주택 수에 따라 중과세율이 적용됩니다.',
+    tags: ['취득가액', '양도가액', '보유기간', '거주기간', '주택 수'],
+    btnLabel: '양도세 계산하기',
+    link: 'capital_gains_tax.html',
+  },
+];
+
+// 카드 렌더링
+const list = document.getElementById('card-list');
+CALCULATORS.forEach((calc, i) => {
+  const card = document.createElement('div');
+  card.className = `calc-card ${calc.cls}`;
+  card.style.animationDelay = `${i * 0.06}s`;
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-icon" style="background:${calc.iconBg}">${calc.icon}</div>
+      <div class="card-title-wrap">
+        <div class="card-title">${calc.title}</div>
+        <div class="card-desc">${calc.short}</div>
+      </div>
+      <div class="card-arrow">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+    <div class="card-tags">${calc.tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    <button class="card-btn" onclick="event.stopPropagation(); goCalc('${calc.link}')">${calc.btnLabel}</button>
+  `;
+  card.addEventListener('click', () => openModal(calc));
+  list.appendChild(card);
+});
+
+function scrollToCards() {
+  document.getElementById('cards-section').scrollIntoView({ behavior: 'smooth' });
+}
+
+function goCalc(link) {
+  const overlay = document.getElementById('modal-overlay');
+  // 모달 닫기
+  if (overlay.classList.contains('open')) {
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  // 로컬 file:// 환경 감지
+  if (location.protocol === 'file:') {
+    showToast('Netlify 배포 후 정상 작동합니다');
+    return;
+  }
+  setTimeout(() => { location.href = link; }, 100);
+}
+
+function showToast(msg) {
+  let t = document.getElementById('_toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = '_toast';
+    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#191f28;color:#fff;font-size:13px;font-weight:600;padding:12px 20px;border-radius:12px;z-index:999;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,0.2)';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+}
+
+// 모달
+function openModal(calc) {
+  document.getElementById('modal-icon').style.background = calc.iconBg;
+  document.getElementById('modal-icon').textContent = calc.icon;
+  document.getElementById('modal-title').textContent = calc.title;
+  document.getElementById('modal-desc').textContent = calc.desc;
+  document.getElementById('modal-items').innerHTML = calc.tags.map(t => `<span class="modal-tag">${t}</span>`).join('');
+  const btn = document.getElementById('modal-btn');
+  btn.style.background = calc.color;
+  btn.textContent = calc.btnLabel;
+  btn.onclick = () => goCalc(calc.link);
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('modal-overlay')) {
+    document.getElementById('modal-overlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+}
+
+// 스크롤 시 헤더 그림자
+window.addEventListener('scroll', () => {
+  document.getElementById('header').classList.toggle('scrolled', window.scrollY > 4);
+});
+</script>
+</body>
+</html>

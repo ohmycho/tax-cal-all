@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>VIP 전문 상담 신청 | 부동산중개법인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --accent: #3182F6;
+  --accent-light: #EBF3FF;
+  --accent-dark: #1A6EE8;
+  --bg: #F2F4F6;
+  --surface: #FFFFFF;
+  --text: #191F28;
+  --text-2: #4E5968;
+  --text-3: #8B95A1;
+  --border: #E5E8EB;
+  --border-focus: var(--accent);
+  --radius: 14px;
+  --radius-lg: 20px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md: 0 8px 24px rgba(0,0,0,0.08);
+}
+html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
+}
+
+/* ── 헤더 */
+.top-bar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 20px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.top-bar-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.back-btn {
+  width: 36px; height: 36px;
+  border: none; background: var(--bg);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px; color: var(--text-2);
+  flex-shrink: 0;
+  transition: background 0.13s;
+}
+.back-btn:hover { background: var(--border); }
+.top-title {
+  font-size: 16px; font-weight: 600; color: var(--text);
+}
+
+/* ── 페이지 */
+.page { max-width: 560px; margin: 0 auto; padding: 0 20px 20px; }
+
+/* ── 리포트 카드 */
+.report-card {
+  background: var(--accent);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin: 20px 0;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.report-card.purple { background: #6B35CF; }
+.report-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+}
+.report-card::after {
+  content: '';
+  position: absolute;
+  bottom: -30px; right: 20px;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.report-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 100px; padding: 4px 12px;
+  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9);
+  margin-bottom: 14px;
+}
+.report-name {
+  font-size: 22px; font-weight: 700;
+  line-height: 1.35; margin-bottom: 12px;
+  position: relative; z-index: 1;
+}
+.report-sub {
+  font-size: 14px; color: rgba(255,255,255,0.8);
+  line-height: 1.65; position: relative; z-index: 1;
+}
+.report-figures {
+  display: flex; gap: 12px; margin-top: 16px;
+  position: relative; z-index: 1;
+}
+.report-fig {
+  background: rgba(255,255,255,0.15);
+  border-radius: 12px; padding: 10px 14px; flex: 1;
+}
+.report-fig-label { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+.report-fig-val { font-size: 15px; font-weight: 700; color: #fff; }
+
+/* ── 섹션 카드 */
+.section-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 12px;
+  box-shadow: var(--shadow);
+}
+.section-title {
+  font-size: 17px; font-weight: 700; color: var(--text);
+  margin-bottom: 6px;
+}
+.section-sub {
+  font-size: 14px; color: var(--text-3);
+  margin-bottom: 20px; line-height: 1.55;
+}
+
+/* ── 폼 필드 */
+.field { margin-bottom: 18px; }
+.field:last-child { margin-bottom: 0; }
+.field-label {
+  font-size: 14px; font-weight: 600; color: var(--text-2);
+  margin-bottom: 8px; display: block;
+}
+.field-label .req { color: var(--accent); margin-left: 2px; }
+.field-input {
+  width: 100%; padding: 14px 16px;
+  font-size: 16px; font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text); background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius); outline: none;
+  transition: border-color 0.15s, background 0.15s;
+  -moz-appearance: textfield;
+}
+.field-input::-webkit-outer-spin-button,
+.field-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.field-input:focus {
+  border-color: var(--accent); background: #fff;
+}
+.field-input::placeholder { color: var(--text-3); }
+textarea.field-input {
+  resize: none; height: 110px;
+  line-height: 1.65;
+}
+
+/* ── 칩 버튼 */
+.chip-group {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.chip {
+  padding: 10px 16px;
+  border: 1.5px solid var(--border);
+  border-radius: 100px;
+  background: var(--bg);
+  color: var(--text-2);
+  font-size: 14px; font-weight: 500;
+  cursor: pointer; transition: all 0.13s;
+  font-family: 'Noto Sans KR', sans-serif;
+  user-select: none;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent); }
+.chip.on {
+  background: var(--accent-light);
+  border-color: var(--accent);
+  color: var(--accent); font-weight: 600;
+}
+.chip.on.purple-chip {
+  background: #F0EBFF; border-color: #6B35CF; color: #6B35CF;
+}
+
+/* ── 동의 체크박스 */
+.agree-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 16px;
+  background: var(--bg); border-radius: var(--radius);
+  cursor: pointer; user-select: none;
+}
+.agree-check {
+  width: 24px; height: 24px; border-radius: 8px;
+  border: 2px solid var(--border);
+  flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.13s; background: var(--surface);
+}
+.agree-check.on {
+  background: var(--accent); border-color: var(--accent);
+}
+.agree-check.on::after {
+  content: '✓'; color: #fff; font-size: 14px; font-weight: 700;
+}
+.agree-text { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+.agree-text strong { color: var(--text); display: block; margin-bottom: 3px; font-size: 15px; }
+.agree-detail { font-size: 13px; color: var(--text-3); margin-top: 8px; line-height: 1.55; }
+
+/* ── 하단 CTA */
+.bottom-cta {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  z-index: 100;
+}
+.bottom-cta-inner { max-width: 560px; margin: 0 auto; }
+.submit-btn {
+  width: 100%; padding: 18px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius-lg);
+  font-size: 18px; font-weight: 700;
+  cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.15s; letter-spacing: -0.3px;
+}
+.submit-btn:hover { background: var(--accent-dark); transform: translateY(-1px); }
+.submit-btn:active { transform: translateY(0); }
+.submit-btn:disabled { background: var(--border); cursor: not-allowed; transform: none; }
+
+/* ── 신뢰 배지 */
+.trust-row {
+  display: flex; gap: 8px; margin-top: 12px;
+  justify-content: center; flex-wrap: wrap;
+}
+.trust-badge {
+  font-size: 12px; color: var(--text-3);
+  display: flex; align-items: center; gap: 4px;
+}
+
+/* ── 완료 모달 */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 200; display: flex;
+  align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.modal-overlay.show { opacity: 1; pointer-events: all; }
+.modal-box {
+  width: 100%; background: var(--surface);
+  border-radius: 24px 24px 0 0;
+  padding: 32px 24px;
+  padding-bottom: calc(32px + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-width: 560px; margin: 0 auto;
+}
+.modal-overlay.show .modal-box { transform: translateY(0); }
+.modal-handle {
+  width: 40px; height: 4px; background: var(--border);
+  border-radius: 2px; margin: 0 auto 24px;
+}
+.modal-icon {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--accent-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin: 0 auto 20px;
+}
+.modal-title {
+  font-size: 22px; font-weight: 700; text-align: center;
+  color: var(--text); margin-bottom: 10px;
+}
+.modal-desc {
+  font-size: 15px; color: var(--text-2); text-align: center;
+  line-height: 1.65; margin-bottom: 28px;
+}
+.modal-btn {
+  width: 100%; padding: 16px;
+  background: var(--accent); color: #fff;
+  border: none; border-radius: var(--radius);
+  font-size: 16px; font-weight: 600;
+  cursor: pointer; font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* ── 에러 메시지 */
+.err-msg {
+  font-size: 13px; color: #E03030;
+  margin-top: 6px; display: none;
+}
+.err-msg.show { display: block; }
+
+@media (max-width: 480px) {
+  .report-figures { flex-direction: column; }
+  .report-name { font-size: 19px; }
+}
+
+    /* ── 홈으로 버튼 ── */
+    .home-btn {
+      margin-left: auto;
+      display: flex; align-items: center; gap: 5px;
+      background: none; border: none; cursor: pointer;
+      font-size: 13px; font-weight: 600; color: #8b95a1;
+      font-family: inherit; padding: 6px 8px; border-radius: 8px;
+      transition: background 0.13s;
+    }
+    .home-btn svg { width: 15px; height: 15px; fill: none; stroke: #8b95a1; stroke-width: 2; }
+    .home-btn:active { background: #f2f4f6; }
+</style>
+</head>
+<body>
+
+<!-- 상단 바 -->
+<div class="top-bar">
+  <div class="top-bar-inner">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <span class="top-title">전문가 상담 신청</span>
+    <button class="home-btn" onclick="location.href='index.html'">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      홈
+    </button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- 맞춤형 리포트 카드 -->
+  <div class="report-card" id="report-card">
+    <div class="report-badge" id="report-badge">✨ 맞춤 절세 리포트</div>
+    <div class="report-name" id="report-name">부동산중개법인<br>전문가 상담을 신청하세요</div>
+    <div class="report-sub" id="report-sub">고액 자산가를 위한 증여·상속 절세 전략과 최적의 부동산 솔루션을 제안해 드립니다.</div>
+    <div class="report-figures" id="report-figures" style="display:none">
+      <div class="report-fig">
+        <div class="report-fig-label">자산 규모</div>
+        <div class="report-fig-val" id="fig-asset">—</div>
+      </div>
+      <div class="report-fig">
+        <div class="report-fig-label">예상 세액</div>
+        <div class="report-fig-val" id="fig-tax">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 상담 신청 폼 -->
+  <div class="section-card">
+    <div class="section-title">상담 신청 정보</div>
+    <div class="section-sub">평일 오전 9시~오후 6시 이내 담당 전문가가 직접 연락드립니다.</div>
+
+    <div class="field">
+      <label class="field-label" for="inp-name">고객 성함 <span class="req">*</span></label>
+      <input type="text" id="inp-name" class="field-input" placeholder="홍길동" autocomplete="name">
+      <div class="err-msg" id="err-name">성함을 입력해 주세요.</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="inp-phone">연락처 <span class="req">*</span></label>
+      <input type="tel" id="inp-phone" class="field-input" placeholder="010-0000-0000" inputmode="numeric" maxlength="13" autocomplete="tel">
+      <div class="err-msg" id="err-phone">올바른 연락처를 입력해 주세요.</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">상담 희망 분야</label>
+      <div class="chip-group" id="chip-group">
+        <div class="chip" onclick="toggleChip(this)">부동산 증여·상속 플랜</div>
+        <div class="chip" onclick="toggleChip(this)">부동산 감정평가 및 세무 솔루션</div>
+        <div class="chip" onclick="toggleChip(this)">절세 목적 매물 추천</div>
+        <div class="chip" onclick="toggleChip(this)">기타 자산관리</div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label" for="inp-msg">문의 내용 <span style="color:var(--text-3);font-weight:400">(선택)</span></label>
+      <textarea id="inp-msg" class="field-input" placeholder="궁금하신 점이나 상담 내용을 자유롭게 적어주세요."></textarea>
+    </div>
+  </div>
+
+  <!-- 개인정보 동의 -->
+  <div class="section-card">
+    <div class="agree-row" onclick="toggleAgree()" id="agree-row">
+      <div class="agree-check" id="agree-check"></div>
+      <div>
+        <div class="agree-text">
+          <strong>개인정보 수집 및 이용 동의 <span style="color:#E03030">*</span></strong>
+          상담 진행을 위해 입력하신 개인정보를 수집·이용합니다.
+        </div>
+        <div class="agree-detail">
+          수집 항목: 성명, 연락처, 상담 내용 · 수집 목적: 상담 서비스 제공 · 보유 기간: 상담 완료 후 1년<br>
+          동의를 거부하실 수 있으나, 거부 시 상담 서비스 이용이 제한됩니다.
+        </div>
+      </div>
+    </div>
+    <div class="err-msg" id="err-agree" style="margin-top:10px">개인정보 수집 및 이용에 동의해 주세요.</div>
+  </div>
+
+  <!-- 신뢰 문구 -->
+  <div class="trust-row">
+    <span class="trust-badge">🔒 개인정보 암호화 보호</span>
+    <span class="trust-badge">·</span>
+    <span class="trust-badge">📋 등록 부동산중개법인</span>
+    <span class="trust-badge">·</span>
+    <span class="trust-badge">⚡ 24시간 내 연락</span>
+  </div>
+
+</div>
+
+<!-- 하단 고정 CTA -->
+<div class="bottom-cta">
+  <div class="bottom-cta-inner">
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">VIP 상담 신청하기</button>
+  </div>
+</div>
+
+<!-- 완료 모달 -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal-box">
+    <div class="modal-handle"></div>
+    <div class="modal-icon" id="modal-icon">✅</div>
+    <div class="modal-title" id="modal-title">신청이 완료됐어요!</div>
+    <div class="modal-desc" id="modal-desc">담당 전문가가 영업일 기준 24시간 이내에 직접 연락드릴게요.<br>잠시만 기다려 주세요.</div>
+    <button class="modal-btn" id="modal-btn" onclick="closeModal()">확인</button>
+  </div>
+</div>
+
+<script>
+// ── URL 파라미터 파싱
+var params = new URLSearchParams(location.search);
+var pName  = params.get('name')  || '';
+var pType  = params.get('type')  || '';
+var pAsset = parseFloat(params.get('asset')) || 0;
+var pTax   = parseFloat(params.get('tax'))   || 0;
+var isGift = pType === 'gift';
+var isPurple = pType === 'inherit';
+
+// 만원 단위 → 한글 포맷
+function fmtWon(mw) {
+  if (!mw || mw <= 0) return '0원';
+  var uk  = Math.floor(mw / 10000);
+  var man = Math.round(mw % 10000);
+  if (uk > 0 && man > 0) return uk.toLocaleString() + '억 ' + man.toLocaleString() + '만원';
+  if (uk > 0) return uk.toLocaleString() + '억원';
+  return man.toLocaleString() + '만원';
+}
+
+// ── 테마 컬러 적용
+(function applyTheme() {
+  if (!pType) return;
+  var color = isPurple ? '#6B35CF' : '#3182F6';
+  var lightBg = isPurple ? '#F0EBFF' : '#EBF3FF';
+  document.documentElement.style.setProperty('--accent', color);
+  document.documentElement.style.setProperty('--accent-light', lightBg);
+  document.documentElement.style.setProperty('--accent-dark', isPurple ? '#5A28B0' : '#1A6EE8');
+  if (isPurple) document.getElementById('report-card').classList.add('purple');
+})();
+
+// ── 리포트 카드 렌더링
+(function renderReport() {
+  var badge = document.getElementById('report-badge');
+  var nameEl = document.getElementById('report-name');
+  var subEl = document.getElementById('report-sub');
+  var figures = document.getElementById('report-figures');
+
+  var typeLabel = isGift ? '증여' : isPurple ? '상속' : '';
+
+  if (pName && pType && (pAsset > 0 || pTax > 0)) {
+    badge.textContent = '✨ ' + pName + ' 님 맞춤 리포트';
+    nameEl.innerHTML = pName + ' 님의 예상 ' + (typeLabel||'') + '세는<br><span style="color:rgba(255,255,255,0.9)">' + fmtWon(pTax) + '</span>입니다';
+    subEl.textContent = '부동산중개법인의 전문가 그룹이 자산 규모 ' + fmtWon(pAsset) + '에 딱 맞춘 최적의 절세 출구 전략을 제안해 드립니다.';
+    document.getElementById('fig-asset').textContent = fmtWon(pAsset);
+    document.getElementById('fig-tax').textContent   = fmtWon(pTax);
+    figures.style.display = 'flex';
+    // 이름 자동 입력
+    document.getElementById('inp-name').value = pName;
+    // 분야 자동 선택
+    var chips = document.querySelectorAll('.chip');
+    if (pType) chips[0].click();
+  } else {
+    badge.textContent = '✨ 프리미엄 세무·부동산 상담';
+    nameEl.innerHTML = '증여·상속 절세 전략과<br>최적의 부동산 솔루션';
+    subEl.textContent = '고액 자산가를 위한 맞춤형 컨설팅으로 수억 원의 세금 차이를 만들어 드립니다.';
+  }
+})();
+
+// ── 연락처 하이픈 자동 삽입
+document.getElementById('inp-phone').addEventListener('input', function() {
+  var v = this.value.replace(/\D/g, '');
+  if (v.length <= 3) this.value = v;
+  else if (v.length <= 7) this.value = v.slice(0,3) + '-' + v.slice(3);
+  else this.value = v.slice(0,3) + '-' + v.slice(3,7) + '-' + v.slice(7,11);
+});
+
+// ── 칩 토글
+function toggleChip(el) {
+  var cls = isPurple ? 'purple-chip' : '';
+  el.classList.toggle('on');
+  if (cls) el.classList.toggle(cls, el.classList.contains('on'));
+}
+
+// ── 동의 토글
+var agreed = false;
+function toggleAgree() {
+  agreed = !agreed;
+  var chk = document.getElementById('agree-check');
+  chk.classList.toggle('on', agreed);
+  document.getElementById('err-agree').classList.remove('show');
+}
+
+// ── 유효성 검사
+function validate() {
+  var ok = true;
+  var name  = document.getElementById('inp-name').value.trim();
+  var phone = document.getElementById('inp-phone').value.replace(/\D/g,'');
+
+  document.getElementById('err-name').classList.toggle('show', !name);
+  if (!name) ok = false;
+
+  var phoneOk = phone.length >= 10 && phone.length <= 11;
+  document.getElementById('err-phone').classList.toggle('show', !phoneOk);
+  if (!phoneOk) ok = false;
+
+  document.getElementById('err-agree').classList.toggle('show', !agreed);
+  if (!agreed) ok = false;
+
+  return ok;
+}
+
+// ── 폼 제출
+function submitForm() {
+  if (!validate()) {
+    // 첫 에러 필드로 스크롤
+    var first = document.querySelector('.err-msg.show');
+    if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    return;
+  }
+
+  var btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '신청 중...';
+
+  // ── 서버 전송 로직 자리 ──────────────────────────────
+  // 아래 fetch 코드를 실제 API 엔드포인트에 맞게 연동하세요.
+  //
+  // var payload = {
+  //   name:    document.getElementById('inp-name').value.trim(),
+  //   phone:   document.getElementById('inp-phone').value.trim(),
+  //   fields:  [...document.querySelectorAll('.chip.on')].map(c => c.textContent),
+  //   message: document.getElementById('inp-msg').value.trim(),
+  //   asset:   pAsset,
+  //   tax:     pTax,
+  //   type:    pType,
+  // };
+  // fetch('/api/consulting', {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify(payload)
+  // }).then(r => r.json()).then(showSuccess).catch(showError);
+  // ────────────────────────────────────────────────────
+
+  // 현재는 1초 딜레이 후 성공 모달 표시 (서버 연동 전 임시)
+  setTimeout(function() {
+    btn.disabled = false;
+    btn.textContent = 'VIP 상담 신청하기';
+    showSuccess();
+  }, 1000);
+}
+
+function showSuccess() {
+  var name = document.getElementById('inp-name').value.trim() || '고객';
+  var icon  = document.getElementById('modal-icon');
+  var title = document.getElementById('modal-title');
+  var desc  = document.getElementById('modal-desc');
+  var mbtn  = document.getElementById('modal-btn');
+
+  icon.style.background = isPurple ? '#F0EBFF' : 'var(--accent-light)';
+  icon.textContent = '🎉';
+  title.textContent = name + '님, 신청이 완료됐어요!';
+  desc.innerHTML = '담당 전문가가 영업일 기준 <strong>24시간 이내</strong>에<br>직접 연락드릴게요. 잠시만 기다려 주세요.';
+  mbtn.style.background = isPurple ? '#6B35CF' : 'var(--accent)';
+  mbtn.textContent = '확인';
+
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modal-overlay') && e.target !== document.getElementById('modal-btn')) return;
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+</script>
+</body>
+</html>

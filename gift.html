@@ -1,0 +1,775 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>증여세 계산기 | 스마트 세금 플래너</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* ==========================================================================
+   1. 토스(Toss) 스타일 프리미엄 디자인 시스템 (100% 원복)
+   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #F4F3EF; --surface: #fff; --surface2: #EEEDE8;
+  --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.14);
+  --text: #1A1917; --text-2: #65635E; --text-3: #A09F9A;
+  --purple: #6B35CF; --purple-light: #F0EBFF; --purple-text: #4A1FA8;
+  --radius: 10px; --radius-lg: 16px;
+  --shadow: 0 4px 16px rgba(0,0,0,0.06);
+  --toss-blue: #3182f6; --toss-gray: #f2f4f6; --toss-text: #191f28; --toss-subtext: #4e5968;
+}
+body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(--text); min-height: 100vh; padding: 2.5rem 1rem 8rem; }
+
+/* 위저드 및 랜딩 레이아웃 */
+#landing-screen { position: fixed; inset: 0; z-index: 200; background: #ffffff; display: flex; justify-content: center; padding: 20px; padding-top: max(24px, env(safe-area-inset-top)); overflow-y: auto; }
+.app-container { width: 100%; max-width: 500px; margin: 0 auto; }
+.header-title { font-size: 26px; font-weight: 700; line-height: 1.4; margin-bottom: 30px; color: var(--toss-text); letter-spacing: -0.5px; }
+
+/* 선택 버튼 UI */
+.choice-list { display: flex; flex-direction: column; gap: 12px; }
+.choice-btn { display: flex; align-items: center; width: 100%; padding: 24px 20px; background: var(--toss-gray); border: none; border-radius: 20px; text-align: left; cursor: pointer; transition: 0.2s; }
+.choice-btn:hover { background: #e5e8eb; transform: translateY(-1px); }
+.choice-btn.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(107,53,207,0.25); }
+.choice-btn.on strong, .choice-btn.on small { color: #fff; }
+.choice-btn .icon { font-size: 32px; margin-right: 16px; }
+.choice-btn strong { display: block; font-size: 18px; color: var(--toss-text); margin-bottom: 4px; font-weight: 600; }
+.choice-btn small { color: var(--toss-subtext); font-size: 14px; line-height: 1.4; }
+.choice-btn.yn-btn { flex: 1; justify-content: center; flex-direction: column; text-align: center; min-height: 100px; }
+
+.split-card { width: 100%; padding: 24px 20px; background: var(--toss-gray); border: 2px solid transparent; border-radius: 20px; text-align: left; cursor: pointer; margin-bottom: 12px; transition: 0.2s; }
+.split-card:hover { border-color: var(--purple); transform: translateY(-1px); }
+.split-card.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(107,53,207,0.25); }
+.split-card.on div { color: rgba(255,255,255,0.8); }
+.split-card strong { font-size: 18px; font-weight: 700; display: block; margin-bottom: 8px; }
+.split-card div { font-size: 14px; color: var(--toss-subtext); line-height: 1.5; }
+
+/* 단계별 애니메이션 및 입력창 */
+.wiz-step { display: none; animation: fadeIn 0.4s ease; }
+.wiz-step.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.wiz-back { border: none; background: none; color: var(--toss-subtext); font-size: 14px; font-weight: 500; margin-bottom: 20px; cursor: pointer; padding: 0; }
+.wiz-primary-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--purple); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: 0.2s; box-shadow: 0 4px 12px rgba(107,53,207,0.2); }
+.wiz-primary-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.field { margin-bottom: 24px; }
+.field-label { font-size: 14px; font-weight: 600; color: var(--toss-subtext); margin-bottom: 10px; display: block; }
+.price-wrap { position: relative; }
+.price-wrap input { width: 100%; padding: 16px 52px 16px 20px; font-size: 24px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; color: var(--toss-text); outline: none; transition: 0.2s; }
+.price-wrap input:focus { border-color: var(--purple); background: #fff; box-shadow: 0 0 0 4px rgba(107,53,207,0.1); }
+.price-unit { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 600; color: var(--toss-subtext); }
+.num-row { display: flex; align-items: center; gap: 10px; }
+.num-row input { flex: 1; padding: 16px 20px; font-size: 20px; font-weight: 600; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; outline: none; transition: 0.2s;}
+.num-row input::placeholder,
+.price-wrap input::placeholder { color: #C4C9D4; }
+.num-row input::-webkit-input-placeholder,
+.price-wrap input::-webkit-input-placeholder { color: #C4C9D4; }
+.quick-amount-row { display: flex; gap: 8px; margin-top: 12px; }
+.quick-amount-btn { flex: 1; padding: 12px 4px; border-radius: 10px; border: 1.5px solid var(--purple); background: rgba(107,53,207,0.05); color: var(--purple); font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.quick-amount-btn:active { transform: scale(0.95); }
+
+/* 진행 바 */
+.wiz-progress-wrap { position: fixed; top: 0; left: 0; right: 0; z-index: 300; background: #fff; padding: 12px 20px 8px; border-bottom: 0.5px solid rgba(0,0,0,0.07); }
+.wiz-progress-bar { height: 4px; background: #e5e8eb; border-radius: 2px; overflow: hidden; margin-bottom: 6px; }
+.wiz-progress-fill { height: 100%; background: var(--purple); border-radius: 2px; transition: width 0.4s ease; }
+.wiz-progress-label { font-size: 12px; color: var(--toss-subtext); display: flex; justify-content: space-between; align-items: center; }
+.wiz-progress-label .step-name { font-weight: 600; color: var(--purple); }
+.wiz-progress-label .step-count { opacity: 0.6; }
+
+/* 단계 안내 배너 */
+.wiz-guide-banner {
+  background: linear-gradient(135deg, rgba(107,53,207,0.07), rgba(107,53,207,0.03));
+  border: 1px solid rgba(107,53,207,0.15);
+  border-radius: 14px; padding: 14px 16px;
+  margin-bottom: 20px; font-size: 14px;
+  color: var(--purple-text); line-height: 1.65;
+}
+.wiz-guide-banner .guide-emoji { font-size: 18px; margin-right: 6px; }
+.wiz-guide-banner strong { display: inline; font-size: 13px; font-weight: 700; color: var(--purple); margin-bottom: 0; }
+
+/* 거의 끝나감 배너 */
+.wiz-almost-done {
+  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  border-radius: 14px; padding: 14px 16px;
+  margin-bottom: 20px; color: #fff; font-size: 14px; line-height: 1.6;
+}
+.wiz-almost-done strong { display: block; font-size: 15px; margin-bottom: 3px; color: #fbbf24; }
+
+/* 컨텍스트 바 (현재 선택값 표시) */
+.wiz-context-bar {
+  font-size: 12px; color: var(--toss-subtext);
+  background: var(--toss-gray); border-radius: 10px;
+  padding: 8px 14px; margin-bottom: 20px;
+  display: flex; align-items: center; gap: 6px;
+}
+.wiz-context-bar .ctx-tag { background: var(--purple); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 100px; }
+
+.hidden { display: none !important; }
+
+/* [요구사항 3] 실시간 한글 금액 프리뷰 (예: 2억 1천 324만원) */
+.korean-price-preview { font-size: 16px; font-weight: 700; color: var(--purple); margin-top: 10px; min-height: 24px; padding-left: 4px; letter-spacing: -0.3px; }
+
+/* ==========================================================================
+   2. [요구사항 1] 웹 결과 화면 (세부 공제 항목 100% 투명 노출)
+   ========================================================================== */
+.page { max-width: 500px; margin: 0 auto; }
+.result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); }
+.result-top { padding: 30px 24px; background: linear-gradient(135deg, #6B35CF, #4A1FA8); color: #fff; text-align: center; }
+.result-top-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
+.result-total-num { font-size: 38px; font-weight: 800; color: #fff; line-height: 1.2; letter-spacing: -1px; margin-bottom: 4px;}
+.result-meta { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.meta-badge { font-size: 13px; padding: 6px 12px; border-radius: 100px; background: rgba(255,255,255,0.15); color: #fff; font-weight: 500; }
+
+.web-deduct-list { padding: 24px; background: #fff; }
+.web-deduct-title { font-size: 16px; font-weight: 700; color: var(--toss-text); margin-bottom: 16px; border-bottom: 1px dashed var(--border-med); padding-bottom: 12px; }
+.web-deduct-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 14px; color: var(--toss-subtext); line-height: 1.5; }
+.web-deduct-row span.val { font-weight: 600; color: var(--toss-text); text-align: right; }
+.web-deduct-row.bold { font-weight: 700; color: var(--toss-text); margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border-med); }
+.web-deduct-row.bold span.val { color: var(--purple); font-size: 16px; }
+
+.result-actions { padding: 0 24px 24px 24px; background: #fff; }
+.action-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; border: none; box-shadow: 0 4px 12px rgba(107,53,207,0.25); transition: 0.2s;}
+.action-btn:hover { transform: translateY(-2px); }
+.btn-restart-main { width: 100%; padding: 18px; border-radius: 16px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; background: var(--toss-gray); color: var(--toss-text); margin-top: 10px; transition: 0.2s;}
+.btn-restart-main:hover { background: #e5e8eb; }
+
+/* ==========================================================================
+   3. [요구사항 2] 프리미엄 AI 리포트 템플릿 (평소엔 화면 밖으로 완벽히 숨김)
+   ========================================================================== */
+#pdf-report-template { position: absolute; top: -9999px; left: -9999px; width: 820px; background: #ffffff; padding: 55px; color: #191F28; box-sizing: border-box; }
+.pr-header { border-bottom: 3px solid #191F28; padding-bottom: 20px; margin-bottom: 30px; }
+.pr-logo { font-size: 12px; font-weight: 800; color: #6B35CF; letter-spacing: 0.1em; margin-bottom: 8px; }
+.pr-title { font-size: 30px; font-weight: 800; color: #191F28; letter-spacing: -0.5px; }
+.pr-section { margin-bottom: 28px; background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid #E5E8EB; page-break-inside: avoid; }
+
+/* PDF 캡처 전용 모드 - scrollY 버그 방지 */
+.pdf-export-mode {
+  width: 820px !important;
+  min-width: 820px !important;
+  max-width: 820px !important;
+  position: absolute !important;
+  left: 0 !important;
+  top: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  z-index: -9999 !important;
+  opacity: 1 !important;
+  background: #ffffff !important;
+  visibility: visible !important;
+}
+.pdf-export-mode .pr-section {
+  width: 100% !important;
+  padding: 30px 24px !important;
+  margin: 0 0 20px 0 !important;
+  page-break-inside: avoid;
+}
+.pdf-export-mode .pr-page {
+  padding: 50px 44px !important;
+  margin: 0 !important;
+}
+.pr-section.not-applicable { background: #FFF8F8; border-color: #FEE5E5; color: #7A7A7A; }
+.pr-sec-num { font-size: 13px; font-weight: 800; color: #6B35CF; margin-bottom: 6px; letter-spacing: 0.05em; }
+.pr-section.not-applicable .pr-sec-num { color: #D93A3A; }
+.pr-sec-title { font-size: 18px; font-weight: 800; color: #191F28; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+.pr-sec-body { font-size: 15px; line-height: 1.7; color: #4E5968; word-break: keep-all; }
+.pr-section.not-applicable .pr-sec-body { color: #8B95A1; }
+.pr-na-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #D93A3A; color: #fff; font-weight: 700; }
+.pr-chat-bubble { background: #fff; border: 1px solid #E5E8EB; padding: 18px 20px; border-radius: 14px; margin-top: 14px; font-size: 14.5px; line-height: 1.65; color: #191F28; position: relative; }
+.pr-section.not-applicable .pr-chat-bubble { background: #FFFDFD; border-color: #FAD2D2; }
+.pr-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #E5E8EB; font-size: 12px; color: #8B95A1; line-height: 1.6; }
+.hidden { display: none !important; }
+
+
+    /* ── 포털 뒤로가기 ── */
+    .portal-back {
+      display: flex; align-items: center; gap: 6px;
+      position: fixed; top: 0; left: 0; right: 0;
+      padding: max(14px, env(safe-area-inset-top)) 20px 10px;
+      background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: none; cursor: pointer;
+      font-size: 14px; font-weight: 600; color: #4e5968;
+      font-family: inherit; z-index: 300;
+      border-bottom: 1px solid #f2f4f6;
+    }
+    .portal-back svg { width: 18px; height: 18px; fill: none; stroke: #4e5968; stroke-width: 2.5; }
+    #landing-screen { padding-top: 60px !important; }
+</style>
+</head>
+<body>
+<button class="portal-back" onclick="location.href='index.html'">
+  <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+  홈으로
+</button>
+
+<div id="landing-screen">
+  <div class="app-container">
+
+    <!-- 진행 바 -->
+    <div class="wiz-progress-wrap" id="wiz-progress-wrap" style="display:none">
+      <div class="wiz-progress-bar"><div class="wiz-progress-fill" id="wiz-progress-fill" style="width:0%"></div></div>
+      <div class="wiz-progress-label">
+        <span class="step-name" id="wiz-step-name">시작</span>
+        <span class="step-count" id="wiz-step-count"></span>
+      </div>
+      <div id="wiz-progress-msg" style="display:none;font-size:12px;color:var(--toss-blue);font-weight:600;margin-top:5px;line-height:1.4;"></div>
+    </div>
+
+    <!-- Step 0: 시작 -->
+    <div id="wiz-step-0" class="wiz-step active" style="padding-top:20px">
+      <div style="text-align:center; padding:40px 0 20px;">
+        <div style="font-size:56px; margin-bottom:16px;">🎁</div>
+        <h1 class="header-title">증여세 계산기</h1>
+        <p style="font-size:15px; color:var(--toss-subtext); margin-top:12px; line-height:1.6;">
+          살아계실 때 미리 증여할 때<br>내야 할 세금을 계산해 드려요
+        </p>
+      </div>
+      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g1')" style="margin-top:20px">
+        🚀 계산 시작하기
+      </button>
+      <div style="text-align:center; margin-top:16px;">
+        <a href="상속세.html" style="font-size:14px; color:var(--toss-subtext); text-decoration:none;">
+          🏛️ 상속세 계산하러 가기 →
+        </a>
+      </div>
+    </div>
+
+    
+         
+    
+
+    <!-- g1: 수증자 선택 -->
+    <div id="wiz-step-g1" class="wiz-step" style="padding-top:72px">
+      <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
+      <h1 class="header-title">누구에게<br>증여하시나요?</h1>
+      <div class="choice-list">
+        <button type="button" class="choice-btn" onclick="giftSetTarget('spouse','spouse')">
+          <span class="icon">💑</span><div class="info"><strong>배우자</strong><small>최대 6억원까지 공제 (10년 누계)</small></div>
+        </button>
+        <button type="button" class="choice-btn" onclick="giftSetTarget('child','lineal-down')">
+          <span class="icon">👶</span><div class="info"><strong>자녀</strong><small>성인 5천만 · 미성년 2천만원 공제</small></div>
+        </button>
+        <button type="button" class="choice-btn" onclick="giftSetTarget('grand','lineal-down')">
+          <span class="icon">👨‍👧‍👦</span><div class="info"><strong>손주 (세대생략)</strong><small>공제 동일, 산출세액 30% 할증</small></div>
+        </button>
+        <button type="button" class="choice-btn" onclick="giftSetTarget('parent','lineal-up')">
+          <span class="icon">👴</span><div class="info"><strong>직계존속 (부모·조부모)</strong><small>5천만원 공제</small></div>
+        </button>
+        <button type="button" class="choice-btn" onclick="giftSetTarget('other','other')">
+          <span class="icon">🤝</span><div class="info"><strong>기타 친족</strong><small>형제·자매·사위·며느리 등 · 1천만원 공제</small></div>
+        </button>
+      </div>
+    </div>
+
+    <!-- g2: 미성년 여부 (자녀·손주) -->
+    <div id="wiz-step-g2" class="wiz-step" style="padding-top:72px">
+      <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
+      <div class="wiz-context-bar" id="ctx-g2"></div>
+      <h1 class="header-title">수증자가<br>미성년자인가요?</h1>
+      <div class="wiz-guide-banner">
+        <span class="guide-emoji">🎂</span><strong>나이에 따라 공제한도가 달라요</strong><br>
+        성인(만 19세 이상)은 5천만원, 미성년자는 2천만원까지 공제됩니다 (10년 누계 기준)
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button type="button" class="choice-btn yn-btn" onclick="giftSetMinor(false)"><strong>아니오</strong><small>성인 · 5천만 공제</small></button>
+        <button type="button" class="choice-btn yn-btn" onclick="giftSetMinor(true)"><strong>예</strong><small>미성년 · 2천만 공제</small></button>
+      </div>
+    </div>
+
+    <!-- g3: 증여 금액 -->
+    <div id="wiz-step-g3" class="wiz-step" style="padding-top:72px">
+      <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
+      <div class="wiz-context-bar" id="ctx-g3"></div>
+      <h1 class="header-title">증여하실 금액은<br>얼마인가요?</h1>
+      <div class="wiz-guide-banner">
+        <span class="guide-emoji">💰</span><strong>시가 기준으로 입력해 주세요</strong><br>
+        부동산은 시가(실거래가·KB시세), 금융자산은 평가액 기준입니다.
+      </div>
+      <div class="field">
+        <div class="price-wrap">
+          <input type="number" id="gift-price" placeholder="0" min="0" oninput="giftOnPrice(this)">
+          <span class="price-unit">만원</span>
+        </div>
+        <div id="gift-price-preview" class="korean-price-preview"></div>
+        <div class="quick-amount-row">
+          <button type="button" class="quick-amount-btn" onclick="giftAddAmt(1000)">+1천만</button>
+          <button type="button" class="quick-amount-btn" onclick="giftAddAmt(5000)">+5천만</button>
+          <button type="button" class="quick-amount-btn" onclick="giftAddAmt(10000)">+1억</button>
+          <button type="button" class="quick-amount-btn" onclick="giftAddAmt(50000)">+5억</button>
+        </div>
+      </div>
+      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g4')">다음 단계 →</button>
+    </div>
+
+    <!-- g4: 채무 부담부증여 여부 -->
+    <div id="wiz-step-g4" class="wiz-step" style="padding-top:72px">
+      <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
+      <div class="wiz-context-bar" id="ctx-g4"></div>
+      <h1 class="header-title">수증자가 떠안는<br>빚(채무)이 있나요?</h1>
+      <div class="wiz-guide-banner">
+        <span class="guide-emoji">💳</span><strong>부담부증여</strong><br>
+        대출 낀 부동산 증여 시 채무액은 과세가액에서 차감돼요. 단, 증여자에게 양도세가 발생할 수 있어요.
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button type="button" class="choice-btn yn-btn" onclick="giftWizGo('g5')"><strong>예</strong><small>채무 있음</small></button>
+        <button type="button" class="choice-btn yn-btn" onclick="giftSkipDebt()"><strong>아니오</strong><small>없음</small></button>
+      </div>
+    </div>
+
+    <!-- g5: 채무 금액 -->
+    <div id="wiz-step-g5" class="wiz-step" style="padding-top:72px">
+      <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
+      <div class="wiz-context-bar" id="ctx-g5"></div>
+      <h1 class="header-title">채무 금액이<br>얼마인가요?</h1>
+      <div class="field">
+        <div class="num-row"><input type="number" id="gift-debt" placeholder="0" min="0" oninput="giftSubPreview(this,'gift-debt-prev')"><span>만원</span></div>
+        <div id="gift-debt-prev" class="korean-price-preview"></div>
+        <div class="field-caption">전세보증금·금융권 대출 등 수증자가 인수하는 채무 총액</div>
+      </div>
+      <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g6')">다음 단계 →</button>
+    </div>
+
+    <!-- g6: 혼인·출산 공제 여부 (직계비속) -->
+    <div id="wiz-step-g6" class="wiz-step" style="padding-top:72px">
+      <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
+      <div class="wiz-context-bar" id="ctx-g6"></div>
+      <h1 class="header-title">혼인·출산일로부터<br>2년 이내인가요?</h1>
+      <div class="wiz-guide-banner">
+        <span class="guide-emoji">💍</span><strong>혼인·출산 추가공제 최대 1억원!</strong><br>
+        혼인 또는 출산 후 2년 이내 증여 시 기본공제 외 최대 1억원 추가 공제 가능
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button type="button" class="choice-btn yn-btn" onclick="giftSetMarriage(true)"><strong>예</strong><small>추가공제 최대 1억</small></button>
+        <button type="button" class="choice-btn yn-btn" onclick="giftSetMarriage(false)"><strong>아니오</strong></button>
+      </div>
+    </div>
+
+    <!-- g7: 10년 내 기증여 -->
+    <div id="wiz-step-g7" class="wiz-step" style="padding-top:72px">
+      <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
+      <div class="wiz-context-bar" id="ctx-g7"></div>
+      <div class="wiz-almost-done">
+        <strong>🎉 마지막 단계예요!</strong>
+        입력을 마치면 바로 증여세 계산 결과가 나와요.
+      </div>
+      <h1 class="header-title">최근 10년 내<br>같은 분께 준 적 있나요?</h1>
+      <div class="wiz-guide-banner">
+        <span class="guide-emoji">📅</span><strong>10년 합산 과세</strong><br>
+        같은 수증자에게 10년 내 증여한 금액은 합산해서 세금을 계산해요. 0이면 그냥 두세요.
+      </div>
+      <div class="field">
+        <div class="num-row"><input type="number" id="gift-prior" placeholder="0" min="0" oninput="giftSubPreview(this,'gift-prior-prev')"><span>만원</span></div>
+        <div id="gift-prior-prev" class="korean-price-preview"></div>
+      </div>
+      <button type="button" class="wiz-primary-btn" onclick="doGiftCalculate()">✨ 증여세 계산하기</button>
+    </div>
+
+  </div>
+</div>
+
+  </div>
+</div>
+
+<div class="page hidden" id="main-calc" style="padding-top: 40px;">
+  <div id="calc-result-host"></div>
+</div>
+
+<script>
+var BR = [{lim:10000,rate:0.10,ded:0},{lim:50000,rate:0.20,ded:1000},
+          {lim:100000,rate:0.30,ded:6000},{lim:300000,rate:0.40,ded:16000},
+          {lim:Infinity,rate:0.50,ded:46000}];
+
+function calcProgTax(base){
+  if(base <= 0) return 0;
+  var tax = 0;
+  if(base <= 10000)       tax = base * 0.1;
+  else if(base <= 50000)  tax = base * 0.2 - 1000;
+  else if(base <= 100000) tax = base * 0.3 - 6000;
+  else if(base <= 300000) tax = base * 0.4 - 16000;
+  else                    tax = base * 0.5 - 46000;
+  return Math.max(0, Math.round(tax * 0.97)); // 3% 신고공제 포함
+}
+
+function progTax(base){
+  if(base <= 0) return {tax:0, rate:0, ded:0};
+  for(var i=0;i<BR.length;i++){
+    if(base <= BR[i].lim)
+      return {tax: Math.round(base*BR[i].rate - BR[i].ded), rate:BR[i].rate, ded:BR[i].ded};
+  }
+  return {tax:0, rate:0, ded:0};
+}
+
+function formatKoreanCurrency(manWon) {
+  if (!manWon || manWon === 0) return '0원';
+  var totalWon = Math.round(manWon * 10000);
+  var uk   = Math.floor(totalWon / 100000000);
+  var man  = Math.floor((totalWon % 100000000) / 10000);
+  var won  = totalWon % 10000;
+  var res  = '';
+  if(uk  > 0) res += uk.toLocaleString() + '억 ';
+  if(man > 0) res += man.toLocaleString() + '만 ';
+  if(won > 0){
+    var chon = Math.floor(won / 1000);
+    var baek = won % 1000;
+    if(chon > 0) res += chon + '천';
+    if(baek > 0) res += baek;
+    res = res.trim() + '원';
+  } else {
+    res = res.trim() + '원';
+  }
+  return res.trim();
+}
+
+function previewKor(input, previewId){ var n=parseInt(input.value)||0; var el=document.getElementById(previewId); if(el) el.textContent=n>0?'= '+formatKoreanCurrency(n):''; }
+function updateProgressBar(){ renderWizNav(); }
+
+function giftSubPreview(input, prevId){
+  var n = parseInt(input.value)||0;
+  var el = document.getElementById(prevId);
+  if(el) el.textContent = n>0 ? '= '+formatKoreanCurrency(n) : '';
+}
+
+function downloadPDF(){
+  var btn = document.getElementById('btn-download-pdf');
+  if(btn){ btn.disabled = true; btn.textContent = '📄 고화질 PDF 생성 중...'; }
+
+  var el = document.getElementById('pdf-report-template');
+
+  // ① PDF 전용 클래스 적용 (scrollY 버그 방지 핵심)
+  el.classList.add('pdf-export-mode');
+
+  var filename = 'AI상속세리포트_' + (userData.displayName||'고객') + '_' +
+    new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'') + '.pdf';
+
+  var opt = {
+    margin:      [15, 15, 15, 15],
+    filename:    filename,
+    image:       { type: 'jpeg', quality: 0.98 },
+    html2canvas: {
+      scale:        2,
+      useCORS:      true,
+      letterRendering: true,
+      scrollX:      0,    // 가로 밀림 방지
+      scrollY:      0,    // ★ 세로 여백 버그 핵심 해결
+      windowWidth:  820,
+      backgroundColor: '#ffffff',
+      logging:      false
+    },
+    jsPDF:       { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak:   { mode: ['avoid-all', 'css'], before: '.pr-section' }
+  };
+
+  // 카카오톡 인앱 브라우저 감지 → PNG fallback
+  var isKakao = /KAKAOTALK/i.test(navigator.userAgent);
+  if(isKakao){
+    html2canvas(el, {
+      scale: 2, useCORS: true, backgroundColor:'#ffffff',
+      scrollX: 0, scrollY: 0, windowWidth: 820
+    }).then(function(canvas){
+      el.classList.remove('pdf-export-mode');
+      var link = document.createElement('a');
+      link.download = filename.replace('.pdf','.png');
+      link.href = canvas.toDataURL('image/png');
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+      if(btn){ btn.disabled=false; btn.textContent='📄 AI 리포트 PDF 저장'; }
+    }).catch(function(){
+      el.classList.remove('pdf-export-mode');
+      if(btn){ btn.disabled=false; btn.textContent='📄 AI 리포트 PDF 저장'; }
+      alert('저장 실패. 스크린샷을 이용해 주세요.');
+    });
+    return;
+  }
+
+  html2pdf().set(opt).from(el).toPdf().get('pdf').then(function(pdf){
+    window._lastPdfBlob = pdf.output('blob');
+  }).save().then(function(){
+    el.classList.remove('pdf-export-mode'); // ② 원복
+    if(btn){ btn.disabled=false; btn.textContent='📄 AI 리포트 PDF 저장'; }
+  }).catch(function(){
+    el.classList.remove('pdf-export-mode');
+    if(btn){ btn.disabled=false; btn.textContent='📄 AI 리포트 PDF 저장'; }
+    alert('PDF 생성 실패. 다시 시도해 주세요.');
+  });
+}
+
+function sharePDF(){
+  var shareBtn = document.getElementById('btn-share-pdf');
+  if(shareBtn){ shareBtn.disabled=true; shareBtn.textContent='공유 준비 중...'; }
+
+  var el = document.getElementById('pdf-report-template');
+  el.classList.add('pdf-export-mode'); // scrollY 버그 방지
+
+  var filename = 'AI상속세리포트_' + (userData.displayName||'고객') + '_' +
+    new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'') + '.pdf';
+
+  var opt = {
+    margin: [15,15,15,15], filename: filename,
+    image: { type:'jpeg', quality:0.95 },
+    html2canvas: { scale:2, useCORS:true, scrollX:0, scrollY:0, windowWidth:820, backgroundColor:'#ffffff' },
+    jsPDF: { unit:'mm', format:'a4', orientation:'portrait' },
+    pagebreak: { mode:['avoid-all','css'] }
+  };
+
+  html2pdf().set(opt).from(el).outputPdf('blob').then(function(blob){
+    el.classList.remove('pdf-export-mode');
+    if(shareBtn){ shareBtn.disabled=false; shareBtn.textContent='📤 PDF 공유하기'; }
+
+    var file = new File([blob], filename, { type:'application/pdf' });
+
+    if(navigator.canShare && navigator.canShare({ files:[file] })){
+      navigator.share({ title:'AI 상속세 분석 리포트', text:'맞춤형 상속세 절세 리포트', files:[file] }).catch(function(){});
+    } else if(navigator.share){
+      navigator.share({ title:'AI 상속세 분석 리포트', url:window.location.href }).catch(function(){});
+    } else {
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a'); a.href=url; a.download=filename;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+    }
+  }).catch(function(){
+    el.classList.remove('pdf-export-mode');
+    if(shareBtn){ shareBtn.disabled=false; shareBtn.textContent='📤 PDF 공유하기'; }
+    alert('PDF 생성에 실패했어요. 다시 시도해 주세요.');
+  });
+}
+
+// ══ 증여세 상태 ══
+
+var userData = { type:"gift", target:"", relation:"", isMinor:false, isGrand:false, isMarriage:false, assetValue:0, debtAmount:0, priorGift:0, displayName:"" };
+
+var wizStack = []; var wizScreen = 0;
+
+function giftWizGo(n){
+  wizStack.push(wizScreen);
+  wizScreen = n;
+  // 모든 스텝 숨기고 해당 스텝만 활성화
+  document.querySelectorAll('.wiz-step').forEach(function(el){
+    el.classList.toggle('active', el.id === 'wiz-step-'+n);
+  });
+  // 진행바 업데이트
+  var GIFT_META = {
+    g1:{pct:14,name:'수증자 선택',    total:'1/6', msg:'증여세 플래너를 시작합니다! 누구에게 드릴지 선택해 주세요 🎁'},
+    g2:{pct:28,name:'미성년 여부',    total:'2/6', msg:'공제 한도가 달라요. 나이를 확인해 드릴게요 🎂'},
+    g3:{pct:42,name:'증여 금액 입력', total:'3/6', msg:'핵심 단계예요! 증여하실 금액을 입력해 주세요 💰'},
+    g4:{pct:57,name:'채무 여부 확인', total:'4/6', msg:'부담부증여 여부를 확인해 드릴게요 💳'},
+    g5:{pct:64,name:'채무 금액 입력', total:'4/6', msg:'채무액만큼 과세가액이 줄어들어요 📉'},
+    g6:{pct:78,name:'혼인·출산 공제', total:'5/6', msg:'추가 공제 혜택이 있는지 확인해 드릴게요 💍'},
+    g7:{pct:92,name:'10년 내 기증여', total:'🎉 마지막!', msg:'마지막이에요! 기증여액만 확인하면 바로 결과가 나와요 📅'},
+  };
+  var m = GIFT_META[n]||{pct:0,name:'',total:'',msg:''};
+  var fill=document.getElementById('wiz-progress-fill');
+  var nm=document.getElementById('wiz-step-name');
+  var cnt=document.getElementById('wiz-step-count');
+  var msgEl=document.getElementById('wiz-progress-msg');
+  var wrap=document.getElementById('wiz-progress-wrap');
+  if(fill)  fill.style.width=m.pct+'%';
+  if(nm)    nm.textContent=m.name;
+  if(cnt)   cnt.textContent=m.total;
+  if(msgEl){ msgEl.textContent=m.msg; msgEl.style.display=m.msg?'block':'none'; }
+  if(wrap)  wrap.style.display='block';
+  giftUpdateCtx();
+  history.pushState({wiz:n},'');
+  window.scrollTo(0,0);
+}
+
+function giftUpdateCtx(){
+  var label = {spouse:'💑 배우자',child:'👶 자녀',grand:'👨‍👧‍👦 손주',parent:'👴 직계존속',other:'🤝 기타 친족'}[userData.target]||'';
+  var minor = (userData.target==='child'||userData.target==='grand') && userData.isMinor!==undefined
+    ? (userData.isMinor?' · 미성년':' · 성인') : '';
+  var txt = label ? label+minor : '';
+  ['ctx-g2','ctx-g3','ctx-g4','ctx-g5','ctx-g6','ctx-g7'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el){ if(txt){el.innerHTML='<span class="ctx-tag">증여세</span> '+txt;el.style.display='flex';}else{el.style.display='none';} }
+  });
+}
+
+function wizBack(){
+  if(!wizStack.length) return;
+  wizScreen = wizStack.pop();
+  renderWizNav();
+  // 이전 스텝 입력값 복원
+  requestAnimationFrame(function(){ restoreInputValues(); });
+  window.scrollTo(0,0);
+}
+
+function giftSetTarget(target, relation){
+  userData.target   = target;
+  userData.relation = relation;
+  userData.isGrand  = (target === 'grand');
+  // 자녀·손주 → 미성년 여부 물어봄, 나머지 → 금액으로 바로
+  if(target === 'child' || target === 'grand') giftWizGo('g2');
+  else { userData.isMinor = false; giftWizGo('g3'); }
+}
+
+function giftSetMinor(v){
+  userData.isMinor = v;
+  giftWizGo('g3');
+}
+
+function giftSkipDebt(){
+  userData.debtAmount = 0;
+  var target = userData.target;
+  // 직계비속(자녀·손주)이면 혼인출산 공제 물어봄
+  if(target === 'child' || target === 'grand') giftWizGo('g6');
+  else giftWizGo('g7');
+}
+
+function giftSetMarriage(v){
+  userData.isMarriage = v;
+  giftWizGo('g7');
+}
+
+function giftOnPrice(input){
+  var n = parseInt(input.value)||0;
+  userData.assetValue = n;
+  var p = document.getElementById('gift-price-preview');
+  if(p) p.textContent = n>0 ? '= '+formatKoreanCurrency(n) : '';
+}
+
+function giftAddAmt(a){
+  var el = document.getElementById('gift-price');
+  if(!el) return;
+  el.value = (parseInt(el.value)||0) + a;
+  giftOnPrice(el);
+}
+
+function doGiftCalculate(){
+  userData.assetValue = parseInt(document.getElementById('gift-price').value)||0;
+  userData.debtAmount = parseInt(document.getElementById('gift-debt') ? document.getElementById('gift-debt').value : 0)||0;
+  userData.priorGift  = parseInt(document.getElementById('gift-prior') ? document.getElementById('gift-prior').value : 0)||0;
+
+  document.getElementById('landing-screen').classList.add('hidden');
+  document.getElementById('main-calc').classList.remove('hidden');
+
+  var r = calcGiftFromUserData(userData);
+  document.getElementById('calc-result-host').innerHTML = renderGiftResult(r, userData);
+  window.scrollTo(0,0);
+}
+
+function calcGiftFromUserData(d){
+  // relation 방어
+  var rel = d.relation;
+  if(!rel || !{spouse:1,'lineal-down':1,'lineal-up':1,other:1}[rel]){
+    if(d.target==='spouse')                       rel='spouse';
+    else if(d.target==='child'||d.target==='grand') rel='lineal-down';
+    else if(d.target==='parent')                  rel='lineal-up';
+    else                                           rel='other';
+  }
+  var childDeduct = d.isMinor ? 20000 : 50000;
+  var deductMap = {spouse:60000,'lineal-down':childDeduct,'lineal-up':50000,other:10000};
+  var baseLimit  = deductMap[rel] || 0;
+
+  var debt         = d.debtAmount || 0;
+  var netAsset     = Math.max(0, d.assetValue - debt);
+  var prior        = Math.max(0, d.priorGift || 0);
+  var totalNetAsset= netAsset + prior;
+
+  var totalLimit   = baseLimit;
+  if(d.isMarriage && rel==='lineal-down') totalLimit += 10000; // 혼인출산 추가공제
+
+  var appliedDeduct = Math.min(totalLimit, totalNetAsset);
+  var totalBase     = Math.max(0, totalNetAsset - appliedDeduct);
+  var totalTax      = progTax(totalBase);
+
+  var priorBase     = Math.max(0, prior - totalLimit);
+  var priorTax      = progTax(priorBase);
+
+  var rawTax        = Math.max(0, totalTax.tax - priorTax.tax);
+  var grandSurcharge= 0;
+  if(d.isGrand){ grandSurcharge = Math.round(rawTax * 0.3); rawTax += grandSurcharge; }
+  var discount      = Math.round(rawTax * 0.03);
+  var finalTax      = Math.max(0, rawTax - discount);
+
+  return {
+    rel:rel, baseLimit:baseLimit, totalLimit:totalLimit,
+    debt:debt, netAsset:netAsset, prior:prior, totalNetAsset:totalNetAsset,
+    appliedDeduct:appliedDeduct, totalBase:totalBase,
+    totalTax:totalTax, priorTaxPaid:priorTax.tax,
+    rawTax:rawTax, grandSurcharge:grandSurcharge,
+    discount:discount, finalTax:finalTax,
+    isMarriage:d.isMarriage, isGrand:d.isGrand
+  };
+}
+
+function renderGiftResult(r, d){
+  var eff = d.assetValue>0 ? ((r.finalTax/d.assetValue)*100).toFixed(2).replace(/\.?0+$/,'')+'%' : '0%';
+  var targetLabel = {spouse:'배우자',child:'자녀',grand:'손주',parent:'직계존속',other:'기타 친족'}[d.target]||'';
+  var deductLabel = {spouse:'배우자 6억',child:d.isMinor?'미성년 2천만':'성인 5천만',grand:d.isMinor?'미성년 2천만':'성인 5천만',parent:'직계존속 5천만',other:'기타 1천만'}[d.target]||'';
+
+  function row(label, sub, val, type){
+    var color = type==='deduct'?'#0F7A45':type==='add'?'#D93A3A':'#191F28';
+    var prefix= type==='deduct'?'(-) ':type==='add'?'(+) ':'';
+    var subHtml= sub?'<div style="font-size:11px;color:#A09F9A;margin-top:1px;">'+sub+'</div>':'';
+    return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid #F2F4F6;">'+
+      '<div style="flex:1;font-size:14px;color:#4E5968;">'+label+subHtml+'</div>'+
+      '<div style="font-size:14px;font-weight:700;color:'+color+';white-space:nowrap;margin-left:12px;">'+prefix+formatKoreanCurrency(val)+'</div></div>';
+  }
+  function totalBox(label, val, bg, textColor){
+    return '<div style="background:'+(bg||'linear-gradient(135deg,#1e3a5f,#3182f6)')+';border-radius:12px;padding:14px 18px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;">'+
+      '<span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">'+label+'</span>'+
+      '<span style="font-size:20px;font-weight:700;color:'+(textColor||'#fff')+';font-family:\'Noto Sans KR\',sans-serif;">'+formatKoreanCurrency(val)+'</span></div>';
+  }
+
+  var breakdown =
+    row('증여재산 가액', '', d.assetValue, '')+
+    (r.debt>0?row('(-) 채무 공제','부담부증여',r.debt,'deduct'):'')+
+    (r.debt>0?totalBox('순 증여재산',r.netAsset,'linear-gradient(135deg,#1845D4,#3182f6)'):'')+
+    (r.prior>0?row('(+) 10년 내 기증여액','합산 과세',r.prior,'add'):'')+
+    row('(-) 증여재산공제', deductLabel+(r.isMarriage?'+혼인출산 추가':''), r.appliedDeduct, 'deduct')+
+    totalBox('과세표준', r.totalBase, 'linear-gradient(135deg,#0F7A45,#059669)')+
+    row('산출세액','세율 '+((r.totalTax.rate||0)*100).toFixed(0)+'%',r.totalTax.tax,'')+
+    (r.priorTaxPaid>0?row('(-) 기납부 증여세','과거 납부분 공제',r.priorTaxPaid,'deduct'):'')+
+    (r.grandSurcharge>0?row('(+) 세대생략 할증','30%',r.grandSurcharge,'add'):'')+
+    row('(-) 신고세액공제','자진신고 3%',r.discount,'deduct')+
+    totalBox('최종 납부 예상 증여세', r.finalTax,
+      r.finalTax<=0?'linear-gradient(135deg,#0F7A45,#059669)':'linear-gradient(135deg,#1e3a5f,#6B35CF)',
+      r.finalTax<=0?'#fff':'#fbbf24');
+
+  var ctaUrl = 'consulting.html?type=gift&asset='+encodeURIComponent(d.assetValue)+'&tax='+encodeURIComponent(r.finalTax);
+
+  return (r.finalTax<=0
+    ? '<div style="background:#EDFAF3;border:1px solid #2DC274;border-radius:14px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:#0F7A45;line-height:1.6">'+
+      '✅ 공제 범위 이내 — 납부세액이 없어요!<br>단, 신고기한 내에 신고하시길 권장합니다.</div>' : '')+
+    '<div class="result-card">'+
+    '<div class="result-top">'+
+    '<div class="result-top-label">납부 예상 증여세 · '+targetLabel+'</div>'+
+    '<div class="result-total-num">'+formatKoreanCurrency(r.finalTax)+'</div>'+
+    '<div class="result-meta">'+
+    '<span class="meta-badge hi">실효세율 '+eff+'</span>'+
+    '<span class="meta-badge">과세표준 '+formatKoreanCurrency(r.totalBase)+'</span>'+
+    (r.grandSurcharge>0?'<span class="meta-badge">세대생략 30% 할증</span>':'')+
+    '</div></div>'+
+    '<div style="padding:20px 24px;">'+breakdown+'</div>'+
+    '<div class="result-actions">'+
+    '<div style="display:flex;gap:8px;margin-bottom:10px;">'+
+    '<button id="btn-download-pdf" class="action-btn" style="flex:2;background:linear-gradient(135deg,#3182f6,#1845D4);color:#fff;font-size:15px;" onclick="downloadPDF()">📄 AI 리포트 PDF 저장</button>'+
+    '<button id="btn-share-pdf" class="action-btn" style="flex:1;background:#191F28;color:#fff;font-size:15px;" onclick="sharePDF()">📤 공유</button>'+
+    '</div>'+
+    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;line-height:1.65;">'+
+    '※ 카카오톡 인앱 브라우저에서는 저장이 제한될 수 있습니다. 우측 메뉴(⋯) → 다른 브라우저로 열기를 권장합니다.'+
+    '</div></div></div>'+
+    '<button onclick="location.href=\''+ctaUrl+'\'" style="width:100%;padding:18px;background:var(--toss-blue);color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;margin:12px 0;font-family:\'Noto Sans KR\',sans-serif;">📊 맞춤형 절세 플랜 신청하기</button>'+
+    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;margin-bottom:12px;">'+
+    '신고기한: 증여받은 날이 속하는 달의 말일로부터 <strong>3개월 이내</strong>'+
+    (r.debt>0?'<br>⚠️ 부담부증여: 증여자에게 양도세가 별도 발생할 수 있어요.':'')+
+    '</div>'+
+    '<div class="restart-wrap">'+
+    '<button class="btn-restart-main" onclick="location.reload()">↩ 처음부터 다시 계산하기</button>'+
+    '</div>';
+}
+
+window.addEventListener('load', function(){ history.replaceState({wiz:0},''); });
+window.addEventListener('popstate', function(){
+  var mc=document.getElementById('main-calc'), ls=document.getElementById('landing-screen');
+  if(mc && !mc.classList.contains('hidden')){ mc.classList.add('hidden'); if(ls) ls.classList.remove('hidden'); history.pushState({wiz:wizScreen},''); return; }
+  if(wizStack.length>0){ wizBack(); history.pushState({wiz:wizScreen},''); }
+});
+</script>
+</body>
+</html>
