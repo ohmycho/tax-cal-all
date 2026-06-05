@@ -271,6 +271,64 @@
       font-family: inherit;
     }
     .portal-back svg { width: 18px; height: 18px; fill: none; stroke: #4e5968; stroke-width: 2.5; }
+
+    /* ── AI 챗 ── */
+    .ai-chat-section {
+      background: #fff; border-radius: 16px;
+      padding: 20px; margin-bottom: 12px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .ai-chat-title {
+      font-size: 15px; font-weight: 700; color: #191f28;
+      margin-bottom: 4px; display: flex; align-items: center; gap: 8px;
+    }
+    .ai-badge {
+      font-size: 11px; font-weight: 600;
+      background: #eff6ff; color: #3182f6;
+      padding: 3px 8px; border-radius: 100px;
+    }
+    .ai-chat-desc { font-size: 13px; color: #6b7684; margin-bottom: 16px; }
+    .chat-messages {
+      display: flex; flex-direction: column; gap: 10px;
+      max-height: 320px; overflow-y: auto; margin-bottom: 12px;
+    }
+    .chat-msg { display: flex; gap: 8px; align-items: flex-start; }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-bubble {
+      max-width: 80%; padding: 11px 14px; border-radius: 16px;
+      font-size: 14px; line-height: 1.55; word-break: keep-all;
+    }
+    .chat-msg.ai .chat-bubble { background: #f2f4f6; color: #191f28; border-radius: 4px 16px 16px 16px; }
+    .chat-msg.user .chat-bubble { background: #3182f6; color: #fff; border-radius: 16px 4px 16px 16px; }
+    .chat-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: #eff6ff; color: #3182f6; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-weight: 700;
+    }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input {
+      flex: 1; padding: 12px 14px;
+      border: 1.5px solid #e5e8eb; border-radius: 12px;
+      font-size: 14px; color: #191f28; outline: none;
+      font-family: inherit; resize: none; transition: border-color 0.15s;
+    }
+    .chat-input:focus { border-color: #3182f6; }
+    .chat-send-btn {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: #3182f6; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: background 0.15s;
+    }
+    .chat-send-btn:active { background: #1b64da; }
+    .chat-send-btn svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.5; }
+    .chat-send-btn:disabled { background: #c2d1e8; cursor: default; }
+    .typing-row { display: none; align-items: center; gap: 6px; font-size: 13px; color: #8b95a1; padding: 4px 0; }
+    .typing-row.show { display: flex; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #8b95a1; animation: tBounce 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes tBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
   </style>
 </head>
 <body>
@@ -423,6 +481,27 @@
   <div class="result-body">
     <button class="btn-reset" onclick="resetAll()">← 다시 계산하기</button>
     <div id="result-body"></div>
+    <!-- AI 챗 -->
+    <div class="ai-chat-section" id="ai-chat-section" style="display:none">
+      <div class="ai-chat-title">
+        AI 세금 상담
+        <span class="ai-badge">Beta</span>
+      </div>
+      <div class="ai-chat-desc">계산 결과를 바탕으로 궁금한 점을 물어보세요.</div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="typing-row" id="typing-row">
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        <div class="typing-dot"></div>
+        답변 작성 중...
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chat-input" rows="1" placeholder="예: 비과세 요건이 뭔가요?"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
     <div class="notice">
       ※ 본 계산기는 참고용이며 법적 효력이 없습니다.<br>
       필요경비(자본적지출·양도비용)는 반영되지 않습니다.<br>
@@ -1913,7 +1992,100 @@ function renderResult(p) {
 
   document.getElementById('result-body').innerHTML = html;
   document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
+
+  // AI 챗 초기화 — 계산 결과 요약 전달
+  const taxSummary = [
+    '소재지: ' + p.region,
+    '규제지역: ' + (p.isReg ? '조정대상지역' : '비규제지역'),
+    '취득일: ' + fmtDate(p.acqDate) + ' / 양도일: ' + fmtDate(p.saleDate),
+    '보유기간: ' + p.holdY + '년 ' + p.holdMr + '개월',
+    '거주기간: ' + Math.floor(p.resideMonths/12) + '년 ' + (p.resideMonths%12) + '개월',
+    '보유 주택 수: ' + (p.houseN === 3 ? '3주택 이상' : p.houseN + '주택'),
+    '취득가액: ' + fmt(p.acqPrice),
+    '양도가액: ' + fmt(p.salePrice),
+    '양도차익: ' + fmt(p.gain),
+    '납부 예상 세액: ' + fmt(r.totalTax),
+    '비과세 여부: ' + (r.exempt ? '비과세' : '과세'),
+    '장기보유특별공제율: ' + (r.lthdRate ? Math.round(r.lthdRate*100) + '%' : '없음'),
+  ].join('\n');
+  initChat(taxSummary);
 }
+
+
+// ── AI 챗 ──
+let chatHistory = [];
+let chatSystemPrompt = '';
+
+function initChat(taxInfo) {
+  chatSystemPrompt = `당신은 부동산 양도소득세 전문 AI 상담사입니다.
+아래는 방금 계산된 결과입니다:
+${taxInfo}
+
+이 결과를 바탕으로 사용자의 질문에 친절하고 쉽게 답변해주세요.
+답변은 짧고 명확하게, 전문 용어는 쉽게 풀어서 설명하세요.
+세법 개정이나 개인 상황에 따라 다를 수 있음을 항상 안내하세요.`;
+
+  chatHistory = [];
+  const messages = document.getElementById('chat-messages');
+  messages.innerHTML = '';
+
+  // 첫 안내 메시지
+  appendMsg('ai', '안녕하세요! 방금 계산된 양도세 결과에 대해 궁금한 점을 물어보세요. 😊');
+  document.getElementById('ai-chat-section').style.display = 'block';
+}
+
+function appendMsg(role, text) {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.innerHTML = role === 'ai'
+    ? `<div class="chat-avatar">AI</div><div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div>`
+    : `<div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  messages.appendChild(div);
+  messages.scrollTop = messages.scrollHeight;
+}
+
+async function sendChat() {
+  const input = document.getElementById('chat-input');
+  const btn   = document.getElementById('chat-send-btn');
+  const q = input.value.trim();
+  if (!q) return;
+
+  appendMsg('user', q);
+  chatHistory.push({ role: 'user', content: q });
+  input.value = '';
+  btn.disabled = true;
+
+  const typing = document.getElementById('typing-row');
+  typing.classList.add('show');
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: chatSystemPrompt, messages: chatHistory })
+    });
+    const data = await res.json();
+    const answer = data.content?.[0]?.text || '죄송해요, 다시 시도해 주세요.';
+    chatHistory.push({ role: 'assistant', content: answer });
+    appendMsg('ai', answer);
+  } catch(e) {
+    appendMsg('ai', '일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    typing.classList.remove('show');
+    btn.disabled = false;
+  }
+}
+
+// 엔터키 전송
+document.addEventListener('DOMContentLoaded', () => {
+  const input = document.getElementById('chat-input');
+  if (input) {
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+    });
+  }
+});
 
 function resetAll() {
   document.getElementById('result-section').style.display = 'none';

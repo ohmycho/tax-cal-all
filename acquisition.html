@@ -116,6 +116,36 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
       font-family: inherit; padding: 0;
     }
     .portal-back svg { width: 18px; height: 18px; fill: none; stroke: #4e5968; stroke-width: 2.5; }
+
+    /* ── AI 챗 ── */
+    .ai-chat-wrap { margin-top: 10px; }
+    .ai-chat-section {
+      background: #fff; border-radius: 16px; padding: 20px;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+    }
+    .ai-chat-title { font-size: 15px; font-weight: 700; color: #191f28; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+    .ai-badge { font-size: 11px; font-weight: 600; background: #eff6ff; color: #3182f6; padding: 3px 8px; border-radius: 100px; }
+    .ai-chat-desc { font-size: 13px; color: #6b7684; margin-bottom: 14px; }
+    .chat-messages { display: flex; flex-direction: column; gap: 10px; max-height: 300px; overflow-y: auto; margin-bottom: 12px; }
+    .chat-msg { display: flex; gap: 8px; align-items: flex-start; }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-bubble { max-width: 80%; padding: 11px 14px; border-radius: 16px; font-size: 14px; line-height: 1.55; word-break: keep-all; }
+    .chat-msg.ai .chat-bubble { background: #f2f4f6; color: #191f28; border-radius: 4px 16px 16px 16px; }
+    .chat-msg.user .chat-bubble { background: #3182f6; color: #fff; border-radius: 16px 4px 16px 16px; }
+    .chat-avatar { width: 28px; height: 28px; border-radius: 50%; background: #eff6ff; color: #3182f6; font-size: 13px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-weight: 700; }
+    .chat-input-row { display: flex; gap: 8px; }
+    .chat-input { flex: 1; padding: 12px 14px; border: 1.5px solid #e5e8eb; border-radius: 12px; font-size: 14px; color: #191f28; outline: none; font-family: inherit; resize: none; transition: border-color 0.15s; }
+    .chat-input:focus { border-color: #3182f6; }
+    .chat-send-btn { width: 44px; height: 44px; border-radius: 12px; background: #3182f6; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .chat-send-btn:active { background: #1b64da; }
+    .chat-send-btn svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.5; }
+    .chat-send-btn:disabled { background: #c2d1e8; cursor: default; }
+    .typing-row { display: none; align-items: center; gap: 6px; font-size: 13px; color: #8b95a1; padding: 4px 0; }
+    .typing-row.show { display: flex; }
+    .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #8b95a1; animation: tBounce 1.2s infinite; }
+    .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes tBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
 </style>
 </head>
 <body>
@@ -238,6 +268,26 @@ body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: va
   </div>
 
   <div id="note-box" style="display:none"></div>
+
+  <!-- AI 챗 -->
+  <div class="ai-chat-wrap" id="ai-chat-wrap" style="display:none">
+    <div class="ai-chat-section">
+      <div class="ai-chat-title">AI 세금 상담 <span class="ai-badge">Beta</span></div>
+      <div class="ai-chat-desc">계산 결과를 바탕으로 궁금한 점을 물어보세요.</div>
+      <div class="chat-messages" id="chat-messages"></div>
+      <div class="typing-row" id="typing-row">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+        답변 작성 중...
+      </div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chat-input" rows="1" placeholder="예: 중과세율이 적용되나요?"></textarea>
+        <button class="chat-send-btn" id="chat-send-btn" onclick="sendChat()">
+          <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
 
   <footer class="footer">
     <strong>부동산 취득세 계산기</strong><br>
@@ -394,10 +444,80 @@ function calc() {
     noteEl.className='note';
     noteEl.textContent='본 계산기는 참고용이며, 실제 납부세액은 관할 지자체 고지서 기준입니다. 생애최초 감면 등 특례는 별도 적용됩니다.';
   }
+
+  // AI 챗 초기화
+  var info = [
+    '취득가액: ' + Number(priceMw).toLocaleString() + '만원',
+    '시나리오: ' + r.scenario,
+    '취득세(본세): ' + fmtWon(acqTax) + ' (' + r.acqDesc + ')',
+    '지방교육세: ' + fmtWon(eduTax),
+    '농어촌특별세: ' + (farmTax===0 ? '비과세' : fmtWon(farmTax)),
+    '총 납부 예상 세액: ' + fmtWon(total) + ' (실효세율 ' + totalRate + '%)',
+  ].join('\n');
+  initChat(info);
 }
 
 updateDyn();
 calc();
+
+// ── AI 챗 ──
+var chatHistory = [];
+var chatSystemPrompt = '';
+
+function initChat(info) {
+  chatSystemPrompt = '당신은 부동산 취득세 전문 AI 상담사입니다.\n아래는 방금 계산된 결과입니다:\n' + info + '\n\n이 결과를 바탕으로 사용자의 질문에 친절하고 쉽게 답변해주세요. 답변은 짧고 명확하게, 전문 용어는 쉽게 풀어 설명하세요.';
+  chatHistory = [];
+  document.getElementById('chat-messages').innerHTML = '';
+  appendMsg('ai', '안녕하세요! 방금 계산된 취득세 결과에 대해 궁금한 점을 물어보세요. 😊');
+  document.getElementById('ai-chat-wrap').style.display = 'block';
+}
+
+function appendMsg(role, text) {
+  var msgs = document.getElementById('chat-messages');
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + role;
+  div.innerHTML = role === 'ai'
+    ? '<div class="chat-avatar">AI</div><div class="chat-bubble">' + text.replace(/\n/g,'<br>') + '</div>'
+    : '<div class="chat-bubble">' + text.replace(/\n/g,'<br>') + '</div>';
+  msgs.appendChild(div);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+async function sendChat() {
+  var input = document.getElementById('chat-input');
+  var btn = document.getElementById('chat-send-btn');
+  var q = input.value.trim();
+  if (!q) return;
+  appendMsg('user', q);
+  chatHistory.push({ role: 'user', content: q });
+  input.value = '';
+  btn.disabled = true;
+  document.getElementById('typing-row').classList.add('show');
+  try {
+    var res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ system: chatSystemPrompt, messages: chatHistory })
+    });
+    var data = await res.json();
+    var answer = (data.content && data.content[0] && data.content[0].text) || '죄송해요, 다시 시도해 주세요.';
+    chatHistory.push({ role: 'assistant', content: answer });
+    appendMsg('ai', answer);
+  } catch(e) {
+    appendMsg('ai', '일시적인 오류가 발생했어요. 잠시 후 다시 시도해 주세요.');
+  } finally {
+    document.getElementById('typing-row').classList.remove('show');
+    btn.disabled = false;
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var inp = document.getElementById('chat-input');
+  if (inp) inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
+  });
+});
+
 </script>
 </body>
 </html>

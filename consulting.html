@@ -584,11 +584,24 @@ function showSuccess() {
   icon.style.background = isPurple ? '#F0EBFF' : 'var(--accent-light)';
   icon.textContent = '🎉';
   title.textContent = name + '님, 신청이 완료됐어요!';
-  desc.innerHTML = '담당 전문가가 영업일 기준 <strong>24시간 이내</strong>에<br>직접 연락드릴게요. 잠시만 기다려 주세요.';
+  desc.innerHTML = '담당 전문가가 영업일 기준 <strong>24시간 이내</strong>에<br>직접 연락드릴게요.<br><br><span id="redirect-count" style="font-size:13px;color:#8b95a1;">3초 후 홈으로 이동합니다...</span>';
   mbtn.style.background = isPurple ? '#6B35CF' : 'var(--accent)';
-  mbtn.textContent = '확인';
+  mbtn.textContent = '지금 홈으로';
+  mbtn.onclick = function() { location.href = 'index.html'; };
 
   document.getElementById('modal-overlay').classList.add('show');
+
+  // 3초 카운트다운 후 포털로 이동
+  var count = 3;
+  var timer = setInterval(function() {
+    count--;
+    var el = document.getElementById('redirect-count');
+    if (el) el.textContent = count + '초 후 홈으로 이동합니다...';
+    if (count <= 0) {
+      clearInterval(timer);
+      location.href = 'index.html';
+    }
+  }, 1000);
 }
 
 function closeModal(e) {
