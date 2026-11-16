@@ -328,8 +328,42 @@
     .typing-dot:nth-child(2) { animation-delay: 0.2s; }
     .typing-dot:nth-child(3) { animation-delay: 0.4s; }
     @keyframes tBounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
-  </style>
-<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
+  
+/* ── 계산 근거 및 출처 ── */
+.tsrc { background:#fff; border:1px solid #e5e8eb; border-radius:14px; margin:12px 0; padding:0 16px; font-size:13px; color:#4e5968; line-height:1.65; text-align:left; }
+.tsrc summary { cursor:pointer; padding:14px 0; font-weight:700; color:#191f28; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+.tsrc summary::-webkit-details-marker { display:none; }
+.tsrc summary::after { content:'펼치기'; font-size:12px; font-weight:500; color:#8b95a1; }
+.tsrc[open] summary::after { content:'접기'; }
+.tsrc-body { padding:0 0 14px; border-top:1px solid #f2f4f6; }
+.tsrc-basis { margin:12px 0 10px; font-size:12px; color:#4e5968; }
+.tsrc-basis b { color:#191f28; }
+.tsrc-list { margin:0; padding:0; list-style:none; }
+.tsrc-list li { padding:8px 0; border-bottom:1px solid #f2f4f6; }
+.tsrc-list a { color:#3182f6; font-weight:600; text-decoration:none; word-break:keep-all; }
+.tsrc-list small { display:block; color:#8b95a1; font-size:11px; }
+.tsrc-miss { margin-top:10px; background:#fff8e6; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a5a00; }
+.tsrc-miss ul { margin:4px 0 0; padding-left:16px; }
+.tsrc-disc { margin-top:10px; background:#f2f4f6; border-radius:10px; padding:10px 12px; font-size:12px; color:#6b7684; }
+</style>
+<script>
+// ── 계산 근거 및 출처 (확인 기준일 2026-11-16) ──
+var TAX_CHECKED_DATE = '2026년 11월 16일';
+var TAX_DISCLAIMER = '본 계산은 입력값을 기준으로 산출한 참고용 예상액입니다. 실제 세액은 재산 평가, 주택 수 산정 예외, 감면, 세액공제 및 신고 시점 등에 따라 달라질 수 있습니다. 최종 세액은 세무사 또는 관할 기관에 확인해 주세요.';
+function taxSourceBox(basis, items, missing) {
+  var li = items.map(function(it){
+    return '<li><a href="'+it.url+'" target="_blank" rel="noopener noreferrer">'+it.label+' ↗</a><small>'+it.org+' · 확인 기준일 '+TAX_CHECKED_DATE+'</small></li>';
+  }).join('');
+  var miss = (missing && missing.length)
+    ? '<div class="tsrc-miss"><b>계산에 포함되지 않은 사항</b><ul>'+missing.map(function(m){return '<li>'+m+'</li>';}).join('')+'</ul></div>'
+    : '';
+  return '<details class="tsrc"><summary>계산 근거 및 출처</summary><div class="tsrc-body">'+
+    '<div class="tsrc-basis">계산 기준: <b>'+basis+'</b><br>확인 기준일: '+TAX_CHECKED_DATE+'</div>'+
+    '<ul class="tsrc-list">'+li+'</ul>'+miss+
+    '<div class="tsrc-disc">'+TAX_DISCLAIMER+'</div>'+
+    '</div></details>';
+}
+if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
 <style>.embedded .home-top-btn{display:none!important}</style>
 </head>
 <body>
@@ -517,6 +551,9 @@
 // 조정지역 DB
 // ============================================================
 const rawCsvData = `지역명,시작일,종료일
+경기도 구리시,2026-07-01,
+경기도 용인시 기흥구,2026-07-01,
+경기도 화성시 동탄구,2026-07-01,
 서울특별시 종로구,2025-10-16,
 서울특별시 중구,2025-10-16,
 서울특별시 성동구,2025-10-16,
@@ -1579,31 +1616,25 @@ function updateBadge() {
 }
 
 // 조정지역 판정
+// 입력 지역과 그 상위 지역(시·구)의 지정 이력을 모두 합쳐서 판정한다.
+// (예: "경기도 용인시 기흥구 보정동" → 동 단위 2018~2022 이력 + 기흥구 2026.7.1~ 이력)
+function historiesFor(regionName) {
+  let hs = [];
+  Object.keys(DB).forEach(k => {
+    if (regionName === k || regionName.startsWith(k + ' ')) hs = hs.concat(DB[k]);
+  });
+  if (hs.length) return hs;
+  // 입력이 상위 지역뿐이거나 일부만 입력한 경우: 가장 구체적인 하위 키 이력 사용
+  const keys = Object.keys(DB).filter(k => k.includes(regionName) || regionName.includes(k));
+  keys.sort((a, b) => b.length - a.length);
+  return keys.length ? DB[keys[0]] : [];
+}
 function checkRegulated(regionName, dateStr) {
   if (!regionName || !dateStr) return null;
-  // 날짜 직접 파싱 (timezone 이슈 방지)
   const [ty, tm, td] = dateStr.split('-').map(Number);
   const t = new Date(ty, tm - 1, td);
   if (isNaN(t)) return null;
-
-  // 1순위: 정확 일치
-  let history = DB[regionName];
-
-  // 2순위: DB 키가 입력값을 포함 (예: "반곡동" → "세종특별자치시 반곡동")
-  if (!history) {
-    const key = Object.keys(DB).find(k => k === regionName);
-    if (key) history = DB[key];
-  }
-  // 3순위: 입력값이 DB 키를 포함하거나 DB 키가 입력값을 포함
-  if (!history) {
-    const keys = Object.keys(DB).filter(k => k.includes(regionName) || regionName.includes(k));
-    // 더 구체적인(긴) 키 우선
-    keys.sort((a, b) => b.length - a.length);
-    if (keys.length > 0) history = DB[keys[0]];
-  }
-
-  if (!history) return { isRegulated: false };
-
+  const history = historiesFor(regionName);
   for (const r of history) {
     const [sy, sm, sd] = r.start.split('-').map(Number);
     const [ey, em, ed] = r.end.split('-').map(Number);
@@ -1743,100 +1774,101 @@ function prevStep() {
 // ============================================================
 const BRACKETS = [
   { lim: 14_000_000,    rate: 0.06, ded: 0 },
-  { lim: 50_000_000,    rate: 0.15, ded: 1_080_000 },
-  { lim: 88_000_000,    rate: 0.24, ded: 5_220_000 },
-  { lim: 150_000_000,   rate: 0.35, ded: 14_900_000 },
-  { lim: 300_000_000,   rate: 0.38, ded: 19_400_000 },
-  { lim: 500_000_000,   rate: 0.40, ded: 25_400_000 },
-  { lim: 1_000_000_000, rate: 0.42, ded: 35_400_000 },
-  { lim: Infinity,      rate: 0.45, ded: 65_400_000 },
+  { lim: 50_000_000,    rate: 0.15, ded: 1_260_000 },
+  { lim: 88_000_000,    rate: 0.24, ded: 5_760_000 },
+  { lim: 150_000_000,   rate: 0.35, ded: 15_440_000 },
+  { lim: 300_000_000,   rate: 0.38, ded: 19_940_000 },
+  { lim: 500_000_000,   rate: 0.40, ded: 25_940_000 },
+  { lim: 1_000_000_000, rate: 0.42, ded: 35_940_000 },
+  { lim: Infinity,      rate: 0.45, ded: 65_940_000 },
 ];
 function progTax(base) {
   if (base <= 0) return 0;
   for (const b of BRACKETS) if (base <= b.lim) return base * b.rate - b.ded;
-  return base * 0.45 - 65_400_000;
+  return base * 0.45 - 65_940_000;
 }
 
 // 보유기간(개월) — 날짜 문자열 안전 파싱
 function getHoldMonths(acqStr, saleStr) {
-  const [ay, am] = acqStr.split('-').map(Number);
-  const [sy, sm] = saleStr.split('-').map(Number);
-  return (sy - ay) * 12 + (sm - am);
+  const [ay, am, ad] = acqStr.split('-').map(Number);
+  const [sy, sm, sd] = saleStr.split('-').map(Number);
+  let m = (sy - ay) * 12 + (sm - am);
+  if ((sd || 1) < (ad || 1)) m -= 1;
+  return Math.max(0, m);
 }
 
-// 장기보유특별공제
-function getLthdRate(holdM, resideM, houseN, isReg) {
+// 다주택 중과 한시 배제(보유 2년 이상) 종료: 2026.5.9 → 2026.5.10 이후 양도분부터 중과
+const HEAVY_RESUME = '2026-05-10';
+
+// 장기보유특별공제 (소득세법 제95조②)
+// 표2: 1세대1주택 + 보유 3년 이상 + 거주 2년 이상 → 보유 연4%(최대 40%) + 거주 연4%(최대 40%, 2~3년 미만 8%)
+// 표1: 그 외 보유 3년 이상 → 연 2% (3년 6% ~ 15년 이상 30%)
+function getLthdRate(holdM, resideM, houseN) {
   const hy = Math.floor(holdM / 12);
-  if (hy < 3) return { hr: 0, rr: 0 };
-  if (houseN === 1) {
-    if (isReg) {
-      return { hr: Math.min(hy * 0.04, 0.40), rr: Math.min(Math.floor(resideM/12) * 0.04, 0.40) };
-    }
-    return { hr: Math.min(hy * 0.08, 0.80), rr: 0 };
+  if (hy < 3) return { hr: 0, rr: 0, table: 0 };
+  if (houseN === 1 && resideM >= 24) {
+    const ry = Math.floor(resideM / 12);
+    const rr = ry >= 3 ? Math.min(ry * 0.04, 0.40) : 0.08;
+    return { hr: Math.min(hy * 0.04, 0.40), rr, table: 2 };
   }
-  return { hr: Math.min(hy * 0.02, 0.20), rr: 0 };
+  return { hr: Math.min(hy * 0.02, 0.30), rr: 0, table: 1 };
 }
+
+function shortRate(holdM) { return holdM < 12 ? 0.70 : (holdM < 24 ? 0.60 : 0); }
 
 // 케이스 계산
-function calcCase(gain, salePrice, holdM, resideM, houseN, isReg) {
+// isRegAcq: 취득 당시 조정대상지역(1세대1주택 비과세 거주요건 판단)
+// isRegSale: 양도 당시 조정대상지역(다주택 중과 판단)
+function calcCase(gain, salePrice, holdM, resideM, houseN, isRegAcq, isRegSale, saleDate) {
+  if (isRegSale === undefined) isRegSale = isRegAcq;
   if (gain <= 0) return { exempt: false, taxAmount: 0, localTax: 0, totalTax: 0, taxGain: 0, lthd: 0, lthdRate: 0, base: 0, note: '양도차익 없음' };
 
-  const hy = Math.floor(holdM / 12);
+  let taxGain = gain, note = '', isHighPrice = false;
 
   if (houseN === 1) {
-    const has2Hold   = holdM >= 24;
-    const has2Reside = resideM >= 24;
-    const meetsExempt = has2Hold && (!isReg || has2Reside);
-
+    const meetsExempt = holdM >= 24 && (!isRegAcq || resideM >= 24);
     if (meetsExempt) {
       if (salePrice <= 1_200_000_000) {
         return { exempt: true, taxAmount: 0, localTax: 0, totalTax: 0, note: '1세대1주택 비과세 전액' };
       }
-      // 고가주택
-      const taxGain = gain * (salePrice - 1_200_000_000) / salePrice;
-      const { hr, rr } = getLthdRate(holdM, resideM, 1, isReg);
-      const lthdRate = hr + rr;
-      const lthd = taxGain * lthdRate;
-      const base = Math.max(taxGain - lthd - 2_500_000, 0);
-      const tax = progTax(base);
-      return { exempt: false, isHighPrice: true, taxGain, lthdRate, hr, rr, lthd, base, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, note: '1세대1주택 고가주택 (12억 초과분 과세)' };
+      taxGain = gain * (salePrice - 1_200_000_000) / salePrice;
+      isHighPrice = true;
+      note = '1세대1주택 고가주택 (12억 초과분 과세)';
+    } else {
+      note = holdM < 24 ? '1세대1주택 비과세 미충족 (2년 미만 보유)' : '1세대1주택 비과세 미충족 (취득 당시 조정지역 · 거주 2년 미만)';
     }
-
-    // 비과세 미충족
-    if (holdM < 12) {
-      const tax = gain * 0.70;
-      return { exempt: false, taxGain: gain, lthdRate: 0, lthd: 0, base: gain, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, specialRate: 70, note: '1년 미만 단기양도세율 70%' };
-    }
-    if (holdM < 24) {
-      const tax = gain * 0.60;
-      return { exempt: false, taxGain: gain, lthdRate: 0, lthd: 0, base: gain, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, specialRate: 60, note: '1~2년 미만 단기양도세율 60%' };
-    }
-    // 2년 이상, 조정 거주 미충족
-    const { hr, rr } = getLthdRate(holdM, resideM, 1, isReg);
-    const lthdRate = hr + rr;
-    const lthd = gain * lthdRate;
-    const base = Math.max(gain - lthd - 2_500_000, 0);
-    const tax = progTax(base);
-    return { exempt: false, taxGain: gain, lthdRate, hr, rr, lthd, base, taxAmount: tax, localTax: tax*0.1, totalTax: tax*1.1, note: isReg ? '조정지역 거주요건 미충족 (일반세율)' : '일반세율' };
   }
 
-  // 2·3주택
-  if (holdM < 12) { const tax = gain*0.70; return { exempt:false, taxGain:gain, lthdRate:0, lthd:0, base:gain, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, specialRate:70, note:'1년 미만 단기양도세율 70%' }; }
-  if (holdM < 24) { const tax = gain*0.60; return { exempt:false, taxGain:gain, lthdRate:0, lthd:0, base:gain, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, specialRate:60, note:'1~2년 미만 단기양도세율 60%' }; }
+  const sRate = shortRate(holdM);
+  const heavy = houseN >= 2 && isRegSale && (saleDate >= HEAVY_RESUME || holdM < 24);
+  const sur = heavy ? (houseN === 2 ? 0.20 : 0.30) : 0;
 
-  if (isReg) {
-    const sur = houseN === 2 ? 0.20 : 0.30;
-    const base = Math.max(gain - 2_500_000, 0);
-    const tax = progTax(base) + base * sur;
-    const label = houseN === 2 ? '2주택 조정지역 중과 (+20%p)' : '3주택 이상 조정지역 중과 (+30%p)';
-    return { exempt:false, taxGain:gain, lthdRate:0, lthd:0, base, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, surcharge:sur*100, note:label };
+  // 장기보유특별공제 (중과 대상이면 배제)
+  let hr = 0, rr = 0, table = 0;
+  if (!heavy) ({ hr, rr, table } = getLthdRate(holdM, resideM, houseN));
+  const lthdRate = hr + rr;
+  const lthd = taxGain * lthdRate;
+  const base = Math.max(taxGain - lthd - 2_500_000, 0);
+
+  // 세액: 단기세율·중과세율 중 큰 세액 (소득세법 제104조⑦)
+  const progressive = progTax(base) + base * sur;
+  const shortTax = base * sRate;
+  const useShort = sRate > 0 && shortTax >= progressive;
+  const tax = Math.max(progressive, shortTax);
+
+  if (houseN >= 2) {
+    if (heavy) note = houseN === 2 ? '2주택 조정지역 중과 (기본세율 +20%p)' : '3주택 이상 조정지역 중과 (기본세율 +30%p)';
+    else if (isRegSale) note = '조정지역 다주택 · 중과 한시 배제 기간(2026.5.9까지) 양도 · 기본세율';
+    else note = '비조정지역 · 기본세율';
   }
-  const { hr } = getLthdRate(holdM, resideM, houseN, false);
-  const lthd = gain * hr;
-  const base = Math.max(gain - lthd - 2_500_000, 0);
-  const tax = progTax(base);
-  const label = houseN === 2 ? '2주택 일반지역 기본세율' : '3주택 이상 일반지역 기본세율';
-  return { exempt:false, taxGain:gain, lthdRate:hr, lthd, base, taxAmount:tax, localTax:tax*0.1, totalTax:tax*1.1, note:label };
+  if (useShort) note = (holdM < 12 ? '1년 미만 단기양도세율 70%' : '1~2년 미만 단기양도세율 60%') + (sur ? ' (중과세액보다 커서 적용)' : '');
+
+  return {
+    exempt: false, isHighPrice, taxGain, lthdRate, hr, rr, table, lthd, base,
+    taxAmount: tax, localTax: tax * 0.1, totalTax: tax * 1.1,
+    specialRate: useShort ? sRate * 100 : 0, surcharge: (!useShort && sur) ? sur * 100 : 0,
+    heavy, note
+  };
 }
 
 // ============================================================
@@ -1854,6 +1886,8 @@ function calculate() {
 
   const regulated = checkRegulated(region, acqDate);
   const isReg = regulated ? regulated.isRegulated : false;
+  const regulatedSale = checkRegulated(region, saleDate);
+  const isRegSale = regulatedSale ? regulatedSale.isRegulated : false;
 
   // 보유기간 — 문자열 직접 파싱
   const holdM  = getHoldMonths(acqDate, saleDate);
@@ -1861,7 +1895,7 @@ function calculate() {
   const holdMr = holdM % 12;
   const gain   = salePrice - acqPrice;
 
-  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr, isReg, regulated, gain, houseN: selectedHouse });
+  renderResult({ region, acqDate, saleDate, acqPrice, salePrice, resideMonths, holdM, holdY, holdMr, isReg, isRegSale, regulated, gain, houseN: selectedHouse });
 }
 
 // ============================================================
@@ -1875,9 +1909,9 @@ function renderResult(p) {
   const resideY   = Math.floor(p.resideMonths / 12);
   const resideM   = p.resideMonths % 12;
   const resideStr = `${resideY}년. ${resideM}개월.`;
-  const regLabel  = p.isReg ? '🚨 조정대상지역' : '✅ 비규제지역';
+  const regLabel  = '취득 당시 ' + (p.isReg ? '🚨 조정' : '✅ 비조정') + ' · 양도 당시 ' + (p.isRegSale ? '🚨 조정' : '✅ 비조정');
 
-  const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, p.isReg);
+  const r = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, p.isReg, p.isRegSale, p.saleDate);
 
   let html = '';
 
@@ -1923,18 +1957,17 @@ function renderResult(p) {
 
     if (r.lthdRate > 0) {
       const rateLabel = r.rr > 0
-        ? `장기보유특별공제 (보유 ${Math.round(r.hr*100)}% + 거주 ${Math.round(r.rr*100)}%)`
-        : `장기보유특별공제 (${Math.round(r.lthdRate*100)}%)`;
+        ? `장기보유특별공제 표2 (보유 ${Math.round(r.hr*100)}% + 거주 ${Math.round(r.rr*100)}%)`
+        : `장기보유특별공제 표1 (${Math.round(r.lthdRate*100)}%)`;
       html += `<div class="calc-row"><span class="cl">${rateLabel}</span><span class="cv red">- ${fmt(r.lthd)}</span></div>`;
-    } else if (p.holdM >= 36 && p.houseN > 1 && p.isReg) {
+    } else if (p.holdM >= 36 && r.heavy) {
       html += `<div class="calc-row"><span class="cl">장기보유특별공제</span><span class="cv red">중과로 배제</span></div>`;
     }
 
-    if (!r.specialRate) {
-      html += `<div class="calc-row"><span class="cl">기본공제</span><span class="cv red">- ${fmt(2_500_000)}</span></div>`;
-      html += `<div class="calc-row total"><span class="cl">과세표준</span><span class="cv">${fmt(r.base)}</span></div>`;
-      if (r.surcharge) html += `<div class="calc-row"><span class="cl">중과 가산세율</span><span class="cv red">+ ${r.surcharge}%p</span></div>`;
-    }
+    html += `<div class="calc-row"><span class="cl">기본공제</span><span class="cv red">- ${fmt(2_500_000)}</span></div>`;
+    html += `<div class="calc-row total"><span class="cl">과세표준</span><span class="cv">${fmt(r.base)}</span></div>`;
+    if (r.specialRate) html += `<div class="calc-row"><span class="cl">적용 세율</span><span class="cv red">단기 ${r.specialRate}%</span></div>`;
+    if (r.surcharge) html += `<div class="calc-row"><span class="cl">중과 가산세율</span><span class="cv red">+ ${r.surcharge}%p</span></div>`;
 
     html += `<div class="calc-row total"><span class="cl">양도소득세 본세</span><span class="cv">${fmt(r.taxAmount)}</span></div>`;
     html += `<div class="calc-row"><span class="cl">지방소득세 (×10%)</span><span class="cv">${fmt(r.localTax)}</span></div>`;
@@ -1944,8 +1977,8 @@ function renderResult(p) {
 
   // 1주택 조건별 비교
   if (p.houseN === 1) {
-    const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, 1, false);
-    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, 1, true);
+    const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, 1, false, false, p.saleDate);
+    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, 1, true, true, p.saleDate);
     html += `<div class="rcard"><div class="rcard-title">일반지역 vs 조정지역 비교</div>
       <div class="compare-sub">일반지역 기준</div>
       <div class="calc-row"><span class="cl">비과세 여부</span><span class="cv ${rN.exempt?'green':'red'}">${rN.exempt?'비과세':'과세'}</span></div>
@@ -1960,15 +1993,15 @@ function renderResult(p) {
 
   // 2·3주택 비교
   if (p.houseN >= 2) {
-    const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, false);
-    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, true);
-    const sur = p.houseN === 2 ? '+20%p' : '+30%p';
+    const rN = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, false, false, p.saleDate);
+    const rR = calcCase(p.gain, p.salePrice, p.holdM, p.resideMonths, p.houseN, true, true, p.saleDate);
+    const sur = rR.heavy ? (p.houseN === 2 ? '+20%p' : '+30%p') : '없음 (2026.5.9까지 한시 배제)';
     html += `<div class="rcard"><div class="rcard-title">일반지역 vs 조정지역 비교</div>
       <div class="calc-row"><span class="cl">일반지역 납부세액</span><span class="cv blue">${fmt(rN.totalTax)}</span></div>
       <div class="calc-row"><span class="cl">일반지역 장기보유공제</span><span class="cv">${Math.round(rN.lthdRate*100)}%</span></div>
       <div class="calc-row"><span class="cl">조정지역 납부세액 (중과)</span><span class="cv red">${fmt(rR.totalTax)}</span></div>
       <div class="calc-row"><span class="cl">조정지역 중과세율</span><span class="cv red">${sur}</span></div>
-      <div class="calc-row"><span class="cl">조정지역 장기보유공제</span><span class="cv red">배제</span></div>
+      <div class="calc-row"><span class="cl">조정지역 장기보유공제</span><span class="cv red">${rR.heavy ? '배제' : Math.round(rR.lthdRate*100)+'%'}</span></div>
     </div>`;
   }
 
@@ -1976,11 +2009,12 @@ function renderResult(p) {
   const tips = [];
   if (!r.exempt && p.houseN === 1) {
     if (p.holdM < 24) tips.push(`보유기간 ${24 - p.holdM}개월 추가 시 2년 보유 요건 충족으로 비과세 가능합니다.`);
-    if (p.isReg && p.resideMonths < 24) tips.push(`조정지역은 2년 거주 요건이 추가됩니다. 거주 ${24 - p.resideMonths}개월 더 필요합니다.`);
+    if (p.isReg && p.resideMonths < 24) tips.push(`취득 당시 조정지역이면 2년 거주 요건이 추가됩니다. 거주 ${24 - p.resideMonths}개월 더 필요합니다.`);
     if (p.salePrice > 1_200_000_000) tips.push('고가주택(12억 초과)은 초과분에만 과세됩니다. 12억 이하 양도 시 전액 비과세입니다.');
     if (p.holdM >= 36 && Math.round((r.lthdRate||0)*100) < 80) tips.push(`보유기간을 늘릴수록 장기보유특별공제율이 높아집니다 (최대 80%).`);
   }
-  if (!r.exempt && p.houseN >= 2 && p.isReg) tips.push('조정지역 다주택은 중과세율이 적용됩니다. 비조정지역 주택 먼저 양도, 또는 1주택 상태 양도를 검토해보세요.');
+  if (!r.exempt && r.heavy) tips.push('조정지역 다주택은 2026년 5월 10일 양도분부터 중과세율(+20%p/+30%p)과 장기보유특별공제 배제가 다시 적용됩니다. 비조정지역 주택 먼저 양도, 또는 1주택 상태 양도를 검토해보세요.');
+  if (!r.exempt && r.heavy && p.saleDate <= '2026-11-09') tips.push('2026년 5월 9일까지 매매계약을 체결하고 계약금을 받은 경우, 기존 조정지역은 계약일부터 4개월, 2025.10.16 이후 신규 조정지역은 6개월 안에 양도하면 중과가 배제될 수 있어요(정부 발표 경과조치).');
   if (!r.exempt && p.holdM < 36) tips.push('3년 이상 보유 시 장기보유특별공제가 적용되어 세액이 줄어듭니다.');
 
   if (tips.length) {
@@ -1991,13 +2025,22 @@ function renderResult(p) {
     </div>`;
   }
 
+  html += taxSourceBox('소득세법 제89조·제95조·제104조, 국토교통부 조정대상지역 공고', [
+    { label:'소득세법 (1세대1주택 비과세·장기보유특별공제·세율)', org:'국가법령정보센터', url:'https://www.law.go.kr/법령/소득세법' }
+  ], [
+    '일시적 2주택·상속주택·장기임대주택 등 주택 수 산정 및 중과 배제 특례',
+    '2026.5.9 이전 계약분 경과조치(계약일·계약금 증빙 필요)의 개별 판정',
+    '필요경비(취득세·중개수수료·자본적 지출) 공제',
+    '분양권·입주권, 비사업용 토지 등 주택 외 자산',
+    '2026년 세제개편안(장기보유특별공제 개편 등)은 국회 통과 전이므로 미반영'
+  ]);
   document.getElementById('result-body').innerHTML = html;
   document.getElementById('result-section').scrollIntoView({ behavior: 'smooth' });
 
   // AI 챗 초기화 — 계산 결과 요약 전달
   const taxSummary = [
     '소재지: ' + p.region,
-    '규제지역: ' + (p.isReg ? '조정대상지역' : '비규제지역'),
+    '규제지역: 취득 당시 ' + (p.isReg ? '조정' : '비조정') + ' / 양도 당시 ' + (p.isRegSale ? '조정' : '비조정'),
     '취득일: ' + fmtDate(p.acqDate) + ' / 양도일: ' + fmtDate(p.saleDate),
     '보유기간: ' + p.holdY + '년 ' + p.holdMr + '개월',
     '거주기간: ' + Math.floor(p.resideMonths/12) + '년 ' + (p.resideMonths%12) + '개월',

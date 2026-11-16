@@ -103,6 +103,9 @@
 // 👇👇👇 여기에 대표님의 전체 엑셀(CSV) 데이터를 복사해서 붙여넣으세요! 👇👇👇
 // =====================================================================
 const rawCsvData = `지역명,시작일,종료일
+경기도 구리시,2026-07-01,
+경기도 용인시 기흥구,2026-07-01,
+경기도 화성시 동탄구,2026-07-01,
 
 서울특별시 종로구,2025-10-16,
 서울특별시 중구,2025-10-16,
@@ -1074,7 +1077,12 @@ window.onload = function() {
 function checkRegulatoryStatus(regionName, targetDateStr) {
     if (!targetDateStr) return null;
     const targetDate = new Date(targetDateStr);
-    const regionHistory = regulatoryDB[regionName];
+    // 입력 지역 + 상위 지역(시·구) 이력을 모두 합쳐 판정 (동 단위 과거 이력이 구 단위 현재 지정을 가리지 않도록)
+    let regionHistory = [];
+    Object.keys(regulatoryDB).forEach(function(k){
+        if (regionName === k || regionName.indexOf(k + ' ') === 0) regionHistory = regionHistory.concat(regulatoryDB[k]);
+    });
+    if (!regionHistory.length) regionHistory = null;
 
     // 사용자가 입력한 지역이 DB에 아예 없거나 오타가 난 경우 -> 비규제지역으로 판정
     if (!regionHistory) {
@@ -1088,7 +1096,7 @@ function checkRegulatoryStatus(regionName, targetDateStr) {
 
         if (targetDate >= startDate && targetDate <= endDate) {
             const endDateText = record.endDate === "9999-12-31" ? "현재 유지 중" : `${record.endDate} 해제`;
-            return { isRegulated: true, badgeClass: "badge-red", badgeText: "🚨 조정대상지역 취득", detail: `* 취득일 기준 조정대상지역입니다.<br>(${record.startDate} 지정 ~ ${endDateText})`, requirement: "조정대상지역 취득 주택으로 <strong>2년 보유</strong> 및 <strong>2년 거주</strong> 요건이 모두 필요합니다." };
+            return { isRegulated: true, badgeClass: "badge-red", badgeText: "🚨 조정대상지역 취득", detail: `* 취득일 기준 조정대상지역입니다.<br>(${record.startDate} 지정 ~ ${endDateText})`, requirement: "조정대상지역 취득 주택으로 <strong>2년 보유</strong> 및 <strong>2년 거주</strong> 요건이 모두 필요합니다.<br><span style=\"font-size:12px;color:#8b95a1\">※ 조정대상지역 지정일 이전에 무주택 세대가 매매계약을 체결하고 계약금을 지급한 경우에는 거주요건이 적용되지 않습니다(소득세법 시행령 제154조①).</span>" };
         }
     }
     return { isRegulated: false, badgeClass: "badge-blue", badgeText: "✅ 비규제지역 취득 (해제 후/지정 전)", detail: `* 취득일(${targetDateStr}) 기준 조정대상지역이 아닙니다.`, requirement: "실거주 요건 없이 <strong>2년 이상 보유</strong>만으로 비과세가 가능합니다." };

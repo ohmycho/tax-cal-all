@@ -502,7 +502,24 @@
         font-size: 29px;
       }
     }
-  </style>
+  
+/* ── 계산 근거 및 출처 ── */
+.tsrc { background:#fff; border:1px solid #e5e8eb; border-radius:14px; margin:12px 0; padding:0 16px; font-size:13px; color:#4e5968; line-height:1.65; text-align:left; }
+.tsrc summary { cursor:pointer; padding:14px 0; font-weight:700; color:#191f28; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+.tsrc summary::-webkit-details-marker { display:none; }
+.tsrc summary::after { content:'펼치기'; font-size:12px; font-weight:500; color:#8b95a1; }
+.tsrc[open] summary::after { content:'접기'; }
+.tsrc-body { padding:0 0 14px; border-top:1px solid #f2f4f6; }
+.tsrc-basis { margin:12px 0 10px; font-size:12px; color:#4e5968; }
+.tsrc-basis b { color:#191f28; }
+.tsrc-list { margin:0; padding:0; list-style:none; }
+.tsrc-list li { padding:8px 0; border-bottom:1px solid #f2f4f6; }
+.tsrc-list a { color:#3182f6; font-weight:600; text-decoration:none; word-break:keep-all; }
+.tsrc-list small { display:block; color:#8b95a1; font-size:11px; }
+.tsrc-miss { margin-top:10px; background:#fff8e6; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a5a00; }
+.tsrc-miss ul { margin:4px 0 0; padding-left:16px; }
+.tsrc-disc { margin-top:10px; background:#f2f4f6; border-radius:10px; padding:10px 12px; font-size:12px; color:#6b7684; }
+</style>
 </head>
 
 <body>
@@ -805,6 +822,23 @@
   </main>
 
   <script>
+// ── 계산 근거 및 출처 (확인 기준일 2026-11-16) ──
+var TAX_CHECKED_DATE = '2026년 11월 16일';
+var TAX_DISCLAIMER = '본 계산은 입력값을 기준으로 산출한 참고용 예상액입니다. 실제 세액은 재산 평가, 주택 수 산정 예외, 감면, 세액공제 및 신고 시점 등에 따라 달라질 수 있습니다. 최종 세액은 세무사 또는 관할 기관에 확인해 주세요.';
+function taxSourceBox(basis, items, missing) {
+  var li = items.map(function(it){
+    return '<li><a href="'+it.url+'" target="_blank" rel="noopener noreferrer">'+it.label+' ↗</a><small>'+it.org+' · 확인 기준일 '+TAX_CHECKED_DATE+'</small></li>';
+  }).join('');
+  var miss = (missing && missing.length)
+    ? '<div class="tsrc-miss"><b>계산에 포함되지 않은 사항</b><ul>'+missing.map(function(m){return '<li>'+m+'</li>';}).join('')+'</ul></div>'
+    : '';
+  return '<details class="tsrc"><summary>계산 근거 및 출처</summary><div class="tsrc-body">'+
+    '<div class="tsrc-basis">계산 기준: <b>'+basis+'</b><br>확인 기준일: '+TAX_CHECKED_DATE+'</div>'+
+    '<ul class="tsrc-list">'+li+'</ul>'+miss+
+    '<div class="tsrc-disc">'+TAX_DISCLAIMER+'</div>'+
+    '</div></details>';
+}
+
     const $ = (id) => document.getElementById(id);
 
     const moneyInputs = document.querySelectorAll(".money");
@@ -970,6 +1004,7 @@
 
     // 표2 — 1세대1주택: 보유연4%(최대40%) + 거주연4%(최대40%), 합산 최대 80%
     function table2Rate(holdYears, liveYears) {
+      if (holdYears < 3) return 0; // 장기보유특별공제는 보유 3년 이상부터
       const holdRate = Math.min(Math.floor(holdYears) * 0.04, 0.40);
       const liveRate = Math.min(Math.floor(liveYears) * 0.04, 0.40);
       return Math.min(holdRate + liveRate, 0.80);
@@ -1000,7 +1035,7 @@
       const {
         oldAcquirePrice, rightValue, netAddPayment, salePrice,
         totalYears, postApprovalYears,
-        totalLiveYears, afterLiveYears
+        totalLiveYears, afterLiveYears, isRegulatedAcq
       } = params;
 
       // STEP 1. 양도차익 분리
@@ -1024,7 +1059,8 @@
       // STEP 3. 비과세 / 12억 고가주택 판정 (1세대1주택 전제, 전체보유 2년↑)
       const HIGH = 1200000000;
       let isExempt = false, isHighPrice = false, highRatio = 1;
-      const meetsHoldingReq = totalYears >= 2;
+      // 비과세: 보유 2년 이상 + 취득 당시 조정대상지역이면 거주 2년 이상 (소득세법 시행령 제154조①)
+      const meetsHoldingReq = totalYears >= 2 && (!isRegulatedAcq || totalLiveYears >= 2);
 
       if (meetsHoldingReq) {
         if (salePrice <= HIGH) {
@@ -1110,7 +1146,7 @@
       const r = calculateReconstruction({
         oldAcquirePrice, rightValue, netAddPayment, salePrice,
         totalYears, postApprovalYears: postApprovalYearsEff,
-        totalLiveYears, afterLiveYears
+        totalLiveYears, afterLiveYears, isRegulatedAcq: !!window._isRegulated
       });
 
       // ── 과세표준 (기본공제 250만원, 양도 1건당 1회) ──
@@ -1204,11 +1240,14 @@
           badge.innerHTML = '<div style="background:#edfbf4;color:#03b26c;font-size:13px;font-weight:600;padding:10px 14px;border-radius:10px;">✅ 1세대 1주택 비과세 (양도가 12억 이하)</div>';
         } else {
           badge.style.display = "block";
+          const notExemptReason = (totalYears < 2) ? '전체 보유기간 2년 미만'
+            : ((window._isRegulated && totalLiveYears < 2) ? '취득 당시 조정대상지역 · 거주 2년 미만' : '');
 
           const exRatioPct = (r.existingRatio   * 100).toFixed(1);
           const apRatioPct = (r.addPaymentRatio * 100).toFixed(1);
 
-          let html = '<div style="background:#f8f9fb;border:1px solid #e5e8eb;border-radius:12px;padding:14px 16px;">';
+          let html = notExemptReason ? '<div style="background:#fff0f1;color:#f04452;font-size:13px;font-weight:600;padding:10px 14px;border-radius:10px;margin-bottom:10px;">⚠️ 1세대1주택 비과세 미충족 — ' + notExemptReason + ' (양도차익 전체 과세)</div>' : '';
+          html += '<div style="background:#f8f9fb;border:1px solid #e5e8eb;border-radius:12px;padding:14px 16px;">';
           html += '<div style="font-size:13px;font-weight:700;color:#191f28;margin-bottom:10px;">📊 양도차익 분리 산출 (소득세법 시행령 제166조)</div>';
           html += '<div style="font-size:12px;color:#4e5968;line-height:2.1;">';
 
@@ -1247,7 +1286,10 @@
     // ════════════════════════════════════════
     // 조정지역 DB + 자동완성
     // ════════════════════════════════════════
-    const RAW_CSV = `서울특별시 종로구,2025-10-16,
+    const RAW_CSV = `경기도 구리시,2026-07-01,
+경기도 용인시 기흥구,2026-07-01,
+경기도 화성시 동탄구,2026-07-01,
+서울특별시 종로구,2025-10-16,
 서울특별시 중구,2025-10-16,
 서울특별시 성동구,2025-10-16,
 서울특별시 광진구,2025-10-16,
@@ -1383,8 +1425,11 @@
       const [ty, tm, td] = dateStr.split("-").map(Number);
       const t = new Date(ty, tm - 1, td);
       if (isNaN(t)) return null;
-      let history = REGION_DB[regionName];
-      if (!history) {
+      let history = [];
+      Object.keys(REGION_DB).forEach(k => {
+        if (regionName === k || regionName.startsWith(k + " ")) history = history.concat(REGION_DB[k]);
+      });
+      if (!history.length) {
         const key = Object.keys(REGION_DB).find(k => k.includes(regionName) || regionName.includes(k));
         if (!key) return { isRegulated: false };
         history = REGION_DB[key];
@@ -1467,7 +1512,7 @@
     });
 
     // oldAcquireDate 변경 시 뱃지 갱신
-    document.getElementById("oldAcquireDate").addEventListener("change", updateRegionBadge);
+    document.getElementById("oldAcquireDate").addEventListener("change", function(){ updateRegionBadge(); calculateTax(); });
 
     calculateTax();
   </script>

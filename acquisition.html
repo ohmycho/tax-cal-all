@@ -459,7 +459,9 @@ function getRates(priceMw) {
     var corpMetro = S.buyer==='corp' && S.metro==='metro';
     var corpMetroUnder5 = corpMetro && S.corpAge==='under5';
     if(corpMetroUnder5) {
-      acq=0.08; edu=0.01; farm=0.004;
+      // 지방세법 제13조②: 표준세율 4%×3 − 중과기준세율 2%×2 = 8%
+      // 지방교육세 (4%−2%)×20%×3 = 1.2%, 농어촌특별세 중과기준세율 2%×10% = 0.2% → 합계 9.4%
+      acq=0.08; edu=0.012; farm=0.002;
       acqDesc='법인 과밀억제권역 설립 5년 이내 · 중과 8%'; scenario='법인 · 과밀억제권역 · 설립 5년 이내';
     } else if(corpMetro && S.corpAge==='over5') {
       acq=0.04; edu=0.004; farm=0.002;
