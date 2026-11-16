@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=406c25e0-17ed-4cdc-bc69-7c77741e0c2d
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>1세대 2주택 비과세 판정</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Pretendard Variable', 'Pretendard', sans-serif;
+  background: #F2F4F6;
+  color: #191F28;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+.screen {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: #F2F4F6;
+  display: flex;
+  flex-direction: column;
+}
+.top-bar {
+  position: sticky; top: 0; z-index: 10;
+  background: #F2F4F6;
+  padding: 16px 20px 8px;
+  display: flex; align-items: center; gap: 8px;
+}
+.back-btn {
+  width: 36px; height: 36px; border: none; background: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  border-radius: 50%; color: #191F28; flex-shrink: 0;
+}
+.back-btn:hover { background: #E5E8EB; }
+.back-btn svg { display: block; }
+.top-title {
+  font-size: 15px; font-weight: 600; color: #191F28; display: none; flex: 1;
+}
+.home-btn {
+  width: 36px; height: 36px; border: none; background: none; cursor: pointer;
+  display: none; align-items: center; justify-content: center;
+  border-radius: 50%; margin-left: auto; flex-shrink: 0;
+}
+.home-btn:hover { background: #E5E8EB; }
+.home-btn svg { display: block; }
+.progress-wrap { padding: 0 20px 4px; display: none; }
+.progress-track { height: 3px; background: #E5E8EB; border-radius: 2px; overflow: hidden; }
+.progress-fill { height: 100%; background: #3182F6; border-radius: 2px; transition: width 0.35s cubic-bezier(.4,0,.2,1); }
+.content { flex: 1; padding: 8px 20px 110px; }
+
+/* 홈 */
+.home-header { padding: 20px 0 28px; }
+.home-eyebrow { font-size: 13px; color: #8B95A1; margin-bottom: 8px; font-weight: 500; }
+.home-title { font-size: 26px; font-weight: 700; color: #191F28; line-height: 1.35; margin-bottom: 8px; letter-spacing: -0.5px; }
+.home-sub { font-size: 14px; color: #8B95A1; line-height: 1.6; }
+.type-list { display: flex; flex-direction: column; gap: 10px; }
+.type-card {
+  background: #fff; border-radius: 16px; padding: 20px;
+  cursor: pointer; border: 2px solid transparent;
+  transition: border-color 0.15s, transform 0.1s;
+  display: flex; align-items: center; gap: 16px;
+  text-align: left; width: 100%;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.type-card:active { transform: scale(0.99); }
+.type-card.selected { border-color: #3182F6; }
+.type-icon-wrap {
+  width: 48px; height: 48px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.type-icon-wrap.blue { background: #EFF6FF; }
+.type-icon-wrap.green { background: #ECFDF5; }
+.type-icon-wrap.pink { background: #FFF0F6; }
+.type-icon-wrap.yellow { background: #FFFBEB; }
+.type-info { flex: 1; }
+.type-name { font-size: 16px; font-weight: 700; color: #191F28; margin-bottom: 3px; letter-spacing: -0.3px; }
+.type-desc { font-size: 13px; color: #8B95A1; line-height: 1.5; }
+.type-arrow { color: #C4C9D1; flex-shrink: 0; }
+
+/* 질문 */
+.q-screen { display: none; }
+.q-header { padding: 8px 0 28px; }
+.q-step-label { font-size: 13px; color: #3182F6; font-weight: 600; margin-bottom: 10px; }
+.q-title { font-size: 22px; font-weight: 700; color: #191F28; line-height: 1.4; white-space: pre-line; letter-spacing: -0.4px; }
+.q-note-card {
+  background: #F2F4F6; border-radius: 12px; padding: 14px 16px; margin-top: 16px;
+  font-size: 13px; color: #4E5968; line-height: 1.7; display: none;
+}
+.nc-single { font-size: 13px; color: #4E5968; line-height: 1.7; }
+.nc-bullet-item { font-size: 13px; color: #4E5968; line-height: 1.6; padding-left: 14px; position: relative; margin-bottom: 6px; }
+.nc-bullet-item:last-child { margin-bottom: 0; }
+.nc-bullet-item::before { content: '•'; position: absolute; left: 1px; color: #3182F6; font-weight: 900; }
+.nc-intro { font-size: 13px; color: #4E5968; margin-bottom: 10px; }
+.nc-case { margin-bottom: 10px; }
+.nc-case:last-child { margin-bottom: 0; }
+.nc-case-title { font-size: 13px; font-weight: 700; color: #191F28; margin-bottom: 3px; }
+.nc-case-desc { font-size: 12px; color: #8B95A1; line-height: 1.6; padding-left: 4px; }
+.q-options { display: flex; flex-direction: column; gap: 10px; margin-top: 28px; }
+.q-opt {
+  background: #fff; border: 2px solid #E5E8EB; border-radius: 14px;
+  padding: 18px 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between;
+  transition: border-color 0.12s, background 0.12s, transform 0.1s;
+  font-size: 16px; font-weight: 600; color: #191F28; width: 100%; text-align: left;
+}
+.q-opt:active { transform: scale(0.99); }
+.q-opt.yes-sel { border-color: #3182F6; background: #EFF6FF; color: #3182F6; }
+.q-opt.no-sel { border-color: #FF4E4E; background: #FFF5F5; color: #FF4E4E; }
+.q-opt-check {
+  width: 22px; height: 22px; border-radius: 50%; border: 2px solid #E5E8EB;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  transition: all 0.12s;
+}
+.yes-sel .q-opt-check { background: #3182F6; border-color: #3182F6; }
+.no-sel .q-opt-check { background: #FF4E4E; border-color: #FF4E4E; }
+
+/* 결과 */
+.result-screen { display: none; }
+.result-hero { padding: 32px 0 28px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.result-icon-wrap {
+  width: 72px; height: 72px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
+}
+.result-icon-wrap.pass { background: #ECFDF5; }
+.result-icon-wrap.fail { background: #FFF5F5; }
+.result-badge {
+  font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
+  display: inline-block; margin-bottom: 12px; letter-spacing: 0.02em;
+}
+.result-badge.pass { background: #ECFDF5; color: #00B761; }
+.result-badge.fail { background: #FFF5F5; color: #FF4E4E; }
+.result-headline {
+  font-size: 24px; font-weight: 700; color: #191F28;
+  line-height: 1.4; margin-bottom: 8px; letter-spacing: -0.5px; white-space: pre-line;
+}
+.result-sub { font-size: 15px; color: #8B95A1; line-height: 1.6; }
+
+.result-card {
+  background: #fff; border-radius: 16px; padding: 20px;
+  margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+.rc-label { font-size: 11px; font-weight: 700; color: #8B95A1; margin-bottom: 12px; letter-spacing: 0.05em; }
+.rc-row {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid #F2F4F6; font-size: 14px;
+}
+.rc-row:last-child { border-bottom: none; padding-bottom: 0; }
+.rc-icon { flex-shrink: 0; margin-top: 2px; }
+.rc-text { color: #4E5968; line-height: 1.55; flex: 1; }
+
+.notice-card { background: #F2F4F6; border-radius: 16px; padding: 18px 20px; margin-bottom: 10px; }
+.nc-title { font-size: 13px; font-weight: 700; color: #4E5968; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+.nc-body { font-size: 13px; color: #4E5968; line-height: 1.7; }
+.nc-bullet { padding-left: 16px; position: relative; margin-bottom: 6px; color: #4E5968; }
+.nc-bullet::before { content: '•'; position: absolute; left: 2px; color: #3182F6; font-weight: 900; font-size: 14px; line-height: 1.5; }
+.nc-plain { margin-top: 6px; color: #8B95A1; }
+
+.fail-card { background: #FFF5F5; border-radius: 16px; padding: 20px; margin-bottom: 10px; }
+.fail-card-title { font-size: 14px; font-weight: 700; color: #FF4E4E; margin-bottom: 8px; }
+.fail-card-body { font-size: 13px; color: #8B95A1; line-height: 1.65; }
+
+/* 하단 CTA */
+.bottom-cta {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 480px;
+  padding: 12px 20px 32px;
+  background: linear-gradient(to top, #F2F4F6 75%, transparent);
+  display: none;
+}
+.cta-btn {
+  width: 100%; padding: 17px; border: none; border-radius: 15px;
+  font-size: 17px; font-weight: 700; cursor: pointer;
+  transition: opacity 0.15s, transform 0.1s; letter-spacing: -0.02em;
+}
+.cta-btn:active { transform: scale(0.98); opacity: 0.85; }
+.cta-btn.primary { background: #3182F6; color: #fff; }
+.cta-btn.secondary { background: #E5E8EB; color: #4E5968; }
+</style>
+</head>
+<body>
+<div class="screen">
+
+  <div class="top-bar">
+    <button class="back-btn" id="backBtn" onclick="goBack()" aria-label="뒤로가기">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M13 4L7 10L13 16" stroke="#191F28" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <div class="top-title" id="topTitle"></div>
+    <button class="home-btn" id="homeBtn" onclick="resetAll()" aria-label="홈으로">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+        <path d="M3 9.5L10 3L17 9.5V17H13V13H7V17H3V9.5Z" stroke="#191F28" stroke-width="1.7" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </div>
+
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="content" id="mainContent">
+
+    <!-- 홈 -->
+    <div id="homeScreen">
+      <div class="home-header">
+        <div class="home-eyebrow">양도소득세 계산기</div>
+        <div class="home-title">1세대 2주택<br>비과세 판정</div>
+        <div class="home-sub">유형을 선택하면 비과세 해당 여부를<br>바로 확인할 수 있어요</div>
+      </div>
+      <div class="type-list">
+        <button class="type-card" onclick="selectType('temp')">
+          <div class="type-icon-wrap blue">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M7 16L3 12L7 8" stroke="#3182F6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M17 8L21 12L17 16" stroke="#3182F6" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M3 12H21" stroke="#3182F6" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="type-info">
+            <div class="type-name">일시적 2주택</div>
+            <div class="type-desc">새 집을 산 후 기존 집을 파는 경우</div>
+          </div>
+          <div class="type-arrow">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </button>
+        <button class="type-card" onclick="selectType('care')">
+          <div class="type-icon-wrap green">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <circle cx="9" cy="6" r="3" stroke="#00B761" stroke-width="1.7"/>
+              <circle cx="17" cy="8" r="2.5" stroke="#00B761" stroke-width="1.7"/>
+              <path d="M3 19c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#00B761" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M17 14c1.657 0 3 1.343 3 3v1" stroke="#00B761" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="type-info">
+            <div class="type-name">동거봉양 합가</div>
+            <div class="type-desc">부모님을 모시기 위해 세대를 합친 경우</div>
+          </div>
+          <div class="type-arrow">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </button>
+        <button class="type-card" onclick="selectType('marry')">
+          <div class="type-icon-wrap pink">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path d="M12 21C12 21 4 15.5 4 9.5C4 7.01 5.79 5 8 5C9.74 5 11.22 6.11 12 7.5C12.78 6.11 14.26 5 16 5C18.21 5 20 7.01 20 9.5C20 15.5 12 21 12 21Z" stroke="#F04E98" stroke-width="1.7" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="type-info">
+            <div class="type-name">혼인 합가</div>
+            <div class="type-desc">결혼으로 각자의 집이 2채가 된 경우</div>
+          </div>
+          <div class="type-arrow">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </button>
+        <button class="type-card" onclick="selectType('inherit')">
+          <div class="type-icon-wrap yellow">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect x="5" y="3" width="14" height="18" rx="2" stroke="#F5A623" stroke-width="1.7"/>
+              <path d="M9 8H15M9 12H15M9 16H12" stroke="#F5A623" stroke-width="1.7" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <div class="type-info">
+            <div class="type-name">상속 취득</div>
+            <div class="type-desc">상속으로 주택이 한 채 더 생긴 경우</div>
+          </div>
+          <div class="type-arrow">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </button>
+      </div>
+    </div>
+
+    <!-- 질문 -->
+    <div id="qScreen" class="q-screen">
+      <div class="q-header">
+        <div class="q-step-label" id="qStepLabel"></div>
+        <div class="q-title" id="qTitle"></div>
+        <div class="q-note-card" id="qNote">
+          <div class="q-note-label">참고사항</div>
+          <div id="qNoteText"></div>
+        </div>
+      </div>
+      <div class="q-options">
+        <button class="q-opt" id="optYes" onclick="answer('yes')">
+          <span>네, 맞아요</span>
+          <span class="q-opt-check">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" id="yesCheck">
+              <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </button>
+        <button class="q-opt" id="optNo" onclick="answer('no')">
+          <span>아니요</span>
+          <span class="q-opt-check">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" id="noCheck">
+              <path d="M2.5 6L5 8.5L9.5 3.5" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </span>
+        </button>
+      </div>
+    </div>
+
+    <!-- 결과 -->
+    <div id="resultScreen" class="result-screen">
+      <div class="result-hero">
+        <div class="result-icon-wrap" id="resultIconWrap">
+          <svg id="resultIconSvg" width="36" height="36" viewBox="0 0 36 36" fill="none"></svg>
+        </div>
+        <div class="result-badge" id="resultBadge"></div>
+        <div class="result-headline" id="resultHeadline"></div>
+        <div class="result-sub" id="resultSub"></div>
+      </div>
+      <div id="resultCards"></div>
+    </div>
+
+  </div>
+
+  <div class="bottom-cta" id="bottomCta">
+    <button class="cta-btn primary" id="ctaBtn"></button>
+  </div>
+
+</div>
+<script>
+const TYPES = {
+  temp: {
+    name: '일시적 2주택',
+    qs: [
+      { title: '기존에 갖고 있던 집을\n먼저 파시는 건가요?', note: null },
+      { title: '기존 집을 산 지\n1년이 넘은 뒤에\n새 집을 구입하셨나요?', note: '단타 투기 방지 요건이에요. 1년 이내에 새 집을 구입했다면 비과세 혜택이 적용되지 않아요.' },
+      { title: '기존 집의 보유·거주\n요건을 충족하셨나요?', note: '취득 당시 비조정지역이라면 2년 이상 보유\n취득 당시 조정대상지역이라면 2년 이상 보유 + 2년 이상 실거주' },
+      { title: '새 집을 산 날부터\n기존주택을 3년 이내에\n양도하시나요?', note: null },
+    ],
+    passCards: [
+      '기존 집을 먼저 처분',
+      '기존 집 취득 후 1년 경과 시점에 신규 취득',
+      '보유·거주 요건 충족',
+      '새 집 취득일로부터 3년 이내 처분',
+    ],
+    notice: '* 재개발·재건축의 경우 준공 후 3년 이내에 기존 집을 팔아야 해요.\n* 2년 이내에 \'세대 전원\'이 새 아파트로 이사하여 1년 이상 거주해야 비과세가 유지돼요.\n* 양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.',
+  },
+  care: {
+    name: '동거봉양 합가',
+    qs: [
+      { title: '합가 전, 자녀와 부모님이\n각각 집 1채씩 따로\n갖고 계셨나요?', note: '주민등록도 각각 분리되어 있어야 해요.' },
+      { title: '합가할 당시 부모님 중\n한 분이 60세 이상이셨나요?', note: '60세 미만이더라도 암, 희귀난치성 질환 등으로 간병이 필요한 경우에는 네를 선택하세요.' },
+      { title: '세대를 합친 날부터\n10년 이내에 파시나요?', note: '합가한 두 집 중 어느 집을 먼저 팔아도 비과세 혜택을 받을 수 있어요.' },
+      { title: '팔려는 집의 보유·거주\n요건을 충족하셨나요?', note: '취득 당시 비조정지역이라면 2년 이상 보유\n취득 당시 조정대상지역이라면 2년 이상 보유 + 2년 이상 실거주' },
+    ],
+    passCards: [
+      '합가 전 각자 집 1채 보유 (세대 분리 상태)',
+      '합가 당시 부모님 중 1인 60세 이상',
+      '세대합가일부터 10년 이내 처분',
+      '보유·거주 요건 충족',
+    ],
+    notice: '양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.',
+  },
+  marry: {
+    name: '혼인 합가',
+    qs: [
+      { title: '결혼 전 각자 집이\n1채씩 있는 상황인가요?', note: '아래 중 하나에 해당하면 돼요.\n①남편 1주택 + 아내 1주택|남편도 단독 세대주로서 집 1채, 아내도 단독 세대주로서 집 1채를 가지고 만난 경우\n②남편세대 1주택 + 아내 1주택|남편은 부모님 등 가족과 함께 살면서 가족 전체가 집 1채인 상태고, 아내는 단독으로 집 1채가 있는 경우\n③남편 1주택 + 아내세대 1주택|남편은 단독으로 집 1채가 있고, 아내는 부모님 등 가족과 함께 살면서 가족 전체가 집 1채인 상태인 경우\n④남편세대 1주택 + 아내세대 1주택|남편 쪽 가족도 집이 딱 1채뿐이고, 아내 쪽 가족도 집이 딱 1채뿐인 상태에서 두 사람이 결혼한 경우', noteType: 'cases' },
+      { title: '혼인신고일부터\n10년 이내에 파시나요?', note: '두 집 중 어느 집을 먼저 팔아도 비과세 혜택을 받을 수 있어요.' },
+      { title: '팔려는 집의 보유·거주\n요건을 충족하셨나요?', note: '취득 당시 비조정지역이라면 2년 이상 보유\n취득 당시 조정대상지역이라면 2년 이상 보유 + 2년 이상 실거주' },
+    ],
+    passCards: [
+      '결혼 전 각자 독립 취득한 집 1채',
+      '혼인신고일부터 10년 이내 처분',
+      '보유·거주 요건 충족',
+    ],
+    notice: '혼인신고일 기준으로 판정해요.\n양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.',
+  },
+  inherit: {
+    name: '상속 취득',
+    qs: [
+      { title: '상속 전부터 갖고 있던\n집을 먼저 파시나요?', note: '돌아가신 분이 사망 당시 집을 딱 1채만 갖고 계셨어야 해요.\n\n주의: 무주택 상태에서 상속받은 후 새로 집을 산 경우, 일시적 2주택 규정(3년 이내 처분)이 적용돼요.' },
+      { title: '상속 전 보유주택이\n보유·거주 요건을\n충족하셨나요?', note: '취득 당시 비조정지역이라면 2년 이상 보유\n취득 당시 조정대상지역이라면 2년 이상 보유 + 2년 이상 실거주' },
+      { title: '상속 당시 상속인과\n피상속인이 따로 살고\n계셨나요?', note: '주민등록 기준이에요.\n동거봉양 합가로 같이 살고 있는 경우는 "네, 맞아요"를 선택하세요.', branch: { yes: 'done', no: 'extra' } },
+    ],
+    extraQs: [
+      { title: '부모님을 모시기 위해\n함께 살게 된 건가요?', note: '어릴 때부터 쭉 함께 살아온 경우라면 아니요를 선택하세요.' },
+      { title: '함께 살기 시작할 당시\n부모님 중 한 분이\n만 60세 이상이셨나요?', note: null },
+    ],
+    passCards: [
+      '상속 전 보유하던 집을 먼저 처분',
+      '보유·거주 요건 충족',
+      '별도 세대 거주 또는 동거봉양 합가 특례 충족',
+    ],
+    notice: '* 양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.\n* 상속 전 보유하던 집을 먼저 파는 경우 양도 기한의 제한은 없어요.',
+  }
+};
+
+let curType = null, answers = [], inExtra = false, extraAnswers = [], curQIdx = 0;
+
+function selectType(t) {
+  curType = t; answers = []; inExtra = false; extraAnswers = []; curQIdx = 0;
+  showQScreen();
+}
+function getCurQs() {
+  const cfg = TYPES[curType];
+  return inExtra ? cfg.extraQs : cfg.qs;
+}
+function showQScreen() {
+  const cfg = TYPES[curType];
+  document.getElementById('homeScreen').style.display = 'none';
+  document.getElementById('qScreen').style.display = 'block';
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'flex';
+  document.getElementById('homeBtn').style.display = 'flex';
+  document.getElementById('topTitle').style.display = 'block';
+  document.getElementById('topTitle').textContent = cfg.name;
+  document.getElementById('progressWrap').style.display = 'block';
+  renderQ();
+}
+function renderQ() {
+  const cfg = TYPES[curType];
+  const qs = getCurQs();
+  const q = qs[curQIdx];
+  const curAnswers = inExtra ? extraAnswers : answers;
+  const allTotal = cfg.qs.length + (cfg.extraQs ? cfg.extraQs.length : 0);
+  const doneCount = (inExtra ? cfg.qs.length : 0) + curQIdx;
+  document.getElementById('progressFill').style.width = (doneCount / allTotal * 100) + '%';
+  document.getElementById('qStepLabel').textContent = doneCount + 1 + ' / ' + allTotal;
+  document.getElementById('qTitle').textContent = q.title;
+  const noteCard = document.getElementById('qNote');
+  if (q.note) {
+    noteCard.style.display = 'block';
+    if (q.noteType === 'cases') {
+      const lines = q.note.split('\n');
+      const intro = lines[0];
+      const items = lines.slice(1).map(function(line) {
+        const parts = line.split('|');
+        const title = parts[0];
+        const desc = parts[1] || '';
+        return '<div class="nc-case">'
+          + '<div class="nc-case-title">' + title + '</div>'
+          + (desc ? '<div class="nc-case-desc">' + desc + '</div>' : '')
+          + '</div>';
+      }).join('');
+      document.getElementById('qNoteText').innerHTML = '<div class="nc-intro">' + intro + '</div>' + items;
+    } else {
+      const lines = q.note.split('\n').filter(function(l) { return l.trim(); });
+      const html = lines.length === 1
+        ? '<div class="nc-single">' + lines[0] + '</div>'
+        : lines.map(function(l) { return '<div class="nc-bullet-item">' + l + '</div>'; }).join('');
+      document.getElementById('qNoteText').innerHTML = html;
+    }
+  } else {
+    noteCard.style.display = 'none';
+  }
+  const ans = curAnswers[curQIdx];
+  document.getElementById('optYes').className = 'q-opt' + (ans === 'yes' ? ' yes-sel' : '');
+  document.getElementById('optNo').className = 'q-opt' + (ans === 'no' ? ' no-sel' : '');
+  if (ans) {
+    document.getElementById('bottomCta').style.display = 'block';
+    updateCtaForAnswer(ans, q);
+  } else {
+    document.getElementById('bottomCta').style.display = 'none';
+  }
+}
+function answer(val) {
+  const cfg = TYPES[curType];
+  const curAnswers = inExtra ? extraAnswers : answers;
+  curAnswers[curQIdx] = val;
+  const q = getCurQs()[curQIdx];
+  document.getElementById('optYes').className = 'q-opt' + (val === 'yes' ? ' yes-sel' : '');
+  document.getElementById('optNo').className = 'q-opt' + (val === 'no' ? ' no-sel' : '');
+  document.getElementById('bottomCta').style.display = 'block';
+  updateCtaForAnswer(val, q);
+}
+function updateCtaForAnswer(val, q) {
+  const cfg = TYPES[curType];
+  const btn = document.getElementById('ctaBtn');
+  btn.className = 'cta-btn primary';
+  if (val === 'no') {
+    btn.textContent = '결과 확인하기';
+    btn.onclick = () => showResult('fail');
+    return;
+  }
+  if (q.branch && val === 'yes' && q.branch.yes === 'done') {
+    btn.textContent = '결과 확인하기';
+    btn.onclick = () => showResult('pass');
+    return;
+  }
+  const qs = getCurQs();
+  const isLastQ = curQIdx === qs.length - 1;
+  const isLastExtra = inExtra && curQIdx === cfg.extraQs.length - 1;
+  if (isLastExtra || (isLastQ && !q.branch && !inExtra && !cfg.extraQs)) {
+    btn.textContent = '결과 확인하기';
+    btn.onclick = () => showResult('pass');
+  } else if (isLastQ && !q.branch && !inExtra && cfg.extraQs) {
+    btn.textContent = '결과 확인하기';
+    btn.onclick = () => showResult('pass');
+  } else {
+    btn.textContent = '다음';
+    btn.onclick = ctaNext;
+  }
+}
+function ctaNext() {
+  const cfg = TYPES[curType];
+  const curAnswers = inExtra ? extraAnswers : answers;
+  const val = curAnswers[curQIdx];
+  if (!val) return;
+  const q = getCurQs()[curQIdx];
+  if (val === 'no') { showResult('fail'); return; }
+  if (q.branch && val === 'no' && q.branch.no === 'extra') {
+    inExtra = true; curQIdx = 0; renderQ(); return;
+  }
+  if (q.branch && val === 'yes' && q.branch.yes === 'done') {
+    showResult('pass'); return;
+  }
+  const qs = getCurQs();
+  if (curQIdx < qs.length - 1) { curQIdx++; renderQ(); }
+  else showResult('pass');
+}
+function showResult(type) {
+  document.getElementById('qScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'block';
+  document.getElementById('progressFill').style.width = '100%';
+  document.getElementById('qStepLabel').textContent = '';
+  const cfg = TYPES[curType];
+  const wrap = document.getElementById('resultIconWrap');
+  const svg = document.getElementById('resultIconSvg');
+  if (type === 'pass') {
+    wrap.className = 'result-icon-wrap pass';
+    svg.innerHTML = '<circle cx="18" cy="18" r="18" fill="#ECFDF5"/><path d="M10 18L15.5 23.5L26 12.5" stroke="#00B761" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+    document.getElementById('resultBadge').className = 'result-badge pass';
+    document.getElementById('resultBadge').textContent = '비과세 해당';
+    document.getElementById('resultHeadline').textContent = '비과세 혜택을\n받을 수 있어요';
+    document.getElementById('resultSub').textContent = '요건을 모두 충족했어요';
+    let html = '<div class="result-card"><div class="rc-label">충족한 요건</div>';
+    cfg.passCards.forEach(t => {
+      html += `<div class="rc-row">
+        <span class="rc-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#ECFDF5"/><path d="M5.5 9L7.8 11.3L12.5 6.5" stroke="#00B761" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="rc-text">${t}</span>
+      </div>`;
+    });
+    html += '</div>';
+    const noticeHtml = cfg.notice.split('\n').map(function(line) {
+      if (line.startsWith('*')) return '<div class="nc-bullet">' + line.slice(1).trim() + '</div>';
+      if (line) return '<div class="nc-plain">' + line + '</div>';
+      return '';
+    }).join('');
+    html += '<div class="notice-card">'
+      + '<div class="nc-title"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#8B95A1" stroke-width="1.2"/><path d="M8 7V11" stroke="#8B95A1" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5" r="0.8" fill="#8B95A1"/></svg> 꼭 확인하세요</div>'
+      + '<div class="nc-body">' + noticeHtml + '</div>'
+      + '</div>';
+    document.getElementById('resultCards').innerHTML = html;
+  } else {
+    wrap.className = 'result-icon-wrap fail';
+    svg.innerHTML = '<circle cx="18" cy="18" r="18" fill="#FFF5F5"/><path d="M12 12L24 24M24 12L12 24" stroke="#FF4E4E" stroke-width="2.2" stroke-linecap="round"/>';
+    document.getElementById('resultBadge').className = 'result-badge fail';
+    document.getElementById('resultBadge').textContent = '과세 대상';
+    document.getElementById('resultHeadline').textContent = '아쉽지만\n과세 대상이에요';
+    document.getElementById('resultSub').textContent = '요건 중 하나를 충족하지 못했어요';
+    document.getElementById('resultCards').innerHTML = `
+      <div class="fail-card">
+        <div class="fail-card-title">비과세 혜택을 받으려면</div>
+        <div class="fail-card-body">모든 요건을 충족해야 비과세 혜택이 적용돼요. 정확한 내용은 세무사와 함께 확인해보시는 걸 추천드려요.</div>
+      </div>`;
+  }
+  const btn = document.getElementById('ctaBtn');
+  btn.textContent = '처음으로 돌아가기';
+  btn.className = 'cta-btn secondary';
+  btn.onclick = resetAll;
+  document.getElementById('bottomCta').style.display = 'block';
+}
+function goBack() {
+  if (document.getElementById('resultScreen').style.display === 'block') {
+    document.getElementById('resultScreen').style.display = 'none';
+    showQScreen(); return;
+  }
+  if (inExtra && curQIdx === 0) {
+    inExtra = false; curQIdx = TYPES[curType].qs.length - 1; showQScreen(); return;
+  }
+  if (curQIdx > 0) { curQIdx--; renderQ(); return; }
+  resetAll();
+}
+function resetAll() {
+  curType = null; answers = []; inExtra = false; extraAnswers = []; curQIdx = 0;
+  document.getElementById('homeScreen').style.display = 'block';
+  document.getElementById('qScreen').style.display = 'none';
+  document.getElementById('resultScreen').style.display = 'none';
+  document.getElementById('backBtn').style.display = 'none';
+  document.getElementById('homeBtn').style.display = 'none';
+  document.getElementById('topTitle').style.display = 'none';
+  document.getElementById('progressWrap').style.display = 'none';
+  document.getElementById('bottomCta').style.display = 'none';
+  document.getElementById('progressFill').style.width = '0%';
+}
+</script>
+</body>
+</html>

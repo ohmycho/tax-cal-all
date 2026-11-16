@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=0baffbfc-1d6c-465d-b832-4848bb1fca9d
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>법인 부동산 양도 법인세 계산기</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #191f28;
+      --sub: #6b7684;
+      --muted: #8b95a1;
+      --line: #e5e8eb;
+      --blue: #3182f6;
+      --blue-dark: #1b64da;
+      --soft-blue: #eaf3ff;
+      --red: #f04452;
+      --soft-red: #fff1f2;
+      --green: #00a661;
+      --soft-green: #e9f8f1;
+      --radius: 24px;
+      --shadow: 0 12px 30px rgba(25, 31, 40, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+        "Pretendard", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    button, input, select { font-family: inherit; }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(248, 250, 252, 0.86);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(229, 232, 235, 0.7);
+    }
+
+    .header-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 850;
+      letter-spacing: -0.4px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 20px;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 42px 20px 90px;
+    }
+
+    .hero {
+      padding: 22px 0 28px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--soft-blue);
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.18;
+      letter-spacing: -1.4px;
+      font-weight: 900;
+    }
+
+    .hero p {
+      margin: 16px 0 0;
+      color: var(--sub);
+      font-size: 18px;
+      letter-spacing: -0.3px;
+      max-width: 680px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) 390px;
+      gap: 24px;
+      align-items: start;
+      margin-top: 26px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(229, 232, 235, 0.8);
+    }
+
+    .form-card {
+      padding: 28px;
+    }
+
+    .result-card {
+      padding: 26px;
+      position: sticky;
+      top: 92px;
+    }
+
+    .section {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:first-child { padding-top: 0; }
+    .section:last-child { border-bottom: 0; padding-bottom: 0; }
+
+    .section-title {
+      margin: 0 0 18px;
+      font-size: 21px;
+      letter-spacing: -0.6px;
+      font-weight: 900;
+    }
+
+    .section-desc {
+      margin: -8px 0 18px;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333d4b;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .helper {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+
+    .korean-money {
+      margin-top: 8px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+      min-height: 19px;
+    }
+
+    .input-wrap { position: relative; }
+
+    input, select {
+      width: 100%;
+      height: 56px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 0 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.12);
+    }
+
+    .has-unit input { padding-right: 68px; }
+
+    .unit {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    .type-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    .type-card {
+      border: 1px solid var(--line);
+      background: #fff;
+      color: #4e5968;
+      border-radius: 18px;
+      padding: 18px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.18s ease;
+    }
+
+    .type-card strong {
+      display: block;
+      color: var(--text);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.4px;
+      margin-bottom: 6px;
+    }
+
+    .type-card span {
+      display: block;
+      color: var(--sub);
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.45;
+    }
+
+    .type-card.active {
+      border-color: var(--blue);
+      background: var(--soft-blue);
+      box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.08);
+    }
+
+    .button {
+      width: 100%;
+      height: 58px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 22px;
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .button:hover {
+      background: var(--blue-dark);
+      transform: translateY(-1px);
+    }
+
+    .result-main {
+      padding: 22px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #f2f7ff, #ffffff);
+      border: 1px solid #dbeafe;
+      margin-bottom: 16px;
+    }
+
+    .result-label {
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .result-amount {
+      color: var(--blue);
+      font-size: 33px;
+      font-weight: 950;
+      letter-spacing: -1.2px;
+      line-height: 1.2;
+    }
+
+    .tax-boxes {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .tax-box {
+      padding: 18px;
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .tax-box.hidden { display: none; }
+
+    .tax-box strong {
+      display: block;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .tax-box span {
+      display: block;
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+    }
+
+    .tax-box.addition {
+      background: #fff;
+      border-color: #dbeafe;
+    }
+
+    .summary {
+      display: grid;
+      gap: 0;
+      margin-top: 12px;
+    }
+
+    .summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary-row:last-child { border-bottom: 0; }
+
+    .summary-row span:first-child {
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .summary-row span:last-child {
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 850;
+      text-align: right;
+    }
+
+    .notice {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #f2f4f6;
+      color: var(--sub);
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    .warning {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--soft-red);
+      color: #b4232d;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #f2f4f6;
+      color: var(--sub);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pill.blue {
+      background: var(--soft-blue);
+      color: var(--blue);
+    }
+
+    .guide {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .guide-card {
+      background: #fff;
+      border-radius: 22px;
+      padding: 22px;
+      border: 1px solid var(--line);
+    }
+
+    .guide-number {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--soft-blue);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 950;
+      margin-bottom: 14px;
+    }
+
+    .guide-card strong {
+      display: block;
+      font-size: 17px;
+      font-weight: 900;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .guide-card p {
+      margin: 0;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    @media (max-width: 960px) {
+      .layout { grid-template-columns: 1fr; }
+      .result-card { position: static; }
+    }
+
+    @media (max-width: 720px) {
+      .nav { display: none; }
+
+      .container { padding-top: 28px; }
+
+      .hero h1 { font-size: 33px; }
+      .hero p { font-size: 16px; }
+
+      .grid-2,
+      .type-grid,
+      .guide {
+        grid-template-columns: 1fr;
+      }
+
+      .form-card,
+      .result-card {
+        padding: 22px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .header-inner { padding: 16px; }
+
+      .container {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .hero h1 { font-size: 30px; }
+
+      .result-amount { font-size: 29px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="#" class="logo">부동산 세금 계산센터</a>
+      <nav class="nav">
+        <a href="#calculator">계산기</a>
+        <a href="#guide">이용안내</a>
+        <a href="#result">결과확인</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="badge">법인 부동산 양도 법인세</div>
+      <h1>법인 부동산 매매 세금,<br />쉽게 확인하세요</h1>
+      <p>
+        주택과 상가·빌딩을 구분해 일반 법인세와
+        주택 양도소득 추가 법인세를 계산해요.
+      </p>
+    </section>
+
+    <section class="layout" id="calculator">
+      <div class="card form-card">
+        <div class="section">
+          <h2 class="section-title">부동산 유형</h2>
+          <p class="section-desc">등기된 부동산 기준이에요. 주택외는 상가·빌딩만 계산해요.</p>
+
+          <div class="type-grid">
+            <button class="type-card active" type="button" data-type="house">
+              <strong>주택</strong>
+              <span>일반 법인세와 추가 법인세를 함께 계산해요.</span>
+            </button>
+
+            <button class="type-card" type="button" data-type="commercial">
+              <strong>주택외</strong>
+              <span>상가·빌딩 기준으로 일반 법인세만 계산해요.</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">거래 정보</h2>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="acquireDate">취득일자</label>
+              <input id="acquireDate" type="date" />
+            </div>
+
+            <div class="field">
+              <label for="saleDate">양도일자</label>
+              <input id="saleDate" type="date" />
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">금액 정보</h2>
+          <p class="section-desc">금액은 만원 단위로 입력해 주세요.</p>
+
+          <div class="field">
+            <label for="acquirePrice">실지취득가액</label>
+            <div class="input-wrap has-unit">
+              <input id="acquirePrice" class="money" type="text" inputmode="numeric" placeholder="예: 50,000" />
+              <span class="unit">만원</span>
+            </div>
+            <div class="korean-money" id="acquirePriceText"></div>
+          </div>
+
+          <div class="field">
+            <label for="salePrice">실지양도가액</label>
+            <div class="input-wrap has-unit">
+              <input id="salePrice" class="money" type="text" inputmode="numeric" placeholder="예: 80,000" />
+              <span class="unit">만원</span>
+            </div>
+            <div class="korean-money" id="salePriceText"></div>
+          </div>
+
+          <div class="helper">
+            취득가액과 양도가액만 반영한 간이 계산이에요. 필요경비, 장부가액 조정, 지방소득세는 별도 검토가 필요해요.
+          </div>
+        </div>
+
+        <button class="button" onclick="calculateTax()">법인세 계산하기</button>
+      </div>
+
+      <aside class="card result-card" id="result">
+        <h2 class="section-title">계산 결과</h2>
+
+        <div class="result-main">
+          <div class="result-label">예상 납부세액</div>
+          <div class="result-amount" id="totalTax">0원</div>
+        </div>
+
+        <div class="tax-boxes">
+          <div class="tax-box">
+            <strong>1. 일반 법인세</strong>
+            <span id="corporateTax">0원</span>
+          </div>
+
+          <div class="tax-box addition" id="additionalTaxBox">
+            <strong>2. 양도소득에 대한 추가 법인세</strong>
+            <span id="additionalTax">0원</span>
+          </div>
+
+          <div class="tax-box">
+            <strong id="sumLabel">1 + 2</strong>
+            <span id="sumTax">0원</span>
+          </div>
+        </div>
+
+        <div class="summary">
+          <div class="summary-row">
+            <span>부동산 유형</span>
+            <span id="assetTypeLabel">주택</span>
+          </div>
+          <div class="summary-row">
+            <span>실지취득가액</span>
+            <span id="summaryAcquire">0원</span>
+          </div>
+          <div class="summary-row">
+            <span>실지양도가액</span>
+            <span id="summarySale">0원</span>
+          </div>
+          <div class="summary-row">
+            <span>양도차익</span>
+            <span id="gainAmount">0원</span>
+          </div>
+          <div class="summary-row">
+            <span>보유기간</span>
+            <span id="holdingPeriod">-</span>
+          </div>
+          <div class="summary-row">
+            <span>적용 방식</span>
+            <span id="methodLabel">주택 추가 과세</span>
+          </div>
+        </div>
+
+        <div class="pill-row">
+          <span class="pill blue" id="assetPill">주택</span>
+          <span class="pill">등기 부동산</span>
+          <span class="pill">간이 추정</span>
+        </div>
+
+        <div class="notice">
+          일반 법인세는 다른 매출수익이 없다고 가정하고, 양도차익을 과세표준으로 단순 계산했어요.
+          실제 신고 시 장부가액, 필요경비, 결손금, 세액공제, 지방소득세 등을 반영해야 해요.
+        </div>
+
+        <div class="warning">
+          주택외 계산은 상가·빌딩만 대상으로 해요. 토지, 공장, 비사업용 토지는 이 계산기에서 제외해요.
+        </div>
+      </aside>
+    </section>
+
+    <section class="guide" id="guide">
+      <div class="guide-card">
+        <div class="guide-number">1</div>
+        <strong>유형을 선택해요</strong>
+        <p>주택인지 상가·빌딩인지 먼저 선택해요.</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-number">2</div>
+        <strong>금액을 입력해요</strong>
+        <p>취득가액과 양도가액을 만원 단위로 입력해요.</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-number">3</div>
+        <strong>법인세를 확인해요</strong>
+        <p>일반 법인세와 추가 법인세를 구분해서 확인해요.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    let assetType = "house";
+
+    document.querySelectorAll(".type-card").forEach((button) => {
+      button.addEventListener("click", () => {
+        document.querySelectorAll(".type-card").forEach((item) => item.classList.remove("active"));
+        button.classList.add("active");
+        assetType = button.dataset.type;
+        calculateTax();
+      });
+    });
+
+    document.querySelectorAll(".money").forEach((input) => {
+      input.addEventListener("input", () => {
+        const raw = onlyNumber(input.value);
+        input.value = raw ? Number(raw).toLocaleString("ko-KR") : "";
+        updateKoreanMoneyText(input.id);
+        calculateTax();
+      });
+    });
+
+    document.querySelectorAll("input").forEach((input) => {
+      input.addEventListener("input", calculateTax);
+      input.addEventListener("change", calculateTax);
+    });
+
+    function onlyNumber(value) {
+      return String(value).replace(/[^0-9]/g, "");
+    }
+
+    function getManwon(id) {
+      return Number(String($(id).value || "").replace(/,/g, "")) || 0;
+    }
+
+    function getMoney(id) {
+      return getManwon(id) * 10000;
+    }
+
+    function formatWon(value) {
+      const safe = Math.max(0, Math.round(value || 0));
+      return safe.toLocaleString("ko-KR") + "원";
+    }
+
+    function formatKoreanMoneyFromManwon(manwon) {
+      if (!manwon) return "";
+      const totalWon = manwon * 10000;
+      const eok = Math.floor(totalWon / 100000000);
+      const man = Math.floor((totalWon % 100000000) / 10000);
+
+      let result = "";
+      if (eok > 0) result += eok.toLocaleString("ko-KR") + "억";
+      if (man > 0) {
+        if (result) result += " ";
+        result += man.toLocaleString("ko-KR") + "만원";
+      }
+      if (!result) result = totalWon.toLocaleString("ko-KR") + "원";
+      return result;
+    }
+
+    function updateKoreanMoneyText(id) {
+      const target = $(id + "Text");
+      if (!target) return;
+      const manwon = getManwon(id);
+      target.textContent = manwon ? formatKoreanMoneyFromManwon(manwon) : "";
+    }
+
+    function parseDate(id) {
+      const value = $(id).value;
+      if (!value) return null;
+      const date = new Date(value + "T00:00:00");
+      return isNaN(date.getTime()) ? null : date;
+    }
+
+    function yearsBetween(start, end) {
+      if (!start || !end || end < start) return 0;
+      const diff = end.getTime() - start.getTime();
+      return diff / (1000 * 60 * 60 * 24 * 365.25);
+    }
+
+    function formatPeriod(years) {
+      if (!years || years <= 0) return "-";
+      const fullYears = Math.floor(years);
+      const months = Math.floor((years - fullYears) * 12);
+      return `${fullYears}년 ${months}개월`;
+    }
+
+    function calculateCorporateTax(taxBase) {
+      /*
+        2026년 이후 영리법인 법인세율 간이 적용
+        - 2억 이하: 10%
+        - 2억 초과 200억 이하: 20%, 누진공제 2,000만원
+        - 200억 초과 3,000억 이하: 22%, 누진공제 4억 2,000만원
+        - 3,000억 초과: 25%, 누진공제 94억 2,000만원
+      */
+
+      if (taxBase <= 0) return 0;
+
+      const brackets = [
+        { limit: 200000000, rate: 0.10, deduction: 0 },
+        { limit: 20000000000, rate: 0.20, deduction: 20000000 },
+        { limit: 300000000000, rate: 0.22, deduction: 420000000 },
+        { limit: Infinity, rate: 0.25, deduction: 9420000000 }
+      ];
+
+      const bracket = brackets.find((b) => taxBase <= b.limit);
+      return Math.max(0, taxBase * bracket.rate - bracket.deduction);
+    }
+
+    function calculateTax() {
+      updateKoreanMoneyText("acquirePrice");
+      updateKoreanMoneyText("salePrice");
+
+      const acquirePrice = getMoney("acquirePrice");
+      const salePrice = getMoney("salePrice");
+      const acquireDate = parseDate("acquireDate");
+      const saleDate = parseDate("saleDate");
+
+      const gain = Math.max(0, salePrice - acquirePrice);
+      const corporateTax = calculateCorporateTax(gain);
+
+      /*
+        주택 선택 시:
+        등기된 주택 양도 기준, 토지등 양도소득 추가 법인세 20%를 간이 적용.
+        주택외 선택 시:
+        상가·빌딩만 대상으로 하며, 비사업용 토지·공장·토지는 제외하므로 추가 법인세 0원 처리.
+      */
+      const additionalTax = assetType === "house" ? gain * 0.20 : 0;
+      const totalTax = corporateTax + additionalTax;
+      const holdingYears = yearsBetween(acquireDate, saleDate);
+
+      const isHouse = assetType === "house";
+
+      $("totalTax").textContent = formatWon(totalTax);
+      $("corporateTax").textContent = formatWon(corporateTax);
+      $("additionalTax").textContent = formatWon(additionalTax);
+      $("sumTax").textContent = formatWon(totalTax);
+
+      $("summaryAcquire").textContent = formatWon(acquirePrice);
+      $("summarySale").textContent = formatWon(salePrice);
+      $("gainAmount").textContent = formatWon(gain);
+      $("holdingPeriod").textContent = formatPeriod(holdingYears);
+
+      $("assetTypeLabel").textContent = isHouse ? "주택" : "주택외(상가·빌딩)";
+      $("methodLabel").textContent = isHouse ? "주택 추가 과세" : "일반 법인세만 계산";
+      $("assetPill").textContent = isHouse ? "주택" : "상가·빌딩";
+
+      $("additionalTaxBox").classList.toggle("hidden", !isHouse);
+      $("sumLabel").textContent = isHouse ? "1 + 2" : "1. 일반 법인세";
+    }
+
+    calculateTax();
+  </script>
+</body>
+</html>

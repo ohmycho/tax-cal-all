@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+<!-- This site is hosted on Netlify. Anyone can build and deploy a site
+     like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=87557618-9728-4432-baf3-ec0fb587804b
+     Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1세대1주택 재건축·재개발 양도세 계산기</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --text: #191f28;
+      --sub: #6b7684;
+      --muted: #8b95a1;
+      --line: #e5e8eb;
+      --blue: #3182f6;
+      --blue-dark: #1b64da;
+      --soft-blue: #eaf3ff;
+      --red: #f04452;
+      --soft-red: #fff1f2;
+      --radius: 24px;
+      --shadow: 0 12px 30px rgba(25, 31, 40, 0.06);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+        "Pretendard", "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button, input, select {
+      font-family: inherit;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: rgba(248, 250, 252, 0.86);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(229, 232, 235, 0.7);
+    }
+
+    .header-inner {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 18px;
+      font-weight: 850;
+      letter-spacing: -0.4px;
+    }
+
+    .nav {
+      display: flex;
+      gap: 20px;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 42px 20px 90px;
+    }
+
+    .hero {
+      padding: 22px 0 28px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--soft-blue);
+      color: var(--blue);
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.18;
+      letter-spacing: -1.4px;
+      font-weight: 900;
+    }
+
+    .hero p {
+      margin: 16px 0 0;
+      color: var(--sub);
+      font-size: 18px;
+      letter-spacing: -0.3px;
+      max-width: 640px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) 380px;
+      gap: 24px;
+      align-items: start;
+      margin-top: 26px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(229, 232, 235, 0.8);
+    }
+
+    .form-card {
+      padding: 28px;
+    }
+
+    .result-card {
+      padding: 26px;
+      position: sticky;
+      top: 92px;
+    }
+
+    .section {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .section:first-child {
+      padding-top: 0;
+    }
+
+    .section:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .section-title {
+      margin: 0 0 18px;
+      font-size: 21px;
+      letter-spacing: -0.6px;
+      font-weight: 900;
+    }
+
+    .section-desc {
+      margin: -8px 0 18px;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .field {
+      margin-bottom: 16px;
+    }
+
+    .field:last-child {
+      margin-bottom: 0;
+    }
+
+    .field label {
+      display: block;
+      margin-bottom: 8px;
+      color: #333d4b;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: -0.2px;
+    }
+
+    .helper {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.45;
+    }
+
+    .korean-money {
+      margin-top: 8px;
+      color: var(--blue);
+      font-size: 13px;
+      font-weight: 800;
+      line-height: 1.45;
+      min-height: 19px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    input, select {
+      width: 100%;
+      height: 56px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 0 16px;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      background: #fff;
+      outline: none;
+      transition: border 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 4px rgba(49, 130, 246, 0.12);
+    }
+
+    input:disabled {
+      background: #f2f4f6;
+      color: var(--muted);
+      cursor: not-allowed;
+    }
+
+    .has-unit input {
+      padding-right: 68px;
+    }
+
+    .unit {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 800;
+      pointer-events: none;
+    }
+
+    .money-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+    }
+
+    .button {
+      width: 100%;
+      height: 58px;
+      border: 0;
+      border-radius: 18px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 17px;
+      font-weight: 900;
+      cursor: pointer;
+      margin-top: 22px;
+      transition: background 0.18s ease, transform 0.18s ease;
+    }
+
+    .button:hover {
+      background: var(--blue-dark);
+      transform: translateY(-1px);
+    }
+
+    .result-main {
+      padding: 22px;
+      border-radius: 22px;
+      background: linear-gradient(180deg, #f2f7ff, #ffffff);
+      border: 1px solid #dbeafe;
+      margin-bottom: 16px;
+    }
+
+    .result-label {
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .result-amount {
+      color: var(--blue);
+      font-size: 33px;
+      font-weight: 950;
+      letter-spacing: -1.2px;
+      line-height: 1.2;
+    }
+
+    .tax-boxes {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .tax-box {
+      padding: 18px;
+      border-radius: 20px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .tax-box strong {
+      display: block;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .tax-box span {
+      display: block;
+      color: var(--text);
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.6px;
+    }
+
+    .summary {
+      display: grid;
+      gap: 0;
+      margin-top: 12px;
+    }
+
+    .summary-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .summary-row:last-child {
+      border-bottom: 0;
+    }
+
+    .summary-row span:first-child {
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .summary-row span:last-child {
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 850;
+      text-align: right;
+    }
+
+    .notice {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #f2f4f6;
+      color: var(--sub);
+      font-size: 13px;
+      font-weight: 650;
+      line-height: 1.55;
+    }
+
+    .warning {
+      margin-top: 16px;
+      padding: 18px;
+      border-radius: 18px;
+      background: var(--soft-red);
+      color: #b4232d;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .pill {
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #f2f4f6;
+      color: var(--sub);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .pill.blue {
+      background: var(--soft-blue);
+      color: var(--blue);
+    }
+
+    .guide {
+      margin-top: 28px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .guide-card {
+      background: #fff;
+      border-radius: 22px;
+      padding: 22px;
+      border: 1px solid var(--line);
+    }
+
+    .guide-number {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: var(--soft-blue);
+      color: var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 950;
+      margin-bottom: 14px;
+    }
+
+    .guide-card strong {
+      display: block;
+      font-size: 17px;
+      font-weight: 900;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .guide-card p {
+      margin: 0;
+      color: var(--sub);
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    @media (max-width: 960px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .result-card {
+        position: static;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .nav {
+        display: none;
+      }
+
+      .container {
+        padding-top: 28px;
+      }
+
+      .hero h1 {
+        font-size: 33px;
+      }
+
+      .hero p {
+        font-size: 16px;
+      }
+
+      .grid-2,
+      .money-row,
+      .guide {
+        grid-template-columns: 1fr;
+      }
+
+      .form-card,
+      .result-card {
+        padding: 22px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .header-inner {
+        padding: 16px;
+      }
+
+      .container {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+
+      .hero h1 {
+        font-size: 30px;
+      }
+
+      .result-amount {
+        font-size: 29px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header class="header">
+    <div class="header-inner">
+      <a href="#" class="logo">부동산 세금 계산센터</a>
+      <nav class="nav">
+        <a href="#calculator">계산기</a>
+        <a href="#guide">이용안내</a>
+        <a href="#result">결과확인</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="badge">1세대1주택 재건축·재개발 양도세</div>
+      <h1>재건축·재개발 아파트 세금,<br />쉽게 확인하세요</h1>
+      <p>
+        취득가액, 양도가액, 조합원권리가액, 보유·거주기간을 입력하면
+        예상 양도세를 확인해요. 일반 1세대1주택 양도도 계산할 수 있어요.
+      </p>
+    </section>
+
+    <section class="layout" id="calculator">
+      <div class="card form-card">
+        <div class="section">
+        <div class="section">
+          <h2 class="section-title">1. 기본 정보</h2>
+
+          <div class="field">
+            <label for="houseCount">세대의 주택수 조건</label>
+            <select id="houseCount">
+              <option value="1">1세대 1주택</option>
+              <option value="1temp">1세대 1주택 (일시적 2주택)</option>
+            </select>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label for="oldAcquireDate">취득일자</label>
+              <input id="oldAcquireDate" type="date" />
+            </div>
+
+            <div class="field">
+              <label for="saleDate">양도일자</label>
+              <input id="saleDate" type="date" />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="oldAcquirePrice">취득가액</label>
+            <div class="input-wrap has-unit">
+              <input id="oldAcquirePrice" class="money" type="text" inputmode="numeric" placeholder="예: 50,000" />
+              <span class="unit">만원</span>
+              <div class="korean-money" id="oldAcquirePriceText"></div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="salePrice">양도가액</label>
+            <div class="input-wrap has-unit">
+              <input id="salePrice" class="money" type="text" inputmode="numeric" placeholder="예: 150,000" />
+              <span class="unit">만원</span>
+              <div class="korean-money" id="salePriceText"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">2. 재건축 · 재개발 정보</h2>
+          <p class="section-desc">
+            관리처분계획인가일과 조합원권리가액은 일반 1세대1주택 양도라면 비워두세요.
+          </p>
+
+          <div class="field">
+            <label for="approvalDate">관리처분계획인가일</label>
+            <input id="approvalDate" type="date" />
+          </div>
+
+          <div class="field">
+            <label for="rightValue">조합원권리가액</label>
+            <div class="input-wrap has-unit">
+              <input id="rightValue" class="money" type="text" inputmode="numeric" placeholder="예: 70,000" />
+              <span class="unit">만원</span>
+              <div class="korean-money" id="rightValueText"></div>
+            </div>
+            <div class="helper">관리처분계획인가서 상의 조합원권리가액(종전자산 평가액)을 입력해 주세요.</div>
+          </div>
+
+          <div class="money-row">
+            <div class="field">
+              <label for="additionalPayment">추가분담금</label>
+              <div class="input-wrap has-unit">
+                <input id="additionalPayment" class="money" type="text" inputmode="numeric" placeholder="0" />
+                <span class="unit">만원</span>
+                <div class="korean-money" id="additionalPaymentText"></div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="refundPayment">환급금</label>
+              <div class="input-wrap has-unit">
+                <input id="refundPayment" class="money" type="text" inputmode="numeric" placeholder="0" />
+                <span class="unit">만원</span>
+                <div class="korean-money" id="refundPaymentText"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="helper">
+            추가분담금과 환급금은 동시에 입력할 수 없어요. 조합원이 돈을 더 내면 추가분담금, 돌려받으면 환급금만 입력해 주세요.
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">3. 보유 · 거주기간</h2>
+          <p class="section-desc">
+            장기보유특별공제 계산에 사용돼요. 일반 1세대1주택 양도라면
+            인가 후 보유기간과 신축주택 거주기간을 0으로 두세요.
+          </p>
+
+          <div class="grid-2">
+            <div class="field">
+              <label>전체 보유기간</label>
+              <div class="money-row">
+                <div class="input-wrap has-unit">
+                  <input id="totalHoldYears" type="number" min="0" value="0" />
+                  <span class="unit">년</span>
+                </div>
+                <div class="input-wrap has-unit">
+                  <input id="totalHoldMonths" type="number" min="0" max="11" value="0" />
+                  <span class="unit">개월</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>관리처분계획인가일 이후 보유기간</label>
+              <div class="money-row">
+                <div class="input-wrap has-unit">
+                  <input id="postHoldYears" type="number" min="0" value="0" />
+                  <span class="unit">년</span>
+                </div>
+                <div class="input-wrap has-unit">
+                  <input id="postHoldMonths" type="number" min="0" max="11" value="0" />
+                  <span class="unit">개월</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="field">
+              <label>전체 거주기간</label>
+              <div class="money-row">
+                <div class="input-wrap has-unit">
+                  <input id="totalLiveYears" type="number" min="0" value="0" />
+                  <span class="unit">년</span>
+                </div>
+                <div class="input-wrap has-unit">
+                  <input id="totalLiveMonths" type="number" min="0" max="11" value="0" />
+                  <span class="unit">개월</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>신축주택 거주기간</label>
+              <div class="money-row">
+                <div class="input-wrap has-unit">
+                  <input id="afterLiveYears" type="number" min="0" value="0" />
+                  <span class="unit">년</span>
+                </div>
+                <div class="input-wrap has-unit">
+                  <input id="afterLiveMonths" type="number" min="0" max="11" value="0" />
+                  <span class="unit">개월</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h2 class="section-title">4. 부동산 소재지</h2>
+          <p class="section-desc">조정대상지역 여부를 확인해요.</p>
+          <div class="field">
+            <label for="regionInput">지역 검색</label>
+            <div style="position:relative;">
+              <input id="regionInput" type="text" autocomplete="off"
+                placeholder="예: 강남구, 장기동, 수지구"
+                oninput="onRegionInput()" onfocus="onRegionInput()"
+                style="width:100%; padding:12px 14px; border:1.5px solid #e5e8eb; border-radius:12px; font-size:15px; font-family:inherit; outline:none;"
+                onfocusin="this.style.borderColor='#3182f6'" onfocusout="this.style.borderColor='#e5e8eb'">
+              <div id="ac-list" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0;
+                background:#fff; border:1.5px solid #e5e8eb; border-radius:12px;
+                box-shadow:0 8px 24px rgba(0,0,0,0.10); max-height:220px; overflow-y:auto; z-index:200;"></div>
+            </div>
+            <div id="region-badge" style="margin-top:10px;"></div>
+          </div>
+        </div>
+
+        <button class="button" onclick="calculateTax()">예상 세금 계산하기</button>
+      </div>
+
+      <aside class="card result-card" id="result">
+        <h2 class="section-title">계산 결과</h2>
+
+        <div class="result-main">
+          <div class="result-label">양도세 납부 예상액 (본세+지방소득세)</div>
+          <div class="result-amount" id="totalTax">0원</div>
+        </div>
+
+        <div id="regulated-badge" style="margin-bottom:12px;display:none;"></div>
+
+        <div class="tax-boxes">
+          <div class="tax-box">
+            <strong>양도소득세 (본세)</strong>
+            <span id="capitalGainsTax">0원</span>
+          </div>
+          <div class="tax-box">
+            <strong>지방소득세 (본세×10%)</strong>
+            <span id="localIncomeTax">0원</span>
+          </div>
+        </div>
+
+        <div class="summary">
+          <div class="summary-row">
+            <span>추정 양도차익</span>
+            <span id="gainAmount">0원</span>
+          </div>
+          <div class="summary-row">
+            <span>추정 취득가액</span>
+            <span id="basisAmount">0원</span>
+          </div>
+          <div class="summary-row">
+            <span>취득세 필요경비 안내</span>
+            <span id="acqTaxDeducted">0원</span>
+          </div>
+          <div class="summary-row">
+            <span>장기보유공제</span>
+            <span id="deductionAmount">0원</span>
+          </div>
+          <div class="summary-row">
+            <span>과세표준</span>
+            <span id="taxBase">0원</span>
+          </div>
+          <div id="taxBaseFormula" style="display:none; font-size:11px; color:#8b95a1; line-height:1.7;
+            padding:4px 0 8px; border-bottom:1px solid #f2f4f6; margin-bottom:4px;"></div>
+          <div class="summary-row">
+            <span>전체 기간</span>
+            <span id="holdingPeriod">-</span>
+          </div>
+          <div class="summary-row">
+            <span>인가 후 보유기간 (분담금분)</span>
+            <span id="houseHoldingPeriod">-</span>
+          </div>
+          <div class="summary-row">
+            <span>거주기간</span>
+            <span id="livingPeriod">-</span>
+          </div>
+        </div>
+
+        <div class="pill-row">
+          <span class="pill blue" id="housePill">1세대1주택</span>
+          <span class="pill" id="methodPill">일반 양도 (인가정보 없음)</span>
+        </div>
+
+        <div class="notice">
+          계산 결과는 참고용이에요. 실제 세액은 주택 수, 조정대상지역 여부,
+          비과세 요건, 고가주택 여부, 필요경비, 세법 개정에 따라 달라질 수 있어요.
+        </div>
+
+        <div class="warning">
+          재건축·재개발 양도세는 관리처분계획인가일을 기준으로 기존주택분과 분담금분을
+          나누어 계산해요. 실제 신고 전에는 세무 전문가 검토가 필요해요.
+        </div>
+      </aside>
+    </section>
+
+    <section class="guide" id="guide">
+      <div class="guide-card">
+        <div class="guide-number">1</div>
+        <strong>기본 정보를 입력해요</strong>
+        <p>주택수 조건, 취득일·양도일, 취득가·양도가를 넣어요.</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-number">2</div>
+        <strong>재건축 정보를 입력해요</strong>
+        <p>인가일, 조합원권리가액, 추가분담금·환급금을 넣어요. (해당 시)</p>
+      </div>
+
+      <div class="guide-card">
+        <div class="guide-number">3</div>
+        <strong>보유·거주기간을 입력해요</strong>
+        <p>전체 보유·거주기간, 인가 후 보유기간, 신축거주기간을 넣어요.</p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    const moneyInputs = document.querySelectorAll(".money");
+
+    moneyInputs.forEach((input) => {
+      input.addEventListener("input", () => {
+        const raw = onlyNumber(input.value);
+        input.value = raw ? Number(raw).toLocaleString("ko-KR") : "";
+        updateKoreanMoneyText(input.id);
+        handleSettlementExclusive(input.id);
+        calculateTax();
+      });
+    });
+
+    const allInputs = document.querySelectorAll("input, select");
+    allInputs.forEach((input) => {
+      input.addEventListener("input", calculateTax);
+      input.addEventListener("change", calculateTax);
+    });
+
+    function onlyNumber(value) {
+      return String(value).replace(/[^0-9]/g, "");
+    }
+
+    function getMoney(id) {
+      const manwon = Number(String($(id).value || "").replace(/,/g, "")) || 0;
+      return manwon * 10000;
+    }
+
+    function getManwon(id) {
+      return Number(String($(id).value || "").replace(/,/g, "")) || 0;
+    }
+
+    function formatKoreanMoneyFromManwon(manwon) {
+      if (!manwon) return "";
+      const totalWon = manwon * 10000;
+      const eok = Math.floor(totalWon / 100000000);
+      const man = Math.floor((totalWon % 100000000) / 10000);
+
+      let result = "";
+      if (eok > 0) result += eok.toLocaleString("ko-KR") + "억";
+      if (man > 0) {
+        if (result) result += " ";
+        result += man.toLocaleString("ko-KR") + "만원";
+      }
+      if (!result) result = totalWon.toLocaleString("ko-KR") + "원";
+      return result;
+    }
+
+    function updateKoreanMoneyText(id) {
+      const target = $(id + "Text");
+      if (!target) return;
+      const manwon = getManwon(id);
+      target.textContent = manwon ? formatKoreanMoneyFromManwon(manwon) : "";
+    }
+
+    function updateAllKoreanMoneyTexts() {
+      ["oldAcquirePrice", "rightValue", "additionalPayment", "refundPayment", "salePrice"]
+        .forEach(updateKoreanMoneyText);
+    }
+
+    function handleSettlementExclusive(changedId) {
+      const additional = $("additionalPayment");
+      const refund = $("refundPayment");
+
+      if (!additional || !refund) return;
+
+      const additionalValue = getManwon("additionalPayment");
+      const refundValue = getManwon("refundPayment");
+
+      if (changedId === "additionalPayment" && additionalValue > 0) {
+        refund.value = "";
+        refund.disabled = true;
+        updateKoreanMoneyText("refundPayment");
+      }
+
+      if (changedId === "refundPayment" && refundValue > 0) {
+        additional.value = "";
+        additional.disabled = true;
+        updateKoreanMoneyText("additionalPayment");
+      }
+
+      if (getManwon("additionalPayment") === 0) {
+        refund.disabled = false;
+      }
+
+      if (getManwon("refundPayment") === 0) {
+        additional.disabled = false;
+      }
+    }
+
+    function getNumber(id) {
+      return Number($(id).value) || 0;
+    }
+
+    function formatWon(value) {
+      const safe = Math.max(0, Math.round(value || 0));
+      return safe.toLocaleString("ko-KR") + "원";
+    }
+
+    function parseDate(id) {
+      const value = $(id).value;
+      if (!value) return null;
+      const date = new Date(value + "T00:00:00");
+      return isNaN(date.getTime()) ? null : date;
+    }
+
+    function yearsBetween(start, end) {
+      if (!start || !end || end < start) return 0;
+      const diff = end.getTime() - start.getTime();
+      return diff / (1000 * 60 * 60 * 24 * 365.25);
+    }
+
+    function formatPeriod(years) {
+      if (!years || years <= 0) return "-";
+      const fullYears = Math.floor(years);
+      const months = Math.floor((years - fullYears) * 12);
+      return `${fullYears}년 ${months}개월`;
+    }
+
+    // 전체 보유기간 (직접 입력)
+    function getTotalHoldYears() {
+      return getNumber("totalHoldYears") + getNumber("totalHoldMonths") / 12;
+    }
+
+    // 관리처분계획인가일 이후 보유기간 (직접 입력)
+    function getPostHoldYears() {
+      return getNumber("postHoldYears") + getNumber("postHoldMonths") / 12;
+    }
+
+    // 전체 거주기간 (종전+신축 합산, 직접 입력) — 기존주택분 장특공에 사용
+    function getTotalLiveYears() {
+      return getNumber("totalLiveYears") + getNumber("totalLiveMonths") / 12;
+    }
+
+    // 신축주택 거주기간 — 분담금분 장특공에 사용
+    function getAfterLiveYears() {
+      return getNumber("afterLiveYears") + getNumber("afterLiveMonths") / 12;
+    }
+
+    // ══════════════════════════════════════════════════
+    // 재건축 양도세 — 4단계 계산 엔진 (세무사 검증 완료, 2026-06-11)
+    //
+    // STEP 1. 양도차익 분리
+    //   인가전 양도차익 = 권리가액 - 종전취득가액 (필요경비 0 가정)
+    //   인가후 전체차익 = 양도가 - 권리가액 - 순청산금(추가분담금-환급금)
+    //   인가후 차익을 (권리가액 : 순청산금) 비율로 안분
+    //     → 종전주택분 / 분담금분
+    //
+    // STEP 2. 합산
+    //   기존주택 양도차익 = 인가전 차익 + 인가후 종전주택분
+    //   분담금   양도차익 = 인가후 분담금분
+    //
+    // STEP 3. 비과세 / 12억 고가주택 판정 (1세대1주택 + 전체보유 2년↑)
+    //   양도가 ≤ 12억 → 전액 비과세
+    //   양도가 > 12억 → 고가주택비율 = (양도가-12억)/양도가, 양쪽에 동일 적용
+    //
+    // STEP 4. 장기보유특별공제 — 구간별로 다른 보유/거주기간·표 적용
+    //   기존주택분: 보유=전체기간(취득~양도), 거주=종전+신축 합산 → 표2(1주택)/표1(다주택)
+    //   분담금분  : 보유=인가후기간(인가~양도), 거주=신축거주만 인정
+    //               → 신축거주 2년↑ 표2 / 2년미만 표1 (1주택), 다주택은 표1
+    // ══════════════════════════════════════════════════
+
+    // 표2 — 1세대1주택: 보유연4%(최대40%) + 거주연4%(최대40%), 합산 최대 80%
+    function table2Rate(holdYears, liveYears) {
+      const holdRate = Math.min(Math.floor(holdYears) * 0.04, 0.40);
+      const liveRate = Math.min(Math.floor(liveYears) * 0.04, 0.40);
+      return Math.min(holdRate + liveRate, 0.80);
+    }
+
+    // 표1 — 일반 장특공: 보유연2%(최대30%), 3년 미만 0%
+    function table1Rate(holdYears) {
+      if (holdYears < 3) return 0;
+      return Math.min(Math.floor(holdYears) * 0.02, 0.30);
+    }
+
+    // 기존주택분 장특공률 — 전체 보유기간 + (종전+신축) 거주기간
+    // 1세대1주택: 거주 2년 이상 → 표2(보유4%+거주4%) / 거주 2년 미만 → 표1(보유2%)
+    function lthdRateExisting(holdYears, liveYears) {
+      if (liveYears >= 2) return table2Rate(holdYears, liveYears);
+      return table1Rate(holdYears);
+    }
+
+    // 분담금분 장특공률 — 인가 후 보유기간 + 신축주택 거주기간만 인정
+    // 1세대1주택: 신축거주 2년 이상 → 표2 / 2년 미만 → 표1
+    function lthdRateAddPayment(holdYears, afterLiveYears) {
+      if (afterLiveYears >= 2) return table2Rate(holdYears, afterLiveYears);
+      return table1Rate(holdYears);
+    }
+
+    // 4단계 계산 엔진 본체
+    function calculateReconstruction(params) {
+      const {
+        oldAcquirePrice, rightValue, netAddPayment, salePrice,
+        totalYears, postApprovalYears,
+        totalLiveYears, afterLiveYears
+      } = params;
+
+      // STEP 1. 양도차익 분리
+      const preGain = rightValue - oldAcquirePrice; // 인가전 양도차익 (필요경비 0)
+      const postGainTotal = salePrice - rightValue - netAddPayment; // 인가후 전체차익
+
+      const denom = rightValue + netAddPayment;
+      let existingRatio = 1, addPaymentRatio = 0;
+      if (denom > 0) {
+        existingRatio   = rightValue    / denom;
+        addPaymentRatio = netAddPayment / denom;
+      }
+      const postGainExisting   = postGainTotal * existingRatio;
+      const postGainAddPayment = postGainTotal * addPaymentRatio;
+
+      // STEP 2. 기존주택분 / 분담금분 합산
+      const existingGain   = preGain + postGainExisting;
+      const addPaymentGain = postGainAddPayment;
+      const totalGain      = existingGain + addPaymentGain;
+
+      // STEP 3. 비과세 / 12억 고가주택 판정 (1세대1주택 전제, 전체보유 2년↑)
+      const HIGH = 1200000000;
+      let isExempt = false, isHighPrice = false, highRatio = 1;
+      const meetsHoldingReq = totalYears >= 2;
+
+      if (meetsHoldingReq) {
+        if (salePrice <= HIGH) {
+          isExempt = true;
+        } else {
+          isHighPrice = true;
+          highRatio = (salePrice - HIGH) / salePrice;
+        }
+      }
+
+      const existingGainTaxable   = isExempt ? 0 : existingGain   * highRatio;
+      const addPaymentGainTaxable = isExempt ? 0 : addPaymentGain * highRatio;
+
+      // STEP 4. 장기보유특별공제
+      const livingYears   = totalLiveYears;
+      const rateExisting   = lthdRateExisting(totalYears, livingYears);
+      const rateAddPayment = lthdRateAddPayment(postApprovalYears, afterLiveYears);
+
+      const lthdExisting   = existingGainTaxable   * rateExisting;
+      const lthdAddPayment = addPaymentGainTaxable * rateAddPayment;
+
+      const baseExisting   = Math.max(0, existingGainTaxable   - lthdExisting);
+      const baseAddPayment = Math.max(0, addPaymentGainTaxable - lthdAddPayment);
+
+      return {
+        preGain, postGainTotal, postGainExisting, postGainAddPayment,
+        existingGain, addPaymentGain, totalGain,
+        existingRatio, addPaymentRatio,
+        isExempt, isHighPrice, highRatio,
+        existingGainTaxable, addPaymentGainTaxable,
+        rateExisting, rateAddPayment, livingYears,
+        lthdExisting, lthdAddPayment,
+        baseExisting, baseAddPayment,
+      };
+    }
+
+    // ── 누진세율 (2024년 기준 정확한 누진공제액)
+    // ── 누진세율 (2023년 개정 이후 최신 누진공제액)
+    function calculateProgressiveCapitalGainsTax(taxBase) {
+      if (taxBase <= 0) return 0;
+      const brackets = [
+        { limit: 14000000,    rate: 0.06, deduction: 0 },
+        { limit: 50000000,    rate: 0.15, deduction: 1260000 },
+        { limit: 88000000,    rate: 0.24, deduction: 5760000 },
+        { limit: 150000000,   rate: 0.35, deduction: 15440000 },
+        { limit: 300000000,   rate: 0.38, deduction: 19940000 },
+        { limit: 500000000,   rate: 0.40, deduction: 25940000 },
+        { limit: 1000000000,  rate: 0.42, deduction: 35940000 },
+        { limit: Infinity,    rate: 0.45, deduction: 65940000 }
+      ];
+      const bracket = brackets.find((b) => taxBase <= b.limit);
+      return Math.max(0, taxBase * bracket.rate - bracket.deduction);
+    }
+
+    function calculateTax() {
+      updateAllKoreanMoneyTexts();
+
+      const houseCountRaw = $("houseCount").value;
+
+      const approvalDate = parseDate("approvalDate");
+
+      const oldAcquirePrice  = getMoney("oldAcquirePrice");
+      const rightValueInput  = getMoney("rightValue");
+      const additionalPayment = getMoney("additionalPayment");
+      const refundPayment    = getMoney("refundPayment");
+      const salePrice        = getMoney("salePrice");
+
+      // ── 기간 (직접 입력) ──
+      const totalYears        = getTotalHoldYears();  // 전체 보유기간 (취득~양도)
+      const postApprovalYears = getPostHoldYears();   // 인가일 이후 보유기간 (분담금분)
+      const totalLiveYears    = getTotalLiveYears();  // 전체 거주기간 (기존주택분)
+      const afterLiveYears    = getAfterLiveYears();  // 신축주택 거주기간 (분담금분)
+
+      const netAddPayment = additionalPayment - refundPayment; // 순청산금(추가분담금-환급금)
+
+      // 인가일·권리가액 입력 여부에 따른 처리
+      // 인가정보가 없으면 전액을 "기존주택분"으로 취급 (일반 1세대1주택 양도와 동일하게 계산)
+      const hasApproval = !!approvalDate && rightValueInput > 0;
+      const rightValue = hasApproval ? rightValueInput : Math.max(0, salePrice - netAddPayment);
+      const postApprovalYearsEff = hasApproval ? postApprovalYears : 0;
+
+      // ── 4단계 계산 엔진 ──
+      const r = calculateReconstruction({
+        oldAcquirePrice, rightValue, netAddPayment, salePrice,
+        totalYears, postApprovalYears: postApprovalYearsEff,
+        totalLiveYears, afterLiveYears
+      });
+
+      // ── 과세표준 (기본공제 250만원, 양도 1건당 1회) ──
+      const BASIC_DEDUCTION = 2500000;
+      const baseSum = r.baseExisting + r.baseAddPayment;
+      const taxBase = r.isExempt ? 0 : Math.max(0, baseSum - BASIC_DEDUCTION);
+
+      // ── 세율 적용 (1세대1주택 — 다주택 중과 없음) ──
+      const nationalTax = r.isExempt ? 0 : calculateProgressiveCapitalGainsTax(taxBase);
+      const capitalGainsTaxFinal = r.isExempt ? 0 : nationalTax;
+      const localTaxFinal = capitalGainsTaxFinal * 0.1;
+      const totalTaxFinal = capitalGainsTaxFinal + localTaxFinal;
+
+      // ── 결과 출력 ──
+      $("totalTax").textContent        = r.isExempt ? "0원 (비과세)" : formatWon(totalTaxFinal);
+      $("capitalGainsTax").textContent = r.isExempt ? "0원 (비과세)" : formatWon(capitalGainsTaxFinal);
+      $("localIncomeTax").textContent  = r.isExempt ? "0원" : formatWon(localTaxFinal);
+      $("acqTaxDeducted").textContent  = "실제 신고 시 증빙 제출로 공제 가능";
+      $("gainAmount").textContent      = formatWon(r.totalGain);
+      $("basisAmount").textContent     = formatWon(Math.max(0, oldAcquirePrice + netAddPayment));
+      $("taxBase").textContent         = r.isExempt ? "비과세" : formatWon(taxBase);
+
+      // ── 장특공 상세 (기존주택분 / 분담금분) ──
+      const deductEl = $("deductionAmount");
+      if (r.isExempt) {
+        deductEl.textContent = "-";
+      } else {
+        deductEl.innerHTML =
+          formatWon(r.lthdExisting + r.lthdAddPayment) +
+          "<div style='font-size:11px;color:#8b95a1;margin-top:4px;line-height:1.6;'>" +
+          "기존주택분 " + Math.floor(totalYears) + "년 × " + (r.rateExisting * 100).toFixed(0) + "% = " + formatWon(r.lthdExisting) + "<br>" +
+          "분담금분 " + Math.floor(postApprovalYears) + "년 × " + (r.rateAddPayment * 100).toFixed(0) + "% = " + formatWon(r.lthdAddPayment) +
+          "</div>";
+      }
+
+      // ── 과세표준 공식 — 기존주택분 / 분담금분 분리 표시 ──
+      const formulaEl = $("taxBaseFormula");
+      if (formulaEl) {
+        if (r.isExempt) {
+          formulaEl.style.display = "none";
+        } else {
+          formulaEl.style.display = "block";
+
+          let existingRateDetail, addPaymentRateDetail;
+          if (totalLiveYears >= 2) {
+            existingRateDetail = "보유 " + Math.floor(totalYears) + "년×4% + 거주 " + Math.floor(totalLiveYears) + "년×4% = " + (r.rateExisting * 100).toFixed(0) + "%";
+          } else {
+            existingRateDetail = "보유 " + Math.floor(totalYears) + "년×2% (거주 2년 미만 → 표1) = " + (r.rateExisting * 100).toFixed(0) + "%";
+          }
+          if (afterLiveYears >= 2) {
+            addPaymentRateDetail = "보유 " + Math.floor(postApprovalYears) + "년×4% + 거주(신축) " + Math.floor(afterLiveYears) + "년×4% = " + (r.rateAddPayment * 100).toFixed(0) + "%";
+          } else {
+            addPaymentRateDetail = "보유 " + Math.floor(postApprovalYears) + "년×2% (신축거주 2년 미만 → 표1) = " + (r.rateAddPayment * 100).toFixed(0) + "%";
+          }
+
+
+          formulaEl.innerHTML =
+            "<span style='color:#3182f6;font-weight:700'>【기존주택분】</span>" +
+            "<br>" + formatWon(r.existingGainTaxable) + " (과세 양도차익)" +
+            "<br>- " + formatWon(r.lthdExisting) + " (장특공 " + existingRateDetail + ")" +
+            "<br>= " + formatWon(r.baseExisting) +
+
+            "<br><br><span style='color:#3182f6;font-weight:700'>【분담금분】</span>" +
+            "<br>" + formatWon(r.addPaymentGainTaxable) + " (과세 양도차익)" +
+            "<br>- " + formatWon(r.lthdAddPayment) + " (장특공 " + addPaymentRateDetail + ")" +
+            "<br>= " + formatWon(r.baseAddPayment) +
+
+            "<br><br><span style='color:#4e5968;font-weight:700'>합산 과세표준</span>" +
+            "<br>" + formatWon(r.baseExisting) + " + " + formatWon(r.baseAddPayment) + " - " + formatWon(BASIC_DEDUCTION) + " (기본공제)" +
+            " = <strong style='color:#191f28'>" + formatWon(taxBase) + "</strong>";
+        }
+      }
+
+      // ── 기간 표시 ──
+      $("holdingPeriod").textContent      = formatPeriod(totalYears);
+      $("houseHoldingPeriod").textContent = hasApproval ? formatPeriod(postApprovalYears) : "-";
+      $("livingPeriod").textContent       =
+        "전체 " + Math.floor(totalLiveYears) + "년 / 신축주택 " + Math.floor(afterLiveYears) + "년";
+
+      $("housePill").textContent =
+        houseCountRaw === "1temp" ? "1세대1주택(일시적2주택)" : "1세대1주택";
+      $("methodPill").textContent = hasApproval
+        ? "기존주택분/분담금분 분리 계산"
+        : "일반 양도 (인가정보 없음)";
+
+      // ── 비과세 안내 / 양도차익 분리 산출 내역 ──
+      const badge = $("regulated-badge");
+      if (badge) {
+        if (r.isExempt) {
+          badge.style.display = "block";
+          badge.innerHTML = '<div style="background:#edfbf4;color:#03b26c;font-size:13px;font-weight:600;padding:10px 14px;border-radius:10px;">✅ 1세대 1주택 비과세 (양도가 12억 이하)</div>';
+        } else {
+          badge.style.display = "block";
+
+          const exRatioPct = (r.existingRatio   * 100).toFixed(1);
+          const apRatioPct = (r.addPaymentRatio * 100).toFixed(1);
+
+          let html = '<div style="background:#f8f9fb;border:1px solid #e5e8eb;border-radius:12px;padding:14px 16px;">';
+          html += '<div style="font-size:13px;font-weight:700;color:#191f28;margin-bottom:10px;">📊 양도차익 분리 산출 (소득세법 시행령 제166조)</div>';
+          html += '<div style="font-size:12px;color:#4e5968;line-height:2.1;">';
+
+          html += '<span style="font-weight:700">① 인가 전 양도차익</span><br>';
+          html += '권리가액 ' + formatWon(rightValue) + ' - 취득가액 ' + formatWon(oldAcquirePrice) +
+                  ' = <strong>' + formatWon(r.preGain) + '</strong><br><br>';
+
+          html += '<span style="font-weight:700">② 인가 후 전체 양도차익</span><br>';
+          html += '양도가 ' + formatWon(salePrice) + ' - 권리가액 ' + formatWon(rightValue) +
+                  ' - 순청산금 ' + formatWon(netAddPayment) + ' = <strong>' + formatWon(r.postGainTotal) + '</strong><br>';
+          html += '&nbsp;&nbsp;└ 종전주택분 (' + exRatioPct + '%) = ' + formatWon(r.postGainExisting) + '<br>';
+          html += '&nbsp;&nbsp;└ 분담금분 (' + apRatioPct + '%) = ' + formatWon(r.postGainAddPayment) + '<br><br>';
+
+          html += '<span style="color:#3182f6;font-weight:700">③ 기존주택 양도차익</span> = ① + 종전주택분<br>';
+          html += formatWon(r.preGain) + ' + ' + formatWon(r.postGainExisting) +
+                  ' = <strong>' + formatWon(r.existingGain) + '</strong><br><br>';
+
+          html += '<span style="color:#3182f6;font-weight:700">④ 분담금 양도차익</span> = 분담금분<br>';
+          html += '<strong>' + formatWon(r.addPaymentGain) + '</strong>';
+
+          if (r.isHighPrice) {
+            const highRatioPct = (r.highRatio * 100).toFixed(1);
+            html += '<br><br><span style="color:#d4820a;font-weight:700">⑤ 고가주택(12억 초과) 비율 적용</span><br>';
+            html += '고가주택 비율 = (양도가-12억)÷양도가 = ' + highRatioPct + '%<br>';
+            html += '기존주택 과세차익 = ' + formatWon(r.existingGain) + ' × ' + highRatioPct + '% = <strong>' + formatWon(r.existingGainTaxable) + '</strong><br>';
+            html += '분담금 과세차익 = ' + formatWon(r.addPaymentGain) + ' × ' + highRatioPct + '% = <strong>' + formatWon(r.addPaymentGainTaxable) + '</strong>';
+          }
+
+          html += '</div></div>';
+          badge.innerHTML = html;
+        }
+      }
+    }
+
+
+    // ════════════════════════════════════════
+    // 조정지역 DB + 자동완성
+    // ════════════════════════════════════════
+    const RAW_CSV = `서울특별시 종로구,2025-10-16,
+서울특별시 중구,2025-10-16,
+서울특별시 성동구,2025-10-16,
+서울특별시 광진구,2025-10-16,
+서울특별시 동대문구,2025-10-16,
+서울특별시 중랑구,2025-10-16,
+서울특별시 성북구,2025-10-16,
+서울특별시 강북구,2025-10-16,
+서울특별시 도봉구,2025-10-16,
+서울특별시 노원구,2025-10-16,
+서울특별시 은평구,2025-10-16,
+서울특별시 서대문구,2025-10-16,
+서울특별시 마포구,2025-10-16,
+서울특별시 양천구,2025-10-16,
+서울특별시 강서구,2025-10-16,
+서울특별시 구로구,2025-10-16,
+서울특별시 금천구,2025-10-16,
+서울특별시 영등포구,2025-10-16,
+서울특별시 동작구,2025-10-16,
+서울특별시 관악구,2025-10-16,
+서울특별시 강동구,2025-10-16,
+서울특별시 종로구,2017-08-03,2023-01-04
+서울특별시 중구,2017-08-03,2023-01-04
+서울특별시 용산구,2017-08-03,
+서울특별시 성동구,2017-08-03,2023-01-04
+서울특별시 광진구,2017-08-03,2023-01-04
+서울특별시 동대문구,2017-08-03,2023-01-04
+서울특별시 중랑구,2017-08-03,2023-01-04
+서울특별시 성북구,2017-08-03,2023-01-04
+서울특별시 강북구,2017-08-03,2023-01-04
+서울특별시 도봉구,2017-08-03,2023-01-04
+서울특별시 노원구,2017-08-03,2023-01-04
+서울특별시 은평구,2017-08-03,2023-01-04
+서울특별시 서대문구,2017-08-03,2023-01-04
+서울특별시 마포구,2017-08-03,2023-01-04
+서울특별시 양천구,2017-08-03,2023-01-04
+서울특별시 강서구,2017-08-03,2023-01-04
+서울특별시 구로구,2017-08-03,2023-01-04
+서울특별시 금천구,2017-08-03,2023-01-04
+서울특별시 영등포구,2017-08-03,2023-01-04
+서울특별시 동작구,2017-08-03,2023-01-04
+서울특별시 관악구,2017-08-03,2023-01-04
+서울특별시 서초구,2017-08-03,
+서울특별시 강남구,2017-08-03,
+서울특별시 송파구,2017-08-03,
+서울특별시 강동구,2017-08-03,2023-01-04
+경기도 수원시 장안구,2025-10-16,
+경기도 수원시 팔달구,2025-10-16,
+경기도 수원시 영통구,2025-10-16,
+경기도 성남시 수정구,2025-10-16,
+경기도 성남시 중원구,2025-10-16,
+경기도 성남시 분당구,2025-10-16,
+경기도 안양시 동안구,2025-10-16,
+경기도 광명시,2025-10-16,
+경기도 과천시,2025-10-16,
+경기도 의왕시,2025-10-16,
+경기도 하남시,2025-10-16,
+경기도 용인시 수지구,2025-10-16,
+경기도 성남시 수정구,2017-08-03,2023-01-04
+경기도 성남시 중원구,2017-08-03,2022-11-13
+경기도 성남시 분당구,2017-08-03,2023-01-04
+경기도 광명시,2017-08-03,2023-01-04
+경기도 과천시,2017-08-03,2023-01-04
+경기도 하남시,2017-08-03,2023-01-04
+경기도 구리시,2018-08-28,2022-11-13
+경기도 안양시 동안구,2018-08-28,2022-11-13
+경기도 수원시 장안구,2020-02-21,2022-11-13
+경기도 수원시 권선구,2020-02-21,2022-11-13
+경기도 수원시 영통구,2020-02-21,2022-11-13
+경기도 안양시 만안구,2020-02-21,2022-11-13
+경기도 의왕시,2020-02-21,2022-11-13
+경기도 고양시 덕양구,2020-06-19,2022-11-13
+경기도 고양시 일산동구,2020-06-19,2022-11-13
+경기도 고양시 일산서구,2020-06-19,2022-11-13
+경기도 남양주시,2020-06-19,2022-11-13
+경기도 오산시,2020-06-19,2022-11-13
+경기도 시흥시,2020-06-19,2022-11-13
+경기도 군포시,2020-06-19,2022-11-13
+경기도 의정부시,2020-06-19,2022-11-13
+경기도 부천시,2020-06-19,2022-11-13
+경기도 평택시,2020-06-19,2022-09-25
+경기도 안산시,2020-06-19,2022-11-13
+경기도 화성시,2020-06-19,2022-11-13
+경기도 광주시,2020-06-19,2022-11-13
+경기도 양주시,2020-06-19,2022-09-25
+경기도 용인시 기흥구,2018-12-31,2022-11-13
+경기도 용인시 수지구,2018-12-31,2022-11-13
+경기도 용인시 처인구,2020-06-19,2022-11-13
+경기도 파주시,2020-12-18,2022-09-25
+경기도 김포시,2020-11-20,2022-11-13
+세종특별자치시 반곡동,2017-08-03,2022-11-13
+세종특별자치시 소담동,2017-08-03,2022-11-13
+세종특별자치시 산울동,2020-07-15,2022-11-13
+세종특별자치시 해밀동,2020-07-15,2022-11-13
+세종특별자치시 집현동,2020-07-15,2022-11-13
+세종특별자치시 세종동,2022-07-01,2022-11-13
+세종특별자치시 누리동,2022-07-01,2022-11-13
+세종특별자치시 한별동,2022-07-01,2022-11-13
+세종특별자치시 다솜동,2022-07-01,2022-11-13
+세종특별자치시 용호동,2022-07-01,2022-11-13
+인천광역시 중구,2020-06-19,2022-11-13
+인천광역시 동구,2020-06-19,2022-11-13
+인천광역시 미추홀구,2020-06-19,2022-11-13
+인천광역시 연수구,2020-06-19,2022-11-13
+인천광역시 남동구,2020-06-19,2022-11-13
+인천광역시 부평구,2020-06-19,2022-11-13
+인천광역시 계양구,2020-06-19,2022-11-13
+인천광역시 서구,2020-06-19,2022-11-13
+대구광역시 수성구,2020-11-20,2022-09-25
+부산광역시 해운대구,2020-11-20,2022-09-25
+부산광역시 수영구,2020-11-20,2022-09-25
+부산광역시 동래구,2020-11-20,2022-09-25
+대전광역시 동구,2020-06-19,2022-09-25
+대전광역시 중구,2020-06-19,2022-09-25
+대전광역시 서구,2020-06-19,2022-09-25
+대전광역시 유성구,2020-06-19,2022-09-25
+대전광역시 대덕구,2020-06-19,2022-09-25`;
+
+    // DB 구축
+    const REGION_DB = {};
+    RAW_CSV.split("\n").forEach(line => {
+      const cols = line.trim().split(",");
+      if (cols.length < 2 || !cols[0] || !cols[1]) return;
+      const [region, start, end] = cols.map(s => s.trim());
+      if (!REGION_DB[region]) REGION_DB[region] = [];
+      REGION_DB[region].push({ start, end: end || "9999-12-31" });
+    });
+    const REGIONS = Object.keys(REGION_DB).sort();
+
+    window._isRegulated = false;
+
+    function checkRegulated(regionName, dateStr) {
+      if (!regionName || !dateStr) return null;
+      const [ty, tm, td] = dateStr.split("-").map(Number);
+      const t = new Date(ty, tm - 1, td);
+      if (isNaN(t)) return null;
+      let history = REGION_DB[regionName];
+      if (!history) {
+        const key = Object.keys(REGION_DB).find(k => k.includes(regionName) || regionName.includes(k));
+        if (!key) return { isRegulated: false };
+        history = REGION_DB[key];
+      }
+      for (const r of history) {
+        const [sy,sm,sd] = r.start.split("-").map(Number);
+        const [ey,em,ed] = r.end.split("-").map(Number);
+        if (t >= new Date(sy,sm-1,sd) && t <= new Date(ey,em-1,ed)) {
+          return { isRegulated: true, start: r.start, end: r.end === "9999-12-31" ? null : r.end };
+        }
+      }
+      return { isRegulated: false };
+    }
+
+    function fmtDate(str) {
+      if (!str) return "";
+      const [y,m,d] = str.split("-");
+      return y + "년 " + (+m) + "월 " + (+d) + "일";
+    }
+
+    function openAcList(items, q) {
+      const list = $("ac-list");
+      list.innerHTML = "";
+      items.slice(0, 100).forEach(r => {
+        const div = document.createElement("div");
+        div.style.cssText = "padding:13px 16px;font-size:15px;color:#191f28;cursor:pointer;border-bottom:1px solid #f2f4f6;";
+        if (q) {
+          const idx = r.indexOf(q);
+          div.innerHTML = idx >= 0
+            ? r.slice(0,idx) + "<mark style='background:none;color:#3182f6;font-weight:700'>" + r.slice(idx,idx+q.length) + "</mark>" + r.slice(idx+q.length)
+            : r;
+        } else {
+          div.textContent = r;
+        }
+        div.addEventListener("mousedown", e => { e.preventDefault(); selectRegion(r); });
+        div.addEventListener("touchend",  e => { e.preventDefault(); selectRegion(r); });
+        list.appendChild(div);
+      });
+      list.style.display = items.length > 0 ? "block" : "none";
+    }
+
+    function closeAcList() { $("ac-list").style.display = "none"; }
+
+    function selectRegion(r) {
+      $("regionInput").value = r;
+      closeAcList();
+      updateRegionBadge();
+      calculateTax();
+    }
+
+    function onRegionInput() {
+      const q = $("regionInput").value.trim();
+      if (q.length === 0) openAcList(REGIONS.slice(0, 80), q);
+      else openAcList(REGIONS.filter(r => r.includes(q)), q);
+      updateRegionBadge();
+    }
+
+    function updateRegionBadge() {
+      const q = $("regionInput").value.trim();
+      const acqDateVal = $("oldAcquireDate").value;
+      const badge = $("region-badge");
+      badge.innerHTML = "";
+      window._isRegulated = false;
+      if (!q || !acqDateVal) return;
+      const exactMatch = REGIONS.find(r => r === q) || REGIONS.find(r => r.includes(q) || q.includes(r));
+      if (!exactMatch) return;
+      const result = checkRegulated(exactMatch, acqDateVal);
+      if (!result) return;
+      if (result.isRegulated) {
+        window._isRegulated = true;
+        const endTxt = result.end ? " ~ " + fmtDate(result.end) + " 해제" : " ~ 현재 유지";
+        badge.innerHTML = "<div style='background:#fff0f1;color:#f04452;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;display:inline-block;'>🚨 조정대상지역 (" + fmtDate(result.start) + endTxt + ")</div>";
+      } else {
+        badge.innerHTML = "<div style='background:#eff6ff;color:#3182f6;font-size:13px;font-weight:600;padding:8px 14px;border-radius:10px;display:inline-block;'>✅ 비규제지역</div>";
+      }
+    }
+
+    document.addEventListener("click", e => {
+      if (!e.target.closest("#regionInput") && !e.target.closest("#ac-list")) closeAcList();
+    });
+
+    // oldAcquireDate 변경 시 뱃지 갱신
+    document.getElementById("oldAcquireDate").addEventListener("change", updateRegionBadge);
+
+    calculateTax();
+  </script>
+</body>
+</html>

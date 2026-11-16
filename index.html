@@ -85,6 +85,17 @@
     /* ── 카드 리스트 ── */
     .card-list { display: flex; flex-direction: column; gap: 8px; padding: 0 20px 8px; }
 
+    /* ── 그룹 헤더 ── */
+    .group-header {
+      padding: 16px 20px 6px;
+      font-size: 13px; font-weight: 700; color: var(--t3);
+      letter-spacing: 0.03em; text-transform: uppercase;
+    }
+    .group-divider {
+      height: 1px; background: var(--border);
+      margin: 4px 20px 0;
+    }
+
     .calc-card {
       background: var(--white);
       border-radius: 16px;
@@ -200,30 +211,93 @@ const CALCULATORS = [
     title: '취득세 계산기',
     desc: '부동산을 살 때 내야 할 세금',
     link: 'acquisition.html',
+    group: null,
   },
   {
     icon: '🎁',
     title: '증여세 계산기',
     desc: '부동산을 증여할 때 예상 세금',
     link: 'gift.html',
+    group: null,
   },
   {
     icon: '📋',
     title: '상속세 계산기',
     desc: '상속 재산 기준 예상 세금',
-    link: 'https://inherit-template.netlify.app/inheritance.html',
+    link: 'inheritance.html',
+    group: null,
   },
   {
     icon: '📈',
-    title: '양도세 계산기',
-    desc: '부동산을 팔 때 발생하는 세금',
+    title: '양도세 — 주택 (일반)',
+    desc: '1주택·다주택 양도소득세 계산',
     link: 'capital_gains_tax.html',
+    group: '양도세',
+  },
+  {
+    icon: '🏘️',
+    title: '양도세 — 1세대2주택 비과세',
+    desc: '일시적 2주택 등 비과세 요건 판정',
+    link: 'capital_gains_2house_exempt.html',
+    group: '양도세',
+  },
+  {
+    icon: '🔨',
+    title: '양도세 — 재건축·재개발',
+    desc: '1세대1주택 재건축·재개발 양도세',
+    link: 'capital_gains_rebuild.html',
+    group: '양도세',
+  },
+  {
+    icon: '🏢',
+    title: '양도세 — 주택 외 (상가·빌딩)',
+    desc: '상가, 빌딩 등 주택 외 부동산 양도세',
+    link: 'capital_gains_non_housing.html',
+    group: '양도세',
+  },
+  {
+    icon: '🏗️',
+    title: '양도세 — 법인 부동산',
+    desc: '법인이 부동산 양도 시 법인세 계산',
+    link: 'capital_gains_corporate.html',
+    group: '양도세',
+  },
+  {
+    icon: '📍',
+    title: '양도세 — 조정지역 사전진단',
+    desc: '조정/비조정 지역 여부 및 세율 사전 확인',
+    link: 'capital_gains_zone_check.html',
+    group: '양도세',
   },
 ];
 
 const list = document.getElementById('card-list');
+let lastGroup = null;
 
 CALCULATORS.forEach(calc => {
+  // 그룹 헤더 삽입
+  if (calc.group && calc.group !== lastGroup) {
+    // 그룹 헤더를 card-list 바깥에 삽입
+    const divider = document.createElement('div');
+    divider.className = 'group-divider';
+    list.parentNode.insertBefore(divider, list);
+
+    const gh = document.createElement('div');
+    gh.className = 'group-header';
+    gh.textContent = '양도소득세';
+    list.parentNode.insertBefore(gh, list);
+
+    // 새 card-list 시작
+    const newList = document.createElement('div');
+    newList.className = 'card-list';
+    list.parentNode.insertBefore(newList, list.nextSibling);
+    // 이후 카드는 newList에 추가
+    list.parentNode._yangdoseList = newList;
+    lastGroup = calc.group;
+  }
+
+  const targetList = (calc.group && list.parentNode._yangdoseList) ? list.parentNode._yangdoseList : list;
+
   const card = document.createElement('div');
   card.className = 'calc-card';
   card.innerHTML = `
@@ -243,7 +317,7 @@ CALCULATORS.forEach(calc => {
     }
     location.href = calc.link;
   });
-  list.appendChild(card);
+  targetList.appendChild(card);
 });
 
 function showToast(msg) {
