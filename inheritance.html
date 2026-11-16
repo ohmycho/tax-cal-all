@@ -675,10 +675,11 @@ details > div > div[style*="monospace"] { overflow-x: auto; -webkit-overflow-scr
       <div class="field">
         <label class="field-label">그 중 미성년 자녀(만 19세 미만)는?</label>
         <div class="num-row">
-          <input type="text" inputmode="numeric" pattern="[0-9]*" id="inp-minor" placeholder="0" maxlength="2" max="20" style="max-width:100px;font-size:26px;">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" id="inp-minor" placeholder="0" maxlength="2" max="20" style="max-width:100px;font-size:26px;" oninput="renderMinorAges()">
           <span>명</span>
         </div>
-        <div class="field-caption">미성년 자녀 1인당 (19-나이)×1,000만원 추가 공제</div>
+        <div class="field-caption">미성년 자녀 1인당 (19세 − 나이) × 1,000만원 추가 공제</div>
+        <div id="minor-ages"></div>
       </div>
     </div>
     <div class="feedback-bubble" id="fb-1"></div>
@@ -695,6 +696,14 @@ details > div > div[style*="monospace"] { overflow-x: auto; -webkit-overflow-scr
     <div class="wiz-title">주택 자산을<br>입력해 주세요</div>
     <div id="house-list"></div>
     <button class="add-btn" onclick="addHouse()">＋ 주택 추가</button>
+    <div class="field" style="margin-top:18px;">
+      <label class="field-label">주택을 가장 많이 상속받을 분(지분이 같으면 연장자)의 세대는 이 주택 말고 다른 주택이 없나요?</label>
+      <div style="display:flex; gap:12px;">
+        <button class="yn-btn" id="btn-hnh-y" onclick="setHeirNoHouse(true)"><strong>네, 없어요</strong></button>
+        <button class="yn-btn" id="btn-hnh-n" onclick="setHeirNoHouse(false)"><strong>다른 주택 있어요</strong></button>
+      </div>
+      <div class="field-caption">상속으로 1가구 1주택이 되면 주택 취득세가 2.8% → 0.8%로 낮아져요 (지방세법 제15조).</div>
+    </div>
     <div class="feedback-bubble" id="fb-2"></div>
     <button class="wiz-primary-btn" onclick="goStep(3)">다음 단계 →</button>
   </div>
@@ -770,6 +779,16 @@ details > div > div[style*="monospace"] { overflow-x: auto; -webkit-overflow-scr
           <span>만원</span>
         </div>
         <div class="kor-preview" id="prev-debt"></div>
+        <div class="field-caption">채무 총액 (주택 담보대출 포함)</div>
+      </div>
+      <div class="field">
+        <label class="field-label">그중 은행 등 금융기관 대출은 얼마인가요?</label>
+        <div class="num-row">
+          <input type="text" inputmode="numeric" pattern="[0-9]*" class="price-input" id="inp-findebt" maxlength="9" placeholder="0"  oninput="kor(this,'prev-findebt')">
+          <span>만원</span>
+        </div>
+        <div class="kor-preview" id="prev-findebt"></div>
+        <div class="field-caption">금융재산 상속공제는 '금융재산 − 금융기관 채무' 기준으로 계산해요.</div>
       </div>
     </div>
     <div class="feedback-bubble" id="fb-5"></div>
@@ -1001,7 +1020,7 @@ function toggleDesc(id) {
 //  상태
 // ════════════════════════════════════════════
 var S = {
-  hasSpouse: null, childCount: 0, minorCount: 0,
+  hasSpouse: null, childCount: 0, minorCount: 0, minorAges: [], finDebt: 0, heirNoHouse: null,
   houses: [], nhouses: [],
   finance: 0, insurance: 0, general: 0,
   hasDebt: null, debt: 0,
@@ -1149,6 +1168,24 @@ function setSpouse(val) {
   document.getElementById('btn-sp-n').classList.toggle('on', val === false);
   updateFeedback1();
 }
+function renderMinorAges() {
+  var n = Math.min(20, parseInt((document.getElementById('inp-minor')||{}).value) || 0);
+  var wrap = document.getElementById('minor-ages');
+  if (!wrap) return;
+  var prev = [];
+  wrap.querySelectorAll('input').forEach(function(el){ prev.push(el.value); });
+  var html = '';
+  for (var i = 0; i < n; i++) {
+    html += '<div class="num-row" style="margin-top:8px;"><span style="min-width:72px;font-size:14px;color:#4e5968;">미성년 ' + (i+1) + '</span>' +
+      '<input type="text" inputmode="numeric" pattern="[0-9]*" id="inp-mage' + i + '" maxlength="2" placeholder="나이" value="' + (prev[i]||'') + '" style="max-width:100px;font-size:20px;" oninput="this.value=this.value.replace(/[^0-9]/g,\'\')"><span>세</span></div>';
+  }
+  wrap.innerHTML = html;
+}
+function setHeirNoHouse(val) {
+  S.heirNoHouse = val;
+  document.getElementById('btn-hnh-y').classList.toggle('on', val === true);
+  document.getElementById('btn-hnh-n').classList.toggle('on', val === false);
+}
 function onChildChange(val) {
   S.childCount = parseInt(val) || 0;
   document.getElementById('minor-wrap').style.display = S.childCount > 0 ? 'block' : 'none';
@@ -1180,7 +1217,9 @@ function addHouse() {
     '<div class="asset-card-title">🏠 주택 ' + (document.querySelectorAll('#house-list .asset-card').length + 1) + '</div>' +
     '<input type="text" class="text-input" id="hname-' + i + '" placeholder="물건명 (예: 은마아파트)">' +
     '<div class="num-row"><input type="text" inputmode="numeric" pattern="[0-9]*" class="price-input" style="font-size:18px;padding:14px 16px;" id="hval-' + i + '" placeholder="평가액" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');kor(this,\'prev-h' + i + '\');updateHouseFeedback()"><span>만원</span></div>' +
-    '<div class="kor-preview" id="prev-h' + i + '"></div>';
+    '<div class="kor-preview" id="prev-h' + i + '"></div>' +
+    '<div class="num-row" style="margin-top:8px;"><input type="text" inputmode="numeric" pattern="[0-9]*" class="price-input" style="font-size:16px;padding:12px 16px;" id="hdebt-' + i + '" placeholder="이 주택 담보대출 (없으면 비워두세요)" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');kor(this,\'prev-hd' + i + '\')"><span>만원</span></div>' +
+    '<div class="kor-preview" id="prev-hd' + i + '"></div>';
   document.getElementById('house-list').appendChild(div);
 }
 function updateHouseFeedback() {
@@ -1379,11 +1418,19 @@ function setSpouseHouse(val) {
 function collectAll() {
   S.childCount  = v('inp-child');
   S.minorCount  = v('inp-minor');
+  S.minorAges = [];
+  S.minorAgeAssumed = false;
+  for (var mi = 0; mi < S.minorCount; mi++) {
+    var ageEl = document.getElementById('inp-mage' + mi);
+    var ageVal = ageEl && ageEl.value !== '' ? parseInt(ageEl.value) : NaN;
+    if (isNaN(ageVal)) { ageVal = 15; S.minorAgeAssumed = true; } // 나이 미입력 시 만 15세로 가정
+    S.minorAges.push(Math.max(0, Math.min(18, ageVal)));
+  }
   S.houses = [];
   document.querySelectorAll('#house-list .asset-card').forEach(function(el) {
     var id = el.id.replace('house-','');
     var val = v('hval-'+id);
-    if (val > 0) S.houses.push({ name: (document.getElementById('hname-'+id)||{}).value||'', value: val });
+    if (val > 0) S.houses.push({ name: (document.getElementById('hname-'+id)||{}).value||'', value: val, securedDebt: Math.min(val, v('hdebt-'+id)) });
   });
   S.nhouses = [];
   document.querySelectorAll('#nhouse-list .asset-card').forEach(function(el) {
@@ -1400,6 +1447,10 @@ function collectAll() {
   S.insurance = v('inp-insurance');
   S.general   = v('inp-general');
   S.debt      = S.hasDebt ? v('inp-debt') : 0;
+  S.finDebt   = S.hasDebt ? v('inp-findebt') : 0;
+  // 주택 담보대출·금융기관 대출은 채무 총액의 일부 → 총액이 더 작게 입력되면 총액을 맞춰 줌
+  var securedSum = S.houses.reduce(function(s,hh){ return s + (hh.securedDebt||0); }, 0);
+  S.debt = Math.max(S.debt, S.finDebt, securedSum);
   S.priorSpouse = (S.hasSpouse && S.hasPrior) ? v('inp-ps') : 0;
   S.priorChildren = [];
   for (var i = 0; i < S.childCount; i++) {
@@ -1450,7 +1501,11 @@ function computeInheritance(mode) {
   var n = S.childCount;
   var spouseRatio = (S.hasSpouse && n > 0) ? 1.5 / (n + 1.5) : (S.hasSpouse ? 1 : 0);
   // 법정지분 기준 배우자 상속액 (사전증여 차감) — 배우자공제 한도 계산의 기준값
-  var spouseLegal = S.hasSpouse ? Math.max(0, taxableBase * spouseRatio - S.priorSpouse) : 0;
+  // 배우자공제 한도 (상증세법 제19조①): (상속재산가액 × 법정상속분) − 배우자 사전증여재산의 증여세 과세표준
+  var priorSpouseGiftTaxBase = Math.max(0, S.priorSpouse - 60000);
+  var spouseLegal = S.hasSpouse ? Math.max(0, taxableBase * spouseRatio - priorSpouseGiftTaxBase) : 0;
+  // 법정지분대로 나눌 때 배우자가 실제로 받는 상속재산 (사전증여는 이미 받은 재산이라 제외)
+  var spouseActualLegal = S.hasSpouse ? Math.max(0, netAsset * spouseRatio) : 0;
 
   // ── 동거주택 상속공제 실질 자격 판정 (상증세법 제23조의2) ──
   // 요건: ①무주택 동거 직계비속(자녀)이 ②10년 이상 계속 동거 ③그 10년간 1세대1주택 유지 + 그 자녀가 상속
@@ -1467,12 +1522,17 @@ function computeInheritance(mode) {
   var primaryHouse = null;
   S.houses.forEach(function(h){ if (!primaryHouse || h.value > primaryHouse.value) primaryHouse = h; });
   var primaryHouseVal = primaryHouse ? primaryHouse.value : 0;
+  // 동거주택 상속공제 (상증세법 제23조의2): 주택가액 − 해당 주택에 담보된 피상속인 채무, 최대 6억
+  var primaryHouseDebt = primaryHouse ? Math.min(primaryHouseVal, primaryHouse.securedDebt || 0) : 0;
+  var houseNetRatio = primaryHouseVal > 0 ? (primaryHouseVal - primaryHouseDebt) / primaryHouseVal : 0;
+  var cohouseMaxDeduct = Math.min(60000, primaryHouseVal - primaryHouseDebt);
   var otherHouseVal = hT - primaryHouseVal;
 
   // 자격 자녀가 주택을 "공동지분"으로 상속받아도 되는지 여부
   // 국세청 해석상 동거주택 상속공제는 자격을 갖춘 상속인의 "지분 상당액"에 대해 적용되므로
   // 자격 자녀가 100% 단독 상속받을 필요는 없고, 그 지분가액이 아래 최소 지분만 넘으면 6억 한도를 그대로 확보함.
-  var cohouseMinShare = cohouseEligible ? Math.min(primaryHouseVal, 60000) : 0;
+  // 공제 한도(최대 6억)를 다 받기 위해 자격 자녀가 가져야 하는 주택 지분가액
+  var cohouseMinShare = (cohouseEligible && houseNetRatio > 0) ? Math.min(primaryHouseVal, Math.ceil(cohouseMaxDeduct / houseNetRatio)) : 0;
   // 주택가액이 6억을 초과해 "남는 지분"이 있으면, 그 남는 지분은 자격 없는 형제자매에게 배분해도 공제에 영향 없음
   var cohouseCanSplit = cohouseEligible && primaryHouseVal > cohouseMinShare;
   var cohouseMinSharePct = primaryHouseVal > 0 ? Math.ceil((cohouseMinShare / primaryHouseVal) * 100) : 0;
@@ -1483,7 +1543,8 @@ function computeInheritance(mode) {
   var basicDeduct = 20000;
   var personalDeduct = 0;
   if (S.childCount > 0) personalDeduct += S.childCount * 5000;
-  if (S.minorCount > 0) personalDeduct += S.minorCount * 4000;
+  // 미성년자공제 (상증세법 제20조): 1,000만원 × 19세까지 남은 연수
+  (S.minorAges || []).forEach(function(age){ personalDeduct += Math.max(0, 19 - age) * 1000; });
   var lumpDeduct = 50000;
   var baseAndPersonal = basicDeduct + personalDeduct;
   var chosenDeduct, chosenLabel;
@@ -1498,7 +1559,7 @@ function computeInheritance(mode) {
   }
 
   // 금융재산공제 (상증세법 제22조)
-  var netFinWon = Math.max(0, toWon(S.finance));
+  var netFinWon = Math.max(0, toWon(S.finance - (S.finDebt || 0)));
   var financeDeductWon = 0;
   if (netFinWon <= 20000000) {
     financeDeductWon = netFinWon;
@@ -1513,7 +1574,8 @@ function computeInheritance(mode) {
   var priorSpouseTaxBase = Math.max(0, S.priorSpouse - 60000);
   var priorChildTaxBase  = S.priorChildren.reduce(function(s,c){ return s + Math.max(0, c.amount - 5000); }, 0);
   var priorTaxBase = priorSpouseTaxBase + priorChildTaxBase;
-  var deductLimit = Math.max(0, netAsset - (taxableBase > 50000 ? priorTaxBase : 0));
+  // 상속공제 종합한도 (상증세법 제24조): 상속세 과세가액 − (과세가액 5억 초과 시) 가산한 증여재산의 과세표준
+  var deductLimit = Math.max(0, taxableBase - (taxableBase > 50000 ? priorTaxBase : 0));
 
   // 배우자공제·동거주택공제 조합에 따른 최종세액 산출 헬퍼
   function evalPlan(spouseDeductIn, cohouseDeductIn) {
@@ -1536,12 +1598,10 @@ function computeInheritance(mode) {
   if (mode === 'legal') {
     // 법정분할: 배우자 실제 상속액 = 법정지분액 그대로
     if (S.hasSpouse) {
-      spouseDeduct = Math.max(Math.min(spouseLegal, spouseLegal, 300000), 50000);
+      spouseDeduct = Math.max(Math.min(spouseActualLegal, spouseLegal, 300000), 50000);
     }
     if (cohouseEligible && primaryHouseVal > 0) {
-      var totalAssetWon0 = toWon(grossAsset);
-      var houseDebtPortion0 = totalAssetWon0 > 0 ? toWon(hT) * (toWon(debt) / totalAssetWon0) : 0;
-      var houseNetValueWon0 = Math.max(0, toWon(hT) - houseDebtPortion0);
+      var houseNetValueWon0 = Math.max(0, toWon(primaryHouseVal - primaryHouseDebt));
       // 동거주택공제는 "공제 자격을 갖춘 자녀"의 실제 지분가액에만 적용된다(비자격 형제자매 지분은 제외).
       // 법정지분상속에서는 자녀 각자가 1/(n+1.5)(배우자 있음) 또는 1/n(배우자 없음)씩 균등 지분을
       // 갖게 되므로, 자격 자녀가 여러 명이면 그 인원수만큼만 비례해서 합산한다.
@@ -1550,7 +1610,7 @@ function computeInheritance(mode) {
         ? qualCountLegal / (S.childCount + 1.5)
         : (S.childCount > 0 ? qualCountLegal / S.childCount : 1.0);
       var childHouseShareWon0 = houseNetValueWon0 * childShareRatioLegal;
-      cohouseDeduct = Math.round(Math.min(childHouseShareWon0, 600000000) / 10000);
+      cohouseDeduct = Math.round(Math.min(childHouseShareWon0, toWon(cohouseMaxDeduct)) / 10000);
     }
     plan = evalPlan(spouseDeduct, cohouseDeduct);
   } else {
@@ -1572,9 +1632,9 @@ function computeInheritance(mode) {
       // 배우자도 없고 공제 대상도 아닌 잔여 지분(비자격 상속인 협의 대상)
       var remainderShare = Math.max(0, primaryHouseVal - childHouseShare - spouseHouseShare);
       var spousePoolAssets = spouseHouseShare + otherHouseVal + nT + S.finance + S.insurance + S.general;
-      var spouseActual = Math.max(0, spousePoolAssets - debt - funeral - S.priorSpouse);
+      var spouseActual = Math.max(0, spousePoolAssets - debt - funeral);
       var sd = S.hasSpouse ? Math.max(Math.min(spouseActual, spouseLegal, 300000), 50000) : 0;
-      var cd = (cohouseEligible && primaryHouseVal > 0) ? Math.round(Math.min(childHouseShare, 60000)) : 0;
+      var cd = (cohouseEligible && primaryHouseVal > 0) ? Math.round(Math.min(childHouseShare * houseNetRatio, cohouseMaxDeduct)) : 0;
       var pl = evalPlan(sd, cd);
       var childPoolAssets = Math.max(0, grossAsset - (S.hasSpouse ? spousePoolAssets : 0));
       return {
@@ -1595,7 +1655,7 @@ function computeInheritance(mode) {
     if (cohouseEligible && primaryHouseVal > 0) {
       var spouseHouseShareSkip = S.hasSpouse ? primaryHouseVal : 0;
       var spousePoolAssetsSkip = spouseHouseShareSkip + otherHouseVal + nT + S.finance + S.insurance + S.general;
-      var spouseActualSkip = Math.max(0, spousePoolAssetsSkip - debt - funeral - S.priorSpouse);
+      var spouseActualSkip = Math.max(0, spousePoolAssetsSkip - debt - funeral);
       var sdSkip = S.hasSpouse ? Math.max(Math.min(spouseActualSkip, spouseLegal, 300000), 50000) : 0;
       var planSkip = evalPlan(sdSkip, 0);
       cohouseCompare = {
@@ -1612,25 +1672,26 @@ function computeInheritance(mode) {
   var totalDeduct = plan.totalDeduct, taxStandard = plan.taxStandard, grossTax = plan.grossTax,
       reportDeduct = plan.reportDeduct, priorTaxPaid = plan.priorTaxPaid, finalTax = plan.finalTax;
 
-  // 취득세 (동거주택공제를 실제로 활용하는 협의분할 시나리오에 한해 무주택 상속인 특례세율 0.8% 가정)
+  // 상속 취득세 (지방세법 제11조①1호 2.8%, 제15조① 상속 1가구 1주택 특례 2.8%−2% = 0.8%)
+  // 지방교육세 0.16% 포함, 농어촌특별세 0.2%(일반)·특례 시 비과세 → 특례 0.96% / 일반 3.16%
   var acquisitionTax = 0;
   var acqDetails = [];
-  var houseGetsSpecialRate = mode === 'optimal' && cohouseDeduct > 0;
+  var houseGetsSpecialRate = S.houses.length === 1 && S.heirNoHouse === true;
   if (hT > 0) {
     if (houseGetsSpecialRate) {
-      var hTax = Math.round(toWon(hT) * 0.008);
+      var hTax = Math.round(toWon(hT) * 0.0096);
       acquisitionTax += hTax;
-      acqDetails.push({ name: '주택 (무주택 특례 0.8%)', value: hT, rate: '0.8%', tax: hTax / 10000 });
+      acqDetails.push({ name: '주택 (상속 1가구 1주택 특례)', value: hT, rate: '0.96%', special: true, tax: hTax / 10000 });
     } else {
-      var hTax2 = Math.round(toWon(hT) * 0.028);
+      var hTax2 = Math.round(toWon(hT) * 0.0316);
       acquisitionTax += hTax2;
-      acqDetails.push({ name: '주택', value: hT, rate: '2.8%', tax: hTax2 / 10000 });
+      acqDetails.push({ name: '주택', value: hT, rate: '3.16%', special: false, tax: hTax2 / 10000 });
     }
   }
   if (nT > 0) {
-    var nTax = Math.round(toWon(nT) * 0.028);
+    var nTax = Math.round(toWon(nT) * 0.0316);
     acquisitionTax += nTax;
-    acqDetails.push({ name: '주택 외 부동산', value: nT, rate: '2.8%', tax: nTax / 10000 });
+    acqDetails.push({ name: '주택 외 부동산', value: nT, rate: '3.16%', special: false, tax: nTax / 10000 });
   }
 
   return {
@@ -1641,7 +1702,8 @@ function computeInheritance(mode) {
     acqDetails, totalDeposit, totalRent,
     hT, nT, primaryHouse, primaryHouseVal, otherHouseVal,
     cohouseEligible, cohouseRisk, allocation, cohouseCompare,
-    cohouseMinShare, cohouseCanSplit, cohouseMinSharePct
+    cohouseMinShare, cohouseCanSplit, cohouseMinSharePct, cohouseMaxDeduct, primaryHouseDebt,
+    financeNet: Math.max(0, S.finance - (S.finDebt || 0))
   };
 }
 
@@ -1913,8 +1975,8 @@ function generateReportHTML(type) {
     }
     rows2 += '<tr><td>동거주택 상속공제</td><td>' + formatKor(r.cohouseDeduct) + '</td><td>' + cohouseNote + '</td></tr>';
   }
-  if (r.cohouseEligible && r.cohouseDeduct < r.cohouseMinShare) {
-    rows2 += '<tr style="background:#fff8e1"><td colspan="2">⚠️ 동거주택공제 누수액</td><td style="color:#92400e;font-weight:700;">△' + formatKor(r.cohouseMinShare - r.cohouseDeduct) + ' 손실</td></tr>';
+  if (r.cohouseEligible && r.cohouseDeduct < r.cohouseMaxDeduct) {
+    rows2 += '<tr style="background:#fff8e1"><td colspan="2">⚠️ 동거주택공제 누수액</td><td style="color:#92400e;font-weight:700;">△' + formatKor(r.cohouseMaxDeduct - r.cohouseDeduct) + ' 손실</td></tr>';
   }
   rows2 += '<tr style="' + highlightRow() + '"><td><strong>공제 합계 (종합한도 적용 후)</strong></td><td><strong>' + formatKor(r.totalDeduct) + '</strong></td><td></td></tr>';
   html += tbl(['공제 항목','공제액','비고'], rows2);
@@ -1961,7 +2023,7 @@ function generateReportHTML(type) {
     html += '<div style="padding:14px;font-size:13px;line-height:2.2;border-top:1px solid #eee;"><div style="font-family:monospace;background:#fff;border-radius:8px;padding:12px;border:1px solid #eee;">';
     r.acqDetails.forEach(function(a) {
       html += a.name + '<br>= ' + formatKor(a.value) + ' × ' + a.rate + ' = <strong>' + formatKor(Math.round(a.tax)) + '</strong><br>';
-      if (a.rate === '0.8%') html += '   ※ 무주택 자녀 특례 — 일반세율 2.8% 대비 ' + formatKor(Math.round(a.value * 0.02)) + ' 절감<br>';
+      if (a.special) html += '   ※ 상속 1가구 1주택 특례 — 일반 3.16% 대비 ' + formatKor(Math.round(a.value * 0.022)) + ' 절감<br>';
       html += '<br>';
     });
     html += '취득세 합계 = <strong>' + formatKor(Math.round(r.acquisitionTax)) + '</strong></div></div></details>';
@@ -1984,7 +2046,7 @@ function generateReportHTML(type) {
     html += '<div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:12px;padding:16px;margin:12px 0;">';
     html += '<div style="font-size:14px;font-weight:700;color:#dc2626;margin-bottom:8px;">⚠️ 법정지분상속의 세무적 리스크</div>';
     html += '<ul style="font-size:13px;color:#7f1d1d;line-height:2;padding-left:18px;">';
-    if (r.cohouseEligible) html += '<li>동거주택공제 <strong>' + formatKor(r.cohouseDeduct) + '</strong>만 적용 (' + formatKor(60000 - r.cohouseDeduct) + ' 누수)</li>';
+    if (r.cohouseEligible && r.cohouseDeduct < r.cohouseMaxDeduct) html += '<li>동거주택공제 <strong>' + formatKor(r.cohouseDeduct) + '</strong>만 적용 (' + formatKor(r.cohouseMaxDeduct - r.cohouseDeduct) + ' 누수)</li>';
     if (S.hasSpouse) {
       html += '<li>배우자·자녀 지분 혼재로 향후 처분 시 전원 합의 필요</li>';
     } else if (n > 1) {
@@ -1998,16 +2060,15 @@ function generateReportHTML(type) {
   html += h2('3. 취득세 계산');
   var rows3 = '';
   r.acqDetails.forEach(function(a) {
-    var note = a.rate === '0.8%' ? '✅ 무주택 특례' : (type==='A' && a.name.includes('주택') ? '⚠️ 특례 미적용' : '');
+    var note = a.special ? '✅ 1가구 1주택 특례' : '';
     rows3 += '<tr><td>' + a.name + '</td><td>' + formatKor(a.value) + '</td><td>' + a.rate + '</td><td>' + formatKor(Math.round(a.tax)) + '</td><td>' + note + '</td></tr>';
   });
   rows3 += '<tr style="' + highlightRow() + '"><td colspan="3"><strong>취득세 합계</strong></td><td><strong>' + formatKor(Math.round(r.acquisitionTax)) + '</strong></td><td></td></tr>';
   html += tbl(['자산','평가액','세율','취득세','비고'], rows3);
-  if (type === 'A' && r.cohouseEligible) {
-    var normalTax = Math.round(r.hT * 0.028);
-    var specialTax = Math.round(r.hT * 0.008);
-    html += '<div style="font-size:13px;color:#92400e;background:#fff8e1;border-radius:10px;padding:10px 14px;margin-top:8px;">⚠️ 무주택 특례(0.8%) 미적용 시 취득세 ' + formatKor(normalTax) + ' — 협의분할 시 ' + formatKor(normalTax - specialTax) + ' 추가 절감 가능</div>';
+  if (S.houses.length === 1 && S.heirNoHouse !== true) {
+    html += '<div style="font-size:13px;color:#92400e;background:#fff8e1;border-radius:10px;padding:10px 14px;margin-top:8px;">ℹ️ 주택을 가장 많이 상속받는 분의 세대가 상속 후 1가구 1주택이 되면 취득세가 0.96%(지방교육세 포함)로 낮아져요. 해당 여부는 주택 단계에서 선택해 주세요.</div>';
   }
+  html += '<div style="font-size:12px;color:#8b95a1;margin-top:6px;">※ 일반 3.16% = 취득세 2.8% + 지방교육세 0.16% + 농어촌특별세 0.2% (전용 85㎡ 이하 주택은 농어촌특별세 비과세)</div>';
 
   // ── 4. 실전 집행 가이드
   html += h2('4. 실전 집행 가이드');
@@ -2123,11 +2184,11 @@ function generateReportHTML(type) {
     html += '<div style="background:' + C.guide + ';border-radius:14px;padding:18px;margin-top:16px;color:#fff;font-size:13px;line-height:1.9;">';
     html += '<strong style="color:#fde68a;font-size:14px;display:block;margin-bottom:8px;">💡 AI 실전 절세 가이드</strong>';
     if (r.cohouseDeduct > 0 && type !== 'A') {
-      html += (r.cohouseDeduct >= r.cohouseMinShare)
+      html += (r.cohouseDeduct >= r.cohouseMaxDeduct)
         ? ('동거주택공제 <strong>' + formatKor(r.cohouseDeduct) + '</strong> — 무주택 동거 자녀 지분이 ' + r.cohouseMinSharePct + '% 이상만 유지되면 확보 (공동상속 가능)<br>')
-        : ('⚠️ 동거주택공제 <strong>' + formatKor(r.cohouseDeduct) + '</strong>만 적용 중 — 지분율을 ' + r.cohouseMinSharePct + '% 이상으로 높이면 최대 ' + formatKor(r.cohouseMinShare) + '까지 확보 가능<br>');
+        : ('⚠️ 동거주택공제 <strong>' + formatKor(r.cohouseDeduct) + '</strong>만 적용 중 — 지분율을 ' + r.cohouseMinSharePct + '% 이상으로 높이면 최대 ' + formatKor(r.cohouseMaxDeduct) + '까지 확보 가능<br>');
     }
-    if (type === 'A' && r.cohouseEligible) html += '⚠️ 법정분할 유지 시 동거주택공제 ' + formatKor(60000 - r.cohouseDeduct) + ' 누수 — 협의분할 전환 강력 권고<br>';
+    if (type === 'A' && r.cohouseEligible && r.cohouseDeduct < r.cohouseMaxDeduct) html += '⚠️ 법정분할 유지 시 동거주택공제 ' + formatKor(r.cohouseMaxDeduct - r.cohouseDeduct) + ' 누수 — 협의분할 전환 강력 권고<br>';
     html += '가치 상승 예상 자산을 우선 증여 — 증여 당시 가격으로 합산, 상승분 세금 완전 방어<br>';
     if (r.priorTotal > 0) html += '⚠️ 사전증여 ' + formatKor(r.priorTotal) + ' — 공제 종합한도 축소. 10년 이후 추가 증여 시 완전 제외';
     if (type === 'C' && bRent > 0) html += '<br>💰 월세 ' + formatKor(bRent) + ' → 자녀 귀속 전환 시 연 ' + formatKor(bRent*12) + ' 어머니 자산 증가 차단';
@@ -2153,11 +2214,13 @@ function generateReportHTML(type) {
   ], [
     '장례비용은 최소 공제액 500만원으로 가정 (실제 지출 증빙 시 최대 1,000만원 + 봉안시설 500만원)',
     '공과금 공제',
-    '미성년자공제는 1인당 4,000만원(만 15세 가정)으로 계산 — 실제는 (19세 − 나이) × 1,000만원',
+    '미성년 자녀 나이를 입력하지 않으면 만 15세(4,000만원 공제)로 가정',
+    '상속 취득세 특례의 1가구 1주택 세부 요건(지분 판정, 주택 수 산정 예외)',
     '연로자·장애인 공제 등 자녀·미성년자 외 인적공제',
     '재산 평가(시가·감정가·기준시가)의 세부 판단',
     '가업·영농상속공제, 연부연납·물납',
-    '사전증여재산의 실제 납부세액 (과세표준 기준으로 추정)'
+    '사전증여재산의 실제 납부세액 (과세표준 기준으로 추정)',
+    '배우자 사전증여의 증여세 과세표준은 배우자 증여재산공제 6억원만 반영해 추정'
   ]);
 
   return html;
@@ -2511,6 +2574,9 @@ function saveTemp() {
     hasSpouse: S.hasSpouse,
     childCount: S.childCount,
     minorCount: S.minorCount,
+    minorAges: S.minorAges,
+    finDebt: S.finDebt,
+    heirNoHouse: S.heirNoHouse,
     houses: S.houses,
     nhouses: S.nhouses,
     finance: S.finance,
@@ -2553,11 +2619,14 @@ function loadTemp() {
     }
     if (d.minorCount !== undefined) {
       var mi = document.getElementById('inp-minor');
-      if (mi) mi.value = d.minorCount;
+      if (mi) { mi.value = d.minorCount; renderMinorAges(); }
+      (d.minorAges || []).forEach(function(age, k){ var el = document.getElementById('inp-mage' + k); if (el) el.value = age; });
     }
+    if (d.heirNoHouse !== null && d.heirNoHouse !== undefined) setHeirNoHouse(d.heirNoHouse);
     // 부채
     if (d.hasDebt !== null && d.hasDebt !== undefined) setDebtYN(d.hasDebt);
     if (d.debt) { var di = document.getElementById('inp-debt'); if (di) di.value = d.debt; }
+    if (d.finDebt) { var fdi = document.getElementById('inp-findebt'); if (fdi) fdi.value = d.finDebt; }
     // 사전증여
     if (d.hasPrior !== null && d.hasPrior !== undefined) setPriorYN(d.hasPrior);
     // 금융

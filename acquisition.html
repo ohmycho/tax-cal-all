@@ -416,12 +416,13 @@ function fmtPrev(mw) {
 }
 function pct(r) { return (r*100).toFixed(4).replace(/\.?0+$/,'')+'%'; }
 
-// 지방세법 제11조①8호: 6억 초과 9억 이하 = (취득가액×2/3억 − 3)×1/100, 소수점 이하 다섯째 자리에서 반올림
+// 지방세법 제11조①8호: 6억 초과 9억 이하 = (취득가액×2/3억 − 3)×1/100
+// 세율(%)을 소수점 이하 다섯째 자리에서 반올림해 넷째 자리까지 계산 (예: 7억 1.6667%, 8억 2.3333%)
 function normalHomeAcquisitionRate(price) {
   if (price <= 600000000) return 0.01;
   if (price <= 900000000) {
-    var rate = ((price * 2 / 300000000) - 3) / 100;
-    return Math.round(rate * 10000) / 10000;
+    var ratePct = Math.round(((price * 2 / 300000000) - 3) * 10000) / 10000;
+    return ratePct / 100;
   }
   return 0.03;
 }

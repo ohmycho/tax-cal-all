@@ -1155,7 +1155,12 @@ function taxSourceBox(basis, items, missing) {
       const taxBase = r.isExempt ? 0 : Math.max(0, baseSum - BASIC_DEDUCTION);
 
       // ── 세율 적용 (1세대1주택 — 다주택 중과 없음) ──
-      const nationalTax = r.isExempt ? 0 : calculateProgressiveCapitalGainsTax(taxBase);
+      // 주택 단기양도: 1년 미만 70%, 1년 이상 2년 미만 60% — 기본세율과 비교해 큰 세액 (소득세법 제104조①)
+      const shortRate = totalYears < 1 ? 0.70 : (totalYears < 2 ? 0.60 : 0);
+      const progressiveTax = calculateProgressiveCapitalGainsTax(taxBase);
+      const shortTermTax = taxBase * shortRate;
+      const useShortRate = !r.isExempt && shortRate > 0 && shortTermTax > progressiveTax;
+      const nationalTax = r.isExempt ? 0 : Math.max(progressiveTax, shortTermTax);
       const capitalGainsTaxFinal = r.isExempt ? 0 : nationalTax;
       const localTaxFinal = capitalGainsTaxFinal * 0.1;
       const totalTaxFinal = capitalGainsTaxFinal + localTaxFinal;
@@ -1216,7 +1221,8 @@ function taxSourceBox(basis, items, missing) {
 
             "<br><br><span style='color:#4e5968;font-weight:700'>합산 과세표준</span>" +
             "<br>" + formatWon(r.baseExisting) + " + " + formatWon(r.baseAddPayment) + " - " + formatWon(BASIC_DEDUCTION) + " (기본공제)" +
-            " = <strong style='color:#191f28'>" + formatWon(taxBase) + "</strong>";
+            " = <strong style='color:#191f28'>" + formatWon(taxBase) + "</strong>" +
+            (useShortRate ? "<br><br><span style='color:#f04452;font-weight:700'>단기양도 세율 적용</span><br>보유 " + formatPeriod(totalYears) + " → " + Math.round(shortRate * 100) + "% (기본세율 " + formatWon(progressiveTax) + "보다 큼)" : "");
         }
       }
 
@@ -1228,9 +1234,9 @@ function taxSourceBox(basis, items, missing) {
 
       $("housePill").textContent =
         houseCountRaw === "1temp" ? "1세대1주택(일시적2주택)" : "1세대1주택";
-      $("methodPill").textContent = hasApproval
+      $("methodPill").textContent = (hasApproval
         ? "기존주택분/분담금분 분리 계산"
-        : "일반 양도 (인가정보 없음)";
+        : "일반 양도 (인가정보 없음)") + (useShortRate ? " · 단기세율 " + Math.round(shortRate * 100) + "%" : "");
 
       // ── 비과세 안내 / 양도차익 분리 산출 내역 ──
       const badge = $("regulated-badge");
