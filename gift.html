@@ -187,6 +187,23 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .pr-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #E5E8EB; font-size: 12px; color: #8B95A1; line-height: 1.6; }
 .hidden { display: none !important; }
 
+
+/* ── 계산 근거 및 출처 ── */
+.tsrc { background:#fff; border:1px solid #e5e8eb; border-radius:14px; margin:12px 0; padding:0 16px; font-size:13px; color:#4e5968; line-height:1.65; text-align:left; }
+.tsrc summary { cursor:pointer; padding:14px 0; font-weight:700; color:#191f28; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+.tsrc summary::-webkit-details-marker { display:none; }
+.tsrc summary::after { content:'펼치기'; font-size:12px; font-weight:500; color:#8b95a1; }
+.tsrc[open] summary::after { content:'접기'; }
+.tsrc-body { padding:0 0 14px; border-top:1px solid #f2f4f6; }
+.tsrc-basis { margin:12px 0 10px; font-size:12px; color:#4e5968; }
+.tsrc-basis b { color:#191f28; }
+.tsrc-list { margin:0; padding:0; list-style:none; }
+.tsrc-list li { padding:8px 0; border-bottom:1px solid #f2f4f6; }
+.tsrc-list a { color:#3182f6; font-weight:600; text-decoration:none; word-break:keep-all; }
+.tsrc-list small { display:block; color:#8b95a1; font-size:11px; }
+.tsrc-miss { margin-top:10px; background:#fff8e6; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a5a00; }
+.tsrc-miss ul { margin:4px 0 0; padding-left:16px; }
+.tsrc-disc { margin-top:10px; background:#f2f4f6; border-radius:10px; padding:10px 12px; font-size:12px; color:#6b7684; }
 </style>
 </head>
 <body>
@@ -231,6 +248,10 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
     <div id="wiz-step-g1" class="wiz-step" style="padding-top:72px">
       <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
       <h1 class="header-title">누구에게<br>증여하시나요?</h1>
+      <div class="wiz-guide-banner">
+        <span class="guide-emoji">👥</span><strong>증여자(주는 사람)와 받는 사람의 관계</strong><br>
+        관계에 따라 증여재산공제 한도가 달라져요. 받는 사람 기준으로 선택해 주세요.
+      </div>
       <div class="choice-list">
         <button type="button" class="choice-btn" onclick="giftSetTarget('spouse','spouse')">
           <span class="icon">💑</span><div class="info"><strong>배우자</strong><small>최대 6억원까지 공제 (10년 누계)</small></div>
@@ -254,7 +275,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
     <div id="wiz-step-g2" class="wiz-step" style="padding-top:72px">
       <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
       <div class="wiz-context-bar" id="ctx-g2"></div>
-      <h1 class="header-title">수증자가<br>미성년자인가요?</h1>
+      <h1 class="header-title">받는 사람이<br>미성년자인가요?</h1>
       <div class="wiz-guide-banner">
         <span class="guide-emoji">🎂</span><strong>나이에 따라 공제한도가 달라요</strong><br>
         성인(만 19세 이상)은 5천만원, 미성년자는 2천만원까지 공제됩니다 (10년 누계 기준)
@@ -294,7 +315,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
     <div id="wiz-step-g4" class="wiz-step" style="padding-top:72px">
       <button type="button" class="wiz-back" onclick="wizBack()">← 이전으로</button>
       <div class="wiz-context-bar" id="ctx-g4"></div>
-      <h1 class="header-title">수증자가 떠안는<br>빚(채무)이 있나요?</h1>
+      <h1 class="header-title">받는 사람이 떠안는<br>빚(채무)이 있나요?</h1>
       <div class="wiz-guide-banner">
         <span class="guide-emoji">💳</span><strong>부담부증여</strong><br>
         대출 낀 부동산 증여 시 채무액은 과세가액에서 차감돼요. 단, 증여자에게 양도세가 발생할 수 있어요.
@@ -313,7 +334,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
       <div class="field">
         <div class="num-row"><input type="number" id="gift-debt" placeholder="0" min="0" oninput="giftSubPreview(this,'gift-debt-prev')"><span>만원</span></div>
         <div id="gift-debt-prev" class="korean-price-preview"></div>
-        <div class="field-caption">전세보증금·금융권 대출 등 수증자가 인수하는 채무 총액</div>
+        <div class="field-caption">전세보증금·금융권 대출 등 받는 사람이 인수하는 채무 총액</div>
       </div>
       <button type="button" class="wiz-primary-btn" onclick="giftWizGo('g6')">다음 단계 →</button>
     </div>
@@ -361,12 +382,23 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
       <h1 class="header-title">최근 10년 내<br>같은 분께 준 적 있나요?</h1>
       <div class="wiz-guide-banner">
         <span class="guide-emoji">📅</span><strong>10년 합산 과세</strong><br>
-        같은 수증자에게 10년 내 증여한 금액은 합산해서 세금을 계산해요. 0이면 그냥 두세요.
+        같은 분(부모처럼 배우자 관계인 증여자는 한 사람으로 봄)에게 10년 내 증여한 금액은 합산해서 세금을 계산해요. 없으면 0으로 두세요.
       </div>
       <div class="field">
+        <label style="display:block;font-size:14px;font-weight:600;color:#4e5968;margin-bottom:8px;">최근 10년 내 같은 분께 증여한 금액</label>
         <div class="num-row"><input type="number" id="gift-prior" placeholder="0" min="0" oninput="giftSubPreview(this,'gift-prior-prev')"><span>만원</span></div>
         <div id="gift-prior-prev" class="korean-price-preview"></div>
       </div>
+      <div class="field">
+        <label style="display:block;font-size:14px;font-weight:600;color:#4e5968;margin-bottom:8px;">그때 이미 사용한 증여재산공제액 <span style="font-weight:400;color:#8b95a1">(모르면 비워두세요)</span></label>
+        <div class="num-row"><input type="number" id="gift-prior-deduct" placeholder="자동 추정" min="0" oninput="giftSubPreview(this,'gift-prior-deduct-prev')"><span>만원</span></div>
+        <div id="gift-prior-deduct-prev" class="korean-price-preview"></div>
+        <div class="field-caption" style="font-size:12px;color:#8b95a1;margin-top:6px;">비워두면 관계별 공제 한도 내에서 모두 사용한 것으로 계산해요.</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:10px;background:#f2f4f6;border-radius:14px;padding:14px 16px;margin:4px 0 16px;cursor:pointer;font-size:14px;color:#191f28;">
+        <input type="checkbox" id="gift-ontime" checked style="width:20px;height:20px;accent-color:#3182f6;">
+        <span><strong>신고기한 내에 신고할 예정이에요</strong><br><small style="color:#8b95a1">증여일이 속한 달 말일부터 3개월 이내 · 신고세액공제 3% 적용</small></span>
+      </label>
       <button type="button" class="wiz-primary-btn" onclick="doGiftCalculate()">✨ 증여세 계산하기</button>
     </div>
 
@@ -381,6 +413,23 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 </div>
 
 <script>
+// ── 계산 근거 및 출처 (확인 기준일 2026-11-16) ──
+var TAX_CHECKED_DATE = '2026년 11월 16일';
+var TAX_DISCLAIMER = '본 계산은 입력값을 기준으로 산출한 참고용 예상액입니다. 실제 세액은 재산 평가, 주택 수 산정 예외, 감면, 세액공제 및 신고 시점 등에 따라 달라질 수 있습니다. 최종 세액은 세무사 또는 관할 기관에 확인해 주세요.';
+function taxSourceBox(basis, items, missing) {
+  var li = items.map(function(it){
+    return '<li><a href="'+it.url+'" target="_blank" rel="noopener noreferrer">'+it.label+' ↗</a><small>'+it.org+' · 확인 기준일 '+TAX_CHECKED_DATE+'</small></li>';
+  }).join('');
+  var miss = (missing && missing.length)
+    ? '<div class="tsrc-miss"><b>계산에 포함되지 않은 사항</b><ul>'+missing.map(function(m){return '<li>'+m+'</li>';}).join('')+'</ul></div>'
+    : '';
+  return '<details class="tsrc"><summary>계산 근거 및 출처</summary><div class="tsrc-body">'+
+    '<div class="tsrc-basis">계산 기준: <b>'+basis+'</b><br>확인 기준일: '+TAX_CHECKED_DATE+'</div>'+
+    '<ul class="tsrc-list">'+li+'</ul>'+miss+
+    '<div class="tsrc-disc">'+TAX_DISCLAIMER+'</div>'+
+    '</div></details>';
+}
+
 var BR = [{lim:10000,rate:0.10,ded:0},{lim:50000,rate:0.20,ded:1000},
           {lim:100000,rate:0.30,ded:6000},{lim:300000,rate:0.40,ded:16000},
           {lim:Infinity,rate:0.50,ded:46000}];
@@ -444,7 +493,7 @@ function downloadPDF(){
   // ① PDF 전용 클래스 적용 (scrollY 버그 방지 핵심)
   el.classList.add('pdf-export-mode');
 
-  var filename = 'AI상속세리포트_' + (userData.displayName||'고객') + '_' +
+  var filename = 'AI증여세리포트_' + (userData.displayName||'고객') + '_' +
     new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'') + '.pdf';
 
   var opt = {
@@ -505,7 +554,7 @@ function sharePDF(){
   var el = document.getElementById('pdf-report-template');
   el.classList.add('pdf-export-mode'); // scrollY 버그 방지
 
-  var filename = 'AI상속세리포트_' + (userData.displayName||'고객') + '_' +
+  var filename = 'AI증여세리포트_' + (userData.displayName||'고객') + '_' +
     new Date().toLocaleDateString('ko-KR').replace(/\./g,'').replace(/ /g,'') + '.pdf';
 
   var opt = {
@@ -523,9 +572,9 @@ function sharePDF(){
     var file = new File([blob], filename, { type:'application/pdf' });
 
     if(navigator.canShare && navigator.canShare({ files:[file] })){
-      navigator.share({ title:'AI 상속세 분석 리포트', text:'맞춤형 상속세 절세 리포트', files:[file] }).catch(function(){});
+      navigator.share({ title:'AI 증여세 분석 리포트', text:'맞춤형 증여세 절세 리포트', files:[file] }).catch(function(){});
     } else if(navigator.share){
-      navigator.share({ title:'AI 상속세 분석 리포트', url:window.location.href }).catch(function(){});
+      navigator.share({ title:'AI 증여세 분석 리포트', url:window.location.href }).catch(function(){});
     } else {
       var url = URL.createObjectURL(blob);
       var a = document.createElement('a'); a.href=url; a.download=filename;
@@ -541,7 +590,7 @@ function sharePDF(){
 
 // ══ 증여세 상태 ══
 
-var userData = { type:"gift", target:"", relation:"", isMinor:false, isGrand:false, isMarriage:false, priorMarriageDeduct:0, assetValue:0, debtAmount:0, priorGift:0, displayName:"" };
+var userData = { type:"gift", target:"", relation:"", isMinor:false, isGrand:false, isMarriage:false, priorMarriageDeduct:0, assetValue:0, debtAmount:0, priorGift:0, priorDeductUsed:null, onTime:true, displayName:"" };
 
 var wizStack = []; var wizScreen = 0;
 
@@ -554,7 +603,7 @@ function giftWizGo(n){
   });
   // 진행바 업데이트
   var GIFT_META = {
-    g1:{pct:14,name:'수증자 선택',    total:'1/6', msg:'증여세 플래너를 시작합니다! 누구에게 드릴지 선택해 주세요 🎁'},
+    g1:{pct:14,name:'관계 선택',    total:'1/6', msg:'증여세 플래너를 시작합니다! 누구에게 드릴지 선택해 주세요 🎁'},
     g2:{pct:28,name:'미성년 여부',    total:'2/6', msg:'공제 한도가 달라요. 나이를 확인해 드릴게요 🎂'},
     g3:{pct:42,name:'증여 금액 입력', total:'3/6', msg:'핵심 단계예요! 증여하실 금액을 입력해 주세요 💰'},
     g4:{pct:57,name:'채무 여부 확인', total:'4/6', msg:'부담부증여 여부를 확인해 드릴게요 💳'},
@@ -651,6 +700,10 @@ function doGiftCalculate(){
   userData.assetValue = parseInt(document.getElementById('gift-price').value)||0;
   userData.debtAmount = parseInt(document.getElementById('gift-debt') ? document.getElementById('gift-debt').value : 0)||0;
   userData.priorGift  = parseInt(document.getElementById('gift-prior') ? document.getElementById('gift-prior').value : 0)||0;
+  var pdEl = document.getElementById('gift-prior-deduct');
+  userData.priorDeductUsed = (pdEl && pdEl.value !== '') ? Math.max(0, parseInt(pdEl.value)||0) : null;
+  var otEl = document.getElementById('gift-ontime');
+  userData.onTime = otEl ? otEl.checked : true;
 
   document.getElementById('landing-screen').classList.add('hidden');
   document.getElementById('main-calc').classList.remove('hidden');
@@ -695,7 +748,10 @@ function calcGiftFromUserData(d){
 
   // 기납부세액(공제) 계산: 혼인·출산 공제는 이번 증여분에 한한 별도 한도이므로
   // 과거분 재계산에는 기본공제(baseLimit)만 반영한다.
-  var priorBase     = Math.max(0, prior - baseLimit);
+  var priorDeductUsed = (d.priorDeductUsed === null || d.priorDeductUsed === undefined)
+    ? Math.min(prior, baseLimit)
+    : Math.min(prior, d.priorDeductUsed);
+  var priorBase     = Math.max(0, prior - priorDeductUsed);
   var priorTax      = progTax(priorBase);
 
   var rawTax        = Math.max(0, totalTax.tax - priorTax.tax);
@@ -709,7 +765,8 @@ function calcGiftFromUserData(d){
     grandSurcharge = Math.round(rawTax * surchargeRate);
     rawTax += grandSurcharge;
   }
-  var discount      = Math.round(rawTax * 0.03);
+  // [상증세법 §69] 신고세액공제: 법정신고기한 내 신고 시 (산출세액+할증 − 기납부세액공제 등) × 3%
+  var discount      = d.onTime === false ? 0 : Math.round(rawTax * 0.03);
   var finalTax      = Math.max(0, rawTax - discount);
 
   return {
@@ -719,7 +776,9 @@ function calcGiftFromUserData(d){
     totalTax:totalTax, priorTaxPaid:priorTax.tax,
     rawTax:rawTax, grandSurcharge:grandSurcharge, surchargeRate:surchargeRate,
     discount:discount, finalTax:finalTax,
-    isMarriage:d.isMarriage, isGrand:d.isGrand
+    isMarriage:d.isMarriage, isGrand:d.isGrand,
+    priorDeductUsed:priorDeductUsed, priorDeductEstimated:(d.priorDeductUsed === null || d.priorDeductUsed === undefined),
+    onTime:d.onTime !== false
   };
 }
 
@@ -751,9 +810,9 @@ function renderGiftResult(r, d){
     row('(-) 증여재산공제', deductLabel+(marriageLabel?' '+marriageLabel:''), r.appliedDeduct, 'deduct')+
     totalBox('과세표준', r.totalBase, 'linear-gradient(135deg,#0F7A45,#059669)')+
     row('산출세액','세율 '+((r.totalTax.rate||0)*100).toFixed(0)+'%',r.totalTax.tax,'')+
-    (r.priorTaxPaid>0?row('(-) 기납부 증여세','과거 납부분 공제',r.priorTaxPaid,'deduct'):'')+
+    (r.priorTaxPaid>0?row('(-) 기납부세액 공제','과거 증여분 산출세액'+(r.priorDeductEstimated?' · 기사용 공제 추정':''),r.priorTaxPaid,'deduct'):'')+
     (r.grandSurcharge>0?row('(+) 세대생략 할증',(r.surchargeRate*100)+'%'+(r.surchargeRate===0.4?' · 미성년 20억 초과':''),r.grandSurcharge,'add'):'')+
-    row('(-) 신고세액공제','자진신고 3%',r.discount,'deduct')+
+    (r.onTime ? row('(-) 신고세액공제','기한 내 신고 3%',r.discount,'deduct') : row('신고세액공제','기한 내 미신고 · 미적용 (가산세 별도)',0,''))+
     totalBox('최종 납부 예상 증여세', r.finalTax,
       r.finalTax<=0?'linear-gradient(135deg,#0F7A45,#059669)':'linear-gradient(135deg,#1e3a5f,#6B35CF)',
       r.finalTax<=0?'#fff':'#fbbf24');
@@ -781,6 +840,16 @@ function renderGiftResult(r, d){
     '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;line-height:1.65;">'+
     '※ 카카오톡 인앱 브라우저에서는 저장이 제한될 수 있습니다. 우측 메뉴(⋯) → 다른 브라우저로 열기를 권장합니다.'+
     '</div></div></div>'+
+    taxSourceBox('상속세 및 증여세법과 국세청 증여세 안내', [
+      { label:'증여세 계산 흐름 (증여재산공제·세율)', org:'국세청', url:'https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7728&mi=2338' },
+      { label:'상속세 및 증여세법 제69조 (신고세액공제)', org:'국가법령정보센터', url:'https://www.law.go.kr/lsLinkCommonInfo.do?chrClsCd=010202&lsJoLnkSeq=1029616341' }
+    ], [
+      '감정평가수수료 공제(최대 500만원)',
+      '증여재산 평가(시가·유사매매사례가액 등)의 세부 판단',
+      '창업자금·가업승계 등 증여세 과세특례',
+      '기한 후 신고·무신고 가산세 및 납부지연가산세',
+      '부담부증여 시 증여자의 양도소득세'
+    ])+
     '<button onclick="location.href=\''+ctaUrl+'\'" style="width:100%;padding:18px;background:var(--toss-blue);color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;margin:12px 0;font-family:\'Noto Sans KR\',sans-serif;">📊 맞춤형 절세 플랜 신청하기</button>'+
     '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;margin-bottom:12px;">'+
     '신고기한: 증여받은 날이 속하는 달의 말일로부터 <strong>3개월 이내</strong>'+

@@ -561,6 +561,23 @@ details > div > div[style*="monospace"] { overflow-x: auto; -webkit-overflow-scr
 @keyframes chatBounce { 0%,100%{transform:translateY(0)} 50%{} }
 .typing-dot { width:6px; height:6px; background:#90c2ff; border-radius:50%; display:inline-block; }
 
+
+/* ── 계산 근거 및 출처 ── */
+.tsrc { background:#fff; border:1px solid #e5e8eb; border-radius:14px; margin:12px 0; padding:0 16px; font-size:13px; color:#4e5968; line-height:1.65; text-align:left; }
+.tsrc summary { cursor:pointer; padding:14px 0; font-weight:700; color:#191f28; list-style:none; display:flex; justify-content:space-between; align-items:center; }
+.tsrc summary::-webkit-details-marker { display:none; }
+.tsrc summary::after { content:'펼치기'; font-size:12px; font-weight:500; color:#8b95a1; }
+.tsrc[open] summary::after { content:'접기'; }
+.tsrc-body { padding:0 0 14px; border-top:1px solid #f2f4f6; }
+.tsrc-basis { margin:12px 0 10px; font-size:12px; color:#4e5968; }
+.tsrc-basis b { color:#191f28; }
+.tsrc-list { margin:0; padding:0; list-style:none; }
+.tsrc-list li { padding:8px 0; border-bottom:1px solid #f2f4f6; }
+.tsrc-list a { color:#3182f6; font-weight:600; text-decoration:none; word-break:keep-all; }
+.tsrc-list small { display:block; color:#8b95a1; font-size:11px; }
+.tsrc-miss { margin-top:10px; background:#fff8e6; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a5a00; }
+.tsrc-miss ul { margin:4px 0 0; padding-left:16px; }
+.tsrc-disc { margin-top:10px; background:#f2f4f6; border-radius:10px; padding:10px 12px; font-size:12px; color:#6b7684; }
 </style>
 </head>
 <body>
@@ -950,6 +967,23 @@ details > div > div[style*="monospace"] { overflow-x: auto; -webkit-overflow-scr
 </div>
 
 <script>
+// ── 계산 근거 및 출처 (확인 기준일 2026-11-16) ──
+var TAX_CHECKED_DATE = '2026년 11월 16일';
+var TAX_DISCLAIMER = '본 계산은 입력값을 기준으로 산출한 참고용 예상액입니다. 실제 세액은 재산 평가, 주택 수 산정 예외, 감면, 세액공제 및 신고 시점 등에 따라 달라질 수 있습니다. 최종 세액은 세무사 또는 관할 기관에 확인해 주세요.';
+function taxSourceBox(basis, items, missing) {
+  var li = items.map(function(it){
+    return '<li><a href="'+it.url+'" target="_blank" rel="noopener noreferrer">'+it.label+' ↗</a><small>'+it.org+' · 확인 기준일 '+TAX_CHECKED_DATE+'</small></li>';
+  }).join('');
+  var miss = (missing && missing.length)
+    ? '<div class="tsrc-miss"><b>계산에 포함되지 않은 사항</b><ul>'+missing.map(function(m){return '<li>'+m+'</li>';}).join('')+'</ul></div>'
+    : '';
+  return '<details class="tsrc"><summary>계산 근거 및 출처</summary><div class="tsrc-body">'+
+    '<div class="tsrc-basis">계산 기준: <b>'+basis+'</b><br>확인 기준일: '+TAX_CHECKED_DATE+'</div>'+
+    '<ul class="tsrc-list">'+li+'</ul>'+miss+
+    '<div class="tsrc-disc">'+TAX_DISCLAIMER+'</div>'+
+    '</div></details>';
+}
+
 // ── 첫 화면 카드 토글
 function toggleDesc(id) {
   var el = document.getElementById(id);
@@ -1485,8 +1519,8 @@ function computeInheritance(mode) {
     var totalDeductV = Math.min(sumDeductions, deductLimit);
     var taxStandardV = Math.max(0, taxableBase - totalDeductV);
     var grossTaxV    = Math.round(calcInheritTax(taxStandardV) / 10000);
-    var reportDeductV = Math.round(grossTaxV * 0.03);
-    var priorTaxPaidV = Math.round(calcInheritTax(priorTaxBase) / 10000);
+    var priorTaxPaidV = Math.min(grossTaxV, Math.round(calcInheritTax(priorTaxBase) / 10000));
+    var reportDeductV = Math.round(Math.max(0, grossTaxV - priorTaxPaidV) * 0.03);
     var finalTaxV = Math.max(0, grossTaxV - reportDeductV - priorTaxPaidV);
     return {
       spouseDeduct: spouseDeductIn, cohouseDeduct: cohouseDeductIn,
@@ -2111,7 +2145,18 @@ function generateReportHTML(type) {
     html += '</div>';
   }
 
-  html += '<div class="notice-box" style="margin-top:14px;">※ 본 분석은 입력값 기반 자동 계산 결과로, 실제 세액은 개별 상황에 따라 달라질 수 있습니다. 정확한 신고를 위해 담당 세무사 확인을 권장합니다.</div>';
+  html += taxSourceBox('상속세 및 증여세법과 국세청 상속세 안내', [
+    { label:'상속공제 안내 (기초·인적·일괄·배우자·금융재산·동거주택)', org:'국세청', url:'https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7956' },
+    { label:'상속세 세율 및 계산 흐름', org:'국세청', url:'https://www.nts.go.kr/nts/cm/cntnts/cntntsView.do?cntntsId=7957&mi=6529' }
+  ], [
+    '장례비용은 최소 공제액 500만원으로 가정 (실제 지출 증빙 시 최대 1,000만원 + 봉안시설 500만원)',
+    '공과금 공제',
+    '미성년자공제는 1인당 4,000만원(만 15세 가정)으로 계산 — 실제는 (19세 − 나이) × 1,000만원',
+    '연로자·장애인 공제 등 자녀·미성년자 외 인적공제',
+    '재산 평가(시가·감정가·기준시가)의 세부 판단',
+    '가업·영농상속공제, 연부연납·물납',
+    '사전증여재산의 실제 납부세액 (과세표준 기준으로 추정)'
+  ]);
 
   return html;
 }
