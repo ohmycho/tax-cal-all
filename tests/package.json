@@ -1,0 +1,12 @@
+{
+  "name": "tax-cal-all-tests",
+  "private": true,
+  "type": "module",
+  "description": "세금 계산기 회귀 테스트 (사이트 배포에는 사용하지 않음)",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "playwright": "^1.49.0"
+  }
+}
