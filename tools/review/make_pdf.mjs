@@ -18,6 +18,7 @@ h1{font-size:20pt;margin:0 0 4px} .sub{color:#6b7684;font-size:10pt;margin-botto
 h2{font-size:13pt;margin:22px 0 8px;padding-bottom:5px;border-bottom:2px solid #191f28}
 table{width:100%;border-collapse:collapse;font-size:9.5pt}th{background:#f2f4f6;text-align:left;padding:6px 8px;color:#4e5968;font-weight:700}
 td{padding:7px 8px;border-bottom:1px solid #e5e8eb;vertical-align:top}td.n{width:18px;color:#8b95a1}
+table.chg td:nth-child(2),table.chg th:nth-child(2){width:56px;white-space:nowrap}table.chg td:nth-child(3),table.chg th:nth-child(3){width:130px}table.chg td:nth-child(4),table.chg th:nth-child(4){width:44px}
 .tag{display:inline-block;border-radius:5px;padding:1px 7px;font-size:9pt;font-weight:700;background:#e8f3ff;color:#1b64da;white-space:nowrap}
 .tag.no{background:#ffeeee;color:#d22030}.tag.q{background:#fff3e0;color:#e45600}
 .q{border:1px solid #e5e8eb;border-radius:8px;padding:9px 12px;margin-bottom:8px;page-break-inside:avoid}
@@ -31,7 +32,7 @@ footer{margin-top:20px;color:#8b95a1;font-size:8.5pt}
 <div class="meta"><span>버전 <b>${esc(d.version)}</b></span><span>배포 ${esc(d.date)}</span><span>세법 기준일 ${esc(d.lawDate)}</span><span>커밋 ${esc(d.commit)}</span></div>
 <div class="note" style="margin:0 0 6px">검토 기준: ${esc(d.basis)}</div>
 <h2>1. 반영 내용</h2>
-<table><tr><th></th><th>계산기</th><th>세무사 의견</th><th>판단</th><th>처리</th></tr>
+<table class="chg"><tr><th></th><th>계산기</th><th>세무사 의견</th><th>판단</th><th>처리</th></tr>
 ${d.changes.map((c, i) => `<tr><td class="n">${i + 1}</td><td>${esc(c.calc)}</td><td>${esc(c.comment)}</td><td><span class="tag${/반박/.test(c.decision) ? ' no' : /질문|보류/.test(c.decision) ? ' q' : ''}">${esc(c.decision)}</span></td><td>${esc(c.action)}</td></tr>`).join('')}
 </table>
 ${d.questions.length ? '<h2>2. 질문 (답 적어 주세요)</h2>' : ''}
