@@ -34,7 +34,7 @@ footer{margin-top:20px;color:#8b95a1;font-size:8.5pt}
 <table><tr><th></th><th>계산기</th><th>세무사 의견</th><th>판단</th><th>처리</th></tr>
 ${d.changes.map((c, i) => `<tr><td class="n">${i + 1}</td><td>${esc(c.calc)}</td><td>${esc(c.comment)}</td><td><span class="tag${/반박/.test(c.decision) ? ' no' : /질문|보류/.test(c.decision) ? ' q' : ''}">${esc(c.decision)}</span></td><td>${esc(c.action)}</td></tr>`).join('')}
 </table>
-<h2>2. 질문 (답 적어줘)</h2>
+<h2>2. 질문 (답 적어 주세요)</h2>
 ${d.questions.map((q, i) => `<div class="q"><b>Q${i + 1}.</b> ${esc(q)}<div class="ans">답:</div></div>`).join('')}
 ${d.note ? `<div class="note">${esc(d.note)}</div>` : ''}
 <h2>3. 버전 기록</h2>
