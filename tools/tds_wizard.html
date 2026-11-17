@@ -67,6 +67,10 @@
 .embedded .tds-topbar-title{visibility:hidden}
 /* 너무 작은 글자(10~12px) → 13px 이상 */
 [style*="font-size:10px"],[style*="font-size: 10px"],[style*="font-size:11px"],[style*="font-size: 11px"],[style*="font-size:12px"],[style*="font-size: 12px"]{font-size:13px!important}
+/* 계산기 버전 표시 (세무사 검토 시 서로 같은 버전을 보는지 확인용) */
+.tds-ver-badge{flex-shrink:0;font-size:13px;font-weight:600;color:var(--tds-grey500);background:var(--tds-grey100);border-radius:8px;padding:4px 8px;margin-right:8px}
+.tds-ver-foot{text-align:center;font-size:13px;line-height:1.6;color:var(--tds-grey500);padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
+.tds-wiz-on .tds-ver-foot{display:none}
 /* AI 상담 배지 */
 .ai-badge{font-size:13px!important}
 /* 계산 근거·출처 상자 (모든 계산기 공통) */
@@ -86,6 +90,18 @@
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
+window.TAX_CAL_VERSION = { version:'@@VERSION@@', date:'@@VERSION_DATE@@', lawDate:'@@LAW_DATE@@' };
+window.tdsVersionText = function(long){
+  var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
+};
+/* 모든 페이지 맨 아래 버전 줄 + data-tds-version 자리에 버전 글자 */
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('[data-tds-version]').forEach(function(el){
+    var m=el.getAttribute('data-tds-version'), v=window.TAX_CAL_VERSION;
+    el.textContent = m==='meta' ? (v.date+' 배포 · 세법 기준일 '+v.lawDate) : tdsVersionText(m==='long');
+  });
+  if(!document.querySelector('.tds-ver-foot')){ var f=document.createElement('div'); f.className='tds-ver-foot'; f.textContent=tdsVersionText(true); document.body.appendChild(f); }
+});
 (function(){
   var ICON_BACK='<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>';
   var ICON_CK='<svg viewBox="0 0 24 24"><polyline points="5 12.5 10 17 19 7"/></svg>';
@@ -104,7 +120,7 @@
   window.TDSWizard = function(cfg){
     var a = Object.assign({}, cfg.init||{}), hist=[], idx=0;
     var root=document.createElement('div'); root.className='tds-wiz'; root.id='tds-wiz';
-    root.innerHTML='<div class="tds-topbar"><button class="tds-back" aria-label="뒤로">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(cfg.title)+'</div></div>'+
+    root.innerHTML='<div class="tds-topbar"><button class="tds-back" aria-label="뒤로">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(cfg.title)+'</div><span class="tds-ver-badge">'+tdsVersionText()+'</span></div>'+
       '<div class="tds-progress"><i></i></div><div class="tds-wiz-body"></div>'+
       '<div class="tds-cta-bar"><div><button class="tds-btn" id="tds-next">다음</button></div></div>';
     document.body.appendChild(root); document.documentElement.classList.add('tds-wiz-on');
@@ -224,7 +240,7 @@
     if(!container) return;
     var old=container.querySelector(':scope > .tds-result-head'); if(old) old.remove();
     var head=document.createElement('div'); head.className='tds-result-head';
-    head.innerHTML='<div class="tds-topbar" style="margin:0 -20px 8px;padding:0 4px"><button class="tds-back" aria-label="다시 계산">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(title)+'</div></div>';
+    head.innerHTML='<div class="tds-topbar" style="margin:0 -20px 8px;padding:0 4px"><button class="tds-back" aria-label="다시 계산">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(title)+'</div><span class="tds-ver-badge">'+tdsVersionText()+'</span></div>';
     head.querySelector('.tds-back').onclick=restart;
     container.insertBefore(head, container.firstChild);
     var oldA=container.querySelector(':scope > .tds-result-actions'); if(oldA) oldA.remove();

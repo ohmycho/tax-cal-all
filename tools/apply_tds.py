@@ -11,6 +11,11 @@ import colorsys, glob, os, re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+# ── 계산기 버전 ── 바꿀 때마다 여기만 올리고 CHANGELOG.md에 한 줄 적은 뒤 이 스크립트를 실행한다.
+VERSION = 'v1.3'
+VERSION_DATE = '2026.11.17'
+LAW_DATE = '2026.11.16'   # 세법 확인 기준일 (CLAUDE.md '세법 기준'과 같게)
+
 TDS = {
  'grey':  ['#ffffff','#f9fafb','#f2f4f6','#e5e8eb','#d1d6db','#b0b8c1','#8b95a1','#6b7684','#4e5968','#333d4b','#191f28'],
  'blue':  ['#e8f3ff','#c9e2ff','#90c2ff','#64a8ff','#4593fc','#3182f6','#2272eb','#1b64da','#1957c2','#194aa6'],
@@ -159,6 +164,7 @@ VIEWPORT = '<meta name="viewport" content="width=device-width, initial-scale=1, 
 
 WIZARD = open(os.path.join(ROOT, 'tools', 'tds_wizard.html'), encoding='utf-8').read().strip()
 BLOCK = BLOCK.replace('<!-- TDS:END -->', WIZARD + '\n<!-- TDS:END -->')
+BLOCK = BLOCK.replace('@@VERSION@@', VERSION).replace('@@VERSION_DATE@@', VERSION_DATE).replace('@@LAW_DATE@@', LAW_DATE)
 
 def process(path):
     s = open(path, encoding='utf-8').read()
