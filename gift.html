@@ -5,13 +5,11 @@
 <!-- This site is hosted on Netlify. Anyone can build and deploy a site
      like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=0e28cb73-80d9-4759-904d-8f6211981c94
      Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>증여세 계산기 | 스마트 세금 플래너</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 
 /* ==========================================================================
@@ -19,15 +17,15 @@
    ========================================================================== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #F4F3EF; --surface: #fff; --surface2: #EEEDE8;
+  --bg: #fff9e7; --surface: #fff; --surface2: #e5e8eb;
   --border: rgba(0,0,0,0.08); --border-med: rgba(0,0,0,0.14);
-  --text: #1A1917; --text-2: #65635E; --text-3: #A09F9A;
-  --purple: #6B35CF; --purple-light: #F0EBFF; --purple-text: #4A1FA8;
+  --text: #191f28; --text-2: #4e5968; --text-3: #8b95a1;
+  --purple: #3182f6; --purple-light: #e8f3ff; --purple-text: #1b64da;
   --radius: 10px; --radius-lg: 16px;
   --shadow: 0 4px 16px rgba(0,0,0,0.06);
   --toss-blue: #3182f6; --toss-gray: #f2f4f6; --toss-text: #191f28; --toss-subtext: #4e5968;
 }
-body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(--text); min-height: 100vh; padding: 2.5rem 1rem 8rem; }
+body { font-family: Pretendard, sans-serif; background: #ffffff; color: var(--text); min-height: 100vh; padding: 2.5rem 1rem 8rem; }
 
 /* 위저드 및 랜딩 레이아웃 */
 #landing-screen { position: fixed; inset: 0; z-index: 200; background: #ffffff; display: flex; justify-content: center; padding: 20px; padding-top: max(24px, env(safe-area-inset-top)); overflow-y: auto; }
@@ -38,7 +36,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .choice-list { display: flex; flex-direction: column; gap: 12px; }
 .choice-btn { display: flex; align-items: center; width: 100%; padding: 24px 20px; background: var(--toss-gray); border: none; border-radius: 20px; text-align: left; cursor: pointer; transition: 0.2s; }
 .choice-btn:hover { background: #e5e8eb; transform: translateY(-1px); }
-.choice-btn.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(107,53,207,0.25); }
+.choice-btn.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(49,130,246,0.25); }
 .choice-btn.on strong, .choice-btn.on small { color: #fff; }
 .choice-btn .icon { font-size: 32px; margin-right: 16px; }
 .choice-btn strong { display: block; font-size: 18px; color: var(--toss-text); margin-bottom: 4px; font-weight: 600; }
@@ -47,7 +45,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 
 .split-card { width: 100%; padding: 24px 20px; background: var(--toss-gray); border: 2px solid transparent; border-radius: 20px; text-align: left; cursor: pointer; margin-bottom: 12px; transition: 0.2s; }
 .split-card:hover { border-color: var(--purple); transform: translateY(-1px); }
-.split-card.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(107,53,207,0.25); }
+.split-card.on { background: var(--purple); color: #fff; box-shadow: 0 4px 16px rgba(49,130,246,0.25); }
 .split-card.on div { color: rgba(255,255,255,0.8); }
 .split-card strong { font-size: 18px; font-weight: 700; display: block; margin-bottom: 8px; }
 .split-card div { font-size: 14px; color: var(--toss-subtext); line-height: 1.5; }
@@ -57,23 +55,23 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .wiz-step.active { display: block; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .wiz-back { border: none; background: none; color: var(--toss-subtext); font-size: 14px; font-weight: 500; margin-bottom: 20px; cursor: pointer; padding: 0; }
-.wiz-primary-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--purple); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: 0.2s; box-shadow: 0 4px 12px rgba(107,53,207,0.2); }
+.wiz-primary-btn { width: 100%; padding: 18px; border: none; border-radius: 16px; background: var(--purple); color: #fff; font-size: 17px; font-weight: 700; cursor: pointer; margin-top: 16px; transition: 0.2s; box-shadow: 0 4px 12px rgba(49,130,246,0.2); }
 .wiz-primary-btn:hover { opacity: 0.9; transform: translateY(-1px); }
 
 .field { margin-bottom: 24px; }
 .field-label { font-size: 14px; font-weight: 600; color: var(--toss-subtext); margin-bottom: 10px; display: block; }
 .price-wrap { position: relative; }
-.price-wrap input { width: 100%; padding: 16px 52px 16px 20px; font-size: 24px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; color: var(--toss-text); outline: none; transition: 0.2s; }
-.price-wrap input:focus { border-color: var(--purple); background: #fff; box-shadow: 0 0 0 4px rgba(107,53,207,0.1); }
+.price-wrap input { width: 100%; padding: 16px 52px 16px 20px; font-size: 24px; font-weight: 700; font-family: Pretendard, sans-serif; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; color: var(--toss-text); outline: none; transition: 0.2s; }
+.price-wrap input:focus { border-color: var(--purple); background: #fff; box-shadow: 0 0 0 4px rgba(49,130,246,0.1); }
 .price-unit { position: absolute; right: 18px; top: 50%; transform: translateY(-50%); font-size: 18px; font-weight: 600; color: var(--toss-subtext); }
 .num-row { display: flex; align-items: center; gap: 10px; }
 .num-row input { flex: 1; padding: 16px 20px; font-size: 20px; font-weight: 600; background: var(--toss-gray); border: 2px solid transparent; border-radius: 16px; outline: none; transition: 0.2s;}
 .num-row input::placeholder,
-.price-wrap input::placeholder { color: #C4C9D4; }
+.price-wrap input::placeholder { color: #d1d6db; }
 .num-row input::-webkit-input-placeholder,
-.price-wrap input::-webkit-input-placeholder { color: #C4C9D4; }
+.price-wrap input::-webkit-input-placeholder { color: #d1d6db; }
 .quick-amount-row { display: flex; gap: 8px; margin-top: 12px; }
-.quick-amount-btn { flex: 1; padding: 12px 4px; border-radius: 10px; border: 1.5px solid var(--purple); background: rgba(107,53,207,0.05); color: var(--purple); font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+.quick-amount-btn { flex: 1; padding: 12px 4px; border-radius: 10px; border: 1.5px solid var(--purple); background: rgba(49,130,246,0.05); color: var(--purple); font-size: 14px; font-weight: 700; cursor: pointer; transition: 0.2s; }
 .quick-amount-btn:active { transform: scale(0.95); }
 
 /* 진행 바 */
@@ -86,8 +84,8 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 
 /* 단계 안내 배너 */
 .wiz-guide-banner {
-  background: linear-gradient(135deg, rgba(107,53,207,0.07), rgba(107,53,207,0.03));
-  border: 1px solid rgba(107,53,207,0.15);
+  background: #e8f3ff;
+  border: 1px solid rgba(49,130,246,0.15);
   border-radius: 14px; padding: 14px 16px;
   margin-bottom: 20px; font-size: 14px;
   color: var(--purple-text); line-height: 1.65;
@@ -97,11 +95,11 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 
 /* 거의 끝나감 배너 */
 .wiz-almost-done {
-  background: linear-gradient(135deg, #0f172a, #1e3a5f);
+  background: #333d4b;
   border-radius: 14px; padding: 14px 16px;
   margin-bottom: 20px; color: #fff; font-size: 14px; line-height: 1.6;
 }
-.wiz-almost-done strong { display: block; font-size: 15px; margin-bottom: 3px; color: #fbbf24; }
+.wiz-almost-done strong { display: block; font-size: 15px; margin-bottom: 3px; color: #ffb331; }
 
 /* 컨텍스트 바 (현재 선택값 표시) */
 .wiz-context-bar {
@@ -122,9 +120,9 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
    ========================================================================== */
 .page { max-width: 500px; margin: 0 auto; }
 .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; margin-bottom: 20px; box-shadow: var(--shadow); }
-.result-top { padding: 30px 24px; background: linear-gradient(135deg, #6B35CF, #4A1FA8); color: #fff; text-align: center; }
+.result-top { padding: 30px 24px; background: #3182f6; color: #fff; text-align: center; }
 .result-top-label { font-size: 14px; font-weight: 500; color: rgba(255,255,255,0.7); margin-bottom: 8px; }
-.result-total-num { font-size: 38px; font-weight: 800; color: #fff; line-height: 1.2; letter-spacing: -1px; margin-bottom: 4px;}
+.result-total-num { font-size: 38px; font-weight:700; color: #fff; line-height: 1.2; letter-spacing: -1px; margin-bottom: 4px;}
 .result-meta { margin-top: 16px; display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
 .meta-badge { font-size: 13px; padding: 6px 12px; border-radius: 100px; background: rgba(255,255,255,0.15); color: #fff; font-weight: 500; }
 
@@ -136,7 +134,7 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .web-deduct-row.bold span.val { color: var(--purple); font-size: 16px; }
 
 .result-actions { padding: 0 24px 24px 24px; background: #fff; }
-.action-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; border: none; box-shadow: 0 4px 12px rgba(107,53,207,0.25); transition: 0.2s;}
+.action-btn { width: 100%; padding: 18px; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; text-align: center; border: none; box-shadow: 0 4px 12px rgba(49,130,246,0.25); transition: 0.2s;}
 .action-btn:hover { transform: translateY(-2px); }
 .btn-restart-main { width: 100%; padding: 18px; border-radius: 16px; border: none; font-size: 16px; font-weight: 600; cursor: pointer; background: var(--toss-gray); color: var(--toss-text); margin-top: 10px; transition: 0.2s;}
 .btn-restart-main:hover { background: #e5e8eb; }
@@ -146,8 +144,8 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
    ========================================================================== */
 #pdf-report-template { position: absolute; top: -9999px; left: -9999px; width: 820px; background: #ffffff; padding: 55px; color: #191F28; box-sizing: border-box; }
 .pr-header { border-bottom: 3px solid #191F28; padding-bottom: 20px; margin-bottom: 30px; }
-.pr-logo { font-size: 12px; font-weight: 800; color: #6B35CF; letter-spacing: 0.1em; margin-bottom: 8px; }
-.pr-title { font-size: 30px; font-weight: 800; color: #191F28; letter-spacing: -0.5px; }
+.pr-logo { font-size: 12px; font-weight:700; color: #3182f6; letter-spacing: 0.1em; margin-bottom: 8px; }
+.pr-title { font-size: 30px; font-weight:700; color: #191F28; letter-spacing: -0.5px; }
 .pr-section { margin-bottom: 28px; background: #F9FAFB; padding: 24px; border-radius: 16px; border: 1px solid #E5E8EB; page-break-inside: avoid; }
 
 /* PDF 캡처 전용 모드 - scrollY 버그 방지 */
@@ -175,15 +173,15 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
   padding: 50px 44px !important;
   margin: 0 !important;
 }
-.pr-section.not-applicable { background: #FFF8F8; border-color: #FEE5E5; color: #7A7A7A; }
-.pr-sec-num { font-size: 13px; font-weight: 800; color: #6B35CF; margin-bottom: 6px; letter-spacing: 0.05em; }
-.pr-section.not-applicable .pr-sec-num { color: #D93A3A; }
-.pr-sec-title { font-size: 18px; font-weight: 800; color: #191F28; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
+.pr-section.not-applicable { background: #f9fafb; border-color: #ffeeee; color: #6b7684; }
+.pr-sec-num { font-size: 13px; font-weight:700; color: #3182f6; margin-bottom: 6px; letter-spacing: 0.05em; }
+.pr-section.not-applicable .pr-sec-num { color: #e42939; }
+.pr-sec-title { font-size: 18px; font-weight:700; color: #191F28; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; }
 .pr-sec-body { font-size: 15px; line-height: 1.7; color: #4E5968; word-break: keep-all; }
 .pr-section.not-applicable .pr-sec-body { color: #8B95A1; }
-.pr-na-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #D93A3A; color: #fff; font-weight: 700; }
+.pr-na-badge { font-size: 12px; padding: 4px 10px; border-radius: 6px; background: #e42939; color: #fff; font-weight: 700; }
 .pr-chat-bubble { background: #fff; border: 1px solid #E5E8EB; padding: 18px 20px; border-radius: 14px; margin-top: 14px; font-size: 14.5px; line-height: 1.65; color: #191F28; position: relative; }
-.pr-section.not-applicable .pr-chat-bubble { background: #FFFDFD; border-color: #FAD2D2; }
+.pr-section.not-applicable .pr-chat-bubble { background: #ffffff; border-color: #ffd4d6; }
 .pr-footer { margin-top: 40px; padding-top: 16px; border-top: 1px solid #E5E8EB; font-size: 12px; color: #8B95A1; line-height: 1.6; }
 .hidden { display: none !important; }
 
@@ -201,15 +199,109 @@ body { font-family: 'Noto Sans KR', sans-serif; background: #ffffff; color: var(
 .tsrc-list li { padding:8px 0; border-bottom:1px solid #f2f4f6; }
 .tsrc-list a { color:#3182f6; font-weight:600; text-decoration:none; word-break:keep-all; }
 .tsrc-list small { display:block; color:#8b95a1; font-size:11px; }
-.tsrc-miss { margin-top:10px; background:#fff8e6; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a5a00; }
+.tsrc-miss { margin-top:10px; background:#fff9e7; border-radius:10px; padding:10px 12px; font-size:12px; color:#4e5968; }
 .tsrc-miss ul { margin:4px 0 0; padding-left:16px; }
 .tsrc-disc { margin-top:10px; background:#f2f4f6; border-radius:10px; padding:10px 12px; font-size:12px; color:#6b7684; }
 </style>
+<!-- TDS:BEGIN (tools/apply_tds.py가 관리 — 직접 고치지 말 것) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
+<style id="tds-base">
+:root{
+  --tds-grey50:#f9fafb;--tds-grey100:#f2f4f6;--tds-grey200:#e5e8eb;--tds-grey300:#d1d6db;--tds-grey400:#b0b8c1;
+  --tds-grey500:#8b95a1;--tds-grey600:#6b7684;--tds-grey700:#4e5968;--tds-grey800:#333d4b;--tds-grey900:#191f28;
+  --tds-blue50:#e8f3ff;--tds-blue100:#c9e2ff;--tds-blue500:#3182f6;--tds-blue600:#2272eb;--tds-blue700:#1b64da;
+  --tds-red500:#f04452;--tds-green500:#03b26c;--tds-orange500:#fe9800;
+}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif!important;
+  -webkit-font-smoothing:antialiased;color:var(--tds-grey900);letter-spacing:-0.01em;word-break:keep-all}
+button,input,select,textarea{font-family:inherit!important}
+button,a,label,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input::placeholder,textarea::placeholder{color:var(--tds-grey400)}
+
+/* 선택 상자: 기본 모양 대신 토스식 화살표 */
+select{-webkit-appearance:none;appearance:none;padding-right:40px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b95a1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 14px center!important;background-size:18px!important}
+/* 날짜 입력: 아이폰에서 높이가 줄지 않게 */
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;min-height:48px;display:block;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+input:focus,select:focus,textarea:focus{outline:none}
+
+/* 주요 버튼 (Primary) */
+.cta-btn,.btn-next,.btn-submit,.wiz-primary-btn,.submit-btn,.button,.consult-submit-btn,.btn-pdf,.modal-btn,.action-btn{
+  min-height:56px;border-radius:16px!important;font-size:17px!important;font-weight:600!important;
+  box-shadow:none!important;transform:none!important;letter-spacing:-0.01em}
+.cta-btn:active,.btn-next:active,.btn-submit:active,.wiz-primary-btn:active,.submit-btn:active,.button:active,
+.consult-submit-btn:active,.btn-pdf:active,.modal-btn:active{filter:brightness(.93)}
+.cta-btn:disabled,.btn-next:disabled,.btn-submit:disabled,.wiz-primary-btn:disabled,.submit-btn:disabled,.button:disabled{opacity:.4}
+/* 보조 버튼 (Secondary) */
+.btn-back,.btn-restart-main,.btn-back-input,.btn-save-tmp{border-radius:16px!important;font-weight:600!important;box-shadow:none!important}
+
+/* 화면 제목·설명 (토스 Title 26 / Body 15) */
+.header h1,.header h2,.hero h1,.hero-title,.home-title,#landing-screen .header-title,.tds-title{
+  font-size:26px!important;font-weight:700!important;line-height:1.38!important;letter-spacing:-0.02em!important;color:var(--tds-grey900)!important}
+.header > p,.hero > p,.home-sub,.tds-sub{font-size:15px!important;line-height:1.6!important;color:var(--tds-grey600)!important}
+
+/* 홈으로 (앱 안에서는 숨김 — 앱에 자체 상단바가 있음) */
+.home-top-btn{display:inline-flex!important;align-items:center;gap:2px;height:44px;padding:0 6px 0 0!important;margin:0 0 4px -4px!important;
+  background:none!important;border:0!important;cursor:pointer;font-size:15px!important;font-weight:600!important;color:var(--tds-grey700)!important}
+.home-top-btn svg{width:22px!important;height:22px!important;fill:none!important;stroke:var(--tds-grey700)!important;stroke-width:2.2!important}
+.home-top-btn:active{opacity:.6}
+.embedded .home-top-btn{display:none!important}
+</style>
+<script>
+/* 아이폰은 글자 16px 미만 입력창을 누르면 화면을 확대하고, 확대가 그대로 남아 레이아웃이 깨진다.
+   16px보다 작은 입력창만 16px로 올린다 (큰 금액 입력창은 그대로). 나중에 생기는 입력창(AI 채팅 등)도 처리. */
+(function(){
+  var SEL='input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,textarea';
+  function fix(root){
+    if(!root||!root.querySelectorAll) return;
+    var list=root.matches&&root.matches(SEL)?[root]:[];
+    list=list.concat([].slice.call(root.querySelectorAll(SEL)));
+    list.forEach(function(el){ if(parseFloat(getComputedStyle(el).fontSize)<16) el.style.setProperty('font-size','16px','important'); });
+  }
+  function start(){
+    fix(document);
+    new MutationObserver(function(ms){ ms.forEach(function(m){ [].forEach.call(m.addedNodes,function(n){ if(n.nodeType===1) fix(n); }); }); })
+      .observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  /* 혹시 확대된 상태로 남으면 입력이 끝날 때 원래 배율로 되돌린다 */
+  document.addEventListener('focusout',function(e){
+    if(!e.target.matches||!e.target.matches(SEL)) return;
+    var vp=document.querySelector('meta[name=viewport]'); if(!vp||!window.visualViewport||visualViewport.scale<=1.01) return;
+    var c=vp.content; vp.content=c+', maximum-scale=1'; setTimeout(function(){ vp.content=c; },300);
+  });
+})();
+</script>
+<style>
+/* 계산 단계별 법령 근거 표시 */
+.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:12px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
+.law-ref::before{content:'근거 ';color:var(--tds-blue500);font-weight:600}
+.law-ref.inline{display:inline;margin:0 0 0 4px}
+</style>
+<script>
+/* 계산 단계 옆에 붙이는 법령 근거. 사용: lawRef('소득세법 제104조①1호') */
+/* 브라우저 alert 대신 토스식 토스트 (alert는 앱 안 iframe에서 화면을 멈추게 함) */
+function tdsToast(msg){
+  var el=document.getElementById('tds-toast');
+  if(!el){ el=document.createElement('div'); el.id='tds-toast';
+    el.style.cssText='position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 40px);width:max-content;background:rgba(25,31,40,.92);color:#fff;font-size:15px;font-weight:500;line-height:1.5;padding:13px 20px;border-radius:14px;z-index:99999;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;word-break:keep-all';
+    document.body.appendChild(el); }
+  el.textContent=String(msg); el.style.opacity='1';
+  clearTimeout(el._t); el._t=setTimeout(function(){ el.style.opacity='0'; },2400);
+}
+function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':'')+'">'+t+'</span>' : ''; }
+</script>
+<!-- TDS:END -->
 </head>
 <body>
 
 <div id="landing-screen">
   <div class="app-container">
+    <button class="home-top-btn" onclick="location.href='index.html'"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>홈으로</button>
 
     <!-- 진행 바 -->
     <div class="wiz-progress-wrap" id="wiz-progress-wrap" style="display:none">
@@ -530,7 +622,7 @@ function downloadPDF(){
     }).catch(function(){
       el.classList.remove('pdf-export-mode');
       if(btn){ btn.disabled=false; btn.textContent='📄 AI 리포트 PDF 저장'; }
-      alert('저장 실패. 스크린샷을 이용해 주세요.');
+      tdsToast('저장 실패. 스크린샷을 이용해 주세요.');
     });
     return;
   }
@@ -543,7 +635,7 @@ function downloadPDF(){
   }).catch(function(){
     el.classList.remove('pdf-export-mode');
     if(btn){ btn.disabled=false; btn.textContent='📄 AI 리포트 PDF 저장'; }
-    alert('PDF 생성 실패. 다시 시도해 주세요.');
+    tdsToast('PDF 생성 실패. 다시 시도해 주세요.');
   });
 }
 
@@ -584,7 +676,7 @@ function sharePDF(){
   }).catch(function(){
     el.classList.remove('pdf-export-mode');
     if(shareBtn){ shareBtn.disabled=false; shareBtn.textContent='📤 PDF 공유하기'; }
-    alert('PDF 생성에 실패했어요. 다시 시도해 주세요.');
+    tdsToast('PDF 생성에 실패했어요. 다시 시도해 주세요.');
   });
 }
 
@@ -788,39 +880,40 @@ function renderGiftResult(r, d){
   var deductLabel = {spouse:'배우자 6억',child:d.isMinor?'미성년 2천만':'성인 5천만',grand:d.isMinor?'미성년 2천만':'성인 5천만',parent:'직계존속 5천만',other:'기타 1천만'}[d.target]||'';
   var marriageLabel = r.marriageBonus>0 ? ('+혼인출산 '+formatKoreanCurrency(r.marriageBonus)) : '';
 
-  function row(label, sub, val, type){
-    var color = type==='deduct'?'#0F7A45':type==='add'?'#D93A3A':'#191F28';
+  function row(label, sub, val, type, law){
+    var color = type==='deduct'?'#027648':type==='add'?'#e42939':'#191F28';
     var prefix= type==='deduct'?'(-) ':type==='add'?'(+) ':'';
-    var subHtml= sub?'<div style="font-size:11px;color:#A09F9A;margin-top:1px;">'+sub+'</div>':'';
+    var subHtml= (sub?'<div style="font-size:12px;color:#8b95a1;margin-top:2px;">'+sub+'</div>':'')+lawRef(law);
     return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:0.5px solid #F2F4F6;">'+
       '<div style="flex:1;font-size:14px;color:#4E5968;">'+label+subHtml+'</div>'+
       '<div style="font-size:14px;font-weight:700;color:'+color+';white-space:nowrap;margin-left:12px;">'+prefix+formatKoreanCurrency(val)+'</div></div>';
   }
-  function totalBox(label, val, bg, textColor){
-    return '<div style="background:'+(bg||'linear-gradient(135deg,#1e3a5f,#3182f6)')+';border-radius:12px;padding:14px 18px;margin:10px 0;display:flex;justify-content:space-between;align-items:center;">'+
-      '<span style="font-size:13px;font-weight:700;color:rgba(255,255,255,0.8);">'+label+'</span>'+
-      '<span style="font-size:20px;font-weight:700;color:'+(textColor||'#fff')+';font-family:\'Noto Sans KR\',sans-serif;">'+formatKoreanCurrency(val)+'</span></div>';
+  function totalBox(label, val, variant, law){
+    var p = variant==='primary';
+    return '<div style="background:'+(p?'#3182f6':'#f2f4f6')+';border-radius:14px;padding:14px 18px;margin:10px 0;">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;">'+
+      '<span style="font-size:14px;font-weight:600;color:'+(p?'rgba(255,255,255,0.85)':'#4e5968')+';">'+label+'</span>'+
+      '<span style="font-size:20px;font-weight:700;color:'+(p?'#fff':'#191f28')+';">'+formatKoreanCurrency(val)+'</span></div>'+
+      (law?'<div style="margin-top:2px;'+(p?'opacity:.85':'')+'">'+lawRef(law).replace('class="law-ref"', p?'class="law-ref" style="color:#fff"':'class="law-ref"')+'</div>':'')+'</div>';
   }
 
   var breakdown =
-    row('증여재산 가액', '', d.assetValue, '')+
-    (r.debt>0?row('(-) 채무 공제','부담부증여',r.debt,'deduct'):'')+
-    (r.debt>0?totalBox('순 증여재산',r.netAsset,'linear-gradient(135deg,#1845D4,#3182f6)'):'')+
-    (r.prior>0?row('(+) 10년 내 기증여액','합산 과세',r.prior,'add'):'')+
-    row('(-) 증여재산공제', deductLabel+(marriageLabel?' '+marriageLabel:''), r.appliedDeduct, 'deduct')+
-    totalBox('과세표준', r.totalBase, 'linear-gradient(135deg,#0F7A45,#059669)')+
-    row('산출세액','세율 '+((r.totalTax.rate||0)*100).toFixed(0)+'%',r.totalTax.tax,'')+
-    (r.priorTaxPaid>0?row('(-) 기납부세액 공제','과거 증여분 산출세액'+(r.priorDeductEstimated?' · 기사용 공제 추정':''),r.priorTaxPaid,'deduct'):'')+
-    (r.grandSurcharge>0?row('(+) 세대생략 할증',(r.surchargeRate*100)+'%'+(r.surchargeRate===0.4?' · 미성년 20억 초과':''),r.grandSurcharge,'add'):'')+
-    (r.onTime ? row('(-) 신고세액공제','기한 내 신고 3%',r.discount,'deduct') : row('신고세액공제','기한 내 미신고 · 미적용 (가산세 별도)',0,''))+
-    totalBox('최종 납부 예상 증여세', r.finalTax,
-      r.finalTax<=0?'linear-gradient(135deg,#0F7A45,#059669)':'linear-gradient(135deg,#1e3a5f,#6B35CF)',
-      r.finalTax<=0?'#fff':'#fbbf24');
+    row('증여재산 가액', '', d.assetValue, '', '상증법 제31조 · 제60조 (시가 평가)')+
+    (r.debt>0?row('(-) 채무 공제','부담부증여',r.debt,'deduct','상증법 제47조①'):'')+
+    (r.debt>0?totalBox('순 증여재산',r.netAsset,'light','상증법 제47조①'):'')+
+    (r.prior>0?row('(+) 10년 내 기증여액','합산 과세',r.prior,'add','상증법 제47조②'):'')+
+    row('(-) 증여재산공제', deductLabel+(marriageLabel?' '+marriageLabel:''), r.appliedDeduct, 'deduct', '상증법 제53조'+(r.marriageBonus>0?' · 제53조의2 (혼인·출산)':''))+
+    totalBox('과세표준', r.totalBase, 'light', '상증법 제55조')+
+    row('산출세액','세율 '+((r.totalTax.rate||0)*100).toFixed(0)+'%',r.totalTax.tax,'','상증법 제56조 · 제26조 (10~50% 누진세율)')+
+    (r.priorTaxPaid>0?row('(-) 기납부세액 공제','과거 증여분 산출세액'+(r.priorDeductEstimated?' · 기사용 공제 추정':''),r.priorTaxPaid,'deduct','상증법 제58조'):'')+
+    (r.grandSurcharge>0?row('(+) 세대생략 할증',(r.surchargeRate*100)+'%'+(r.surchargeRate===0.4?' · 미성년 20억 초과':''),r.grandSurcharge,'add','상증법 제57조'):'')+
+    (r.onTime ? row('(-) 신고세액공제','기한 내 신고 3%',r.discount,'deduct','상증법 제69조②') : row('신고세액공제','기한 내 미신고 · 미적용 (가산세 별도)',0,'','상증법 제69조② · 국세기본법 제47조의2 (무신고가산세)'))+
+    totalBox('최종 납부 예상 증여세', r.finalTax, 'primary');
 
   var ctaUrl = 'consulting.html?type=gift&asset='+encodeURIComponent(d.assetValue)+'&tax='+encodeURIComponent(r.finalTax);
 
   return (r.finalTax<=0
-    ? '<div style="background:#EDFAF3;border:1px solid #2DC274;border-radius:14px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:#0F7A45;line-height:1.6">'+
+    ? '<div style="background:#f0faf6;border:1px solid #15c47e;border-radius:14px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:#027648;line-height:1.6">'+
       '✅ 공제 범위 이내 — 납부세액이 없어요!<br>단, 신고기한 내에 신고하시길 권장합니다.</div>' : '')+
     '<div class="result-card">'+
     '<div class="result-top">'+
@@ -834,10 +927,10 @@ function renderGiftResult(r, d){
     '<div style="padding:20px 24px;">'+breakdown+'</div>'+
     '<div class="result-actions">'+
     '<div style="display:flex;gap:8px;margin-bottom:10px;">'+
-    '<button id="btn-download-pdf" class="action-btn" style="flex:2;background:linear-gradient(135deg,#3182f6,#1845D4);color:#fff;font-size:15px;" onclick="downloadPDF()">📄 AI 리포트 PDF 저장</button>'+
+    '<button id="btn-download-pdf" class="action-btn" style="flex:2;background:#3182f6;color:#fff;font-size:15px;" onclick="downloadPDF()">📄 AI 리포트 PDF 저장</button>'+
     '<button id="btn-share-pdf" class="action-btn" style="flex:1;background:#191F28;color:#fff;font-size:15px;" onclick="sharePDF()">📤 공유</button>'+
     '</div>'+
-    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;line-height:1.65;">'+
+    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#4e5968;line-height:1.65;">'+
     '※ 카카오톡 인앱 브라우저에서는 저장이 제한될 수 있습니다. 우측 메뉴(⋯) → 다른 브라우저로 열기를 권장합니다.'+
     '</div></div></div>'+
     taxSourceBox('상속세 및 증여세법과 국세청 증여세 안내', [
@@ -850,8 +943,8 @@ function renderGiftResult(r, d){
       '기한 후 신고·무신고 가산세 및 납부지연가산세',
       '부담부증여 시 증여자의 양도소득세'
     ])+
-    '<button onclick="location.href=\''+ctaUrl+'\'" style="width:100%;padding:18px;background:var(--toss-blue);color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;margin:12px 0;font-family:\'Noto Sans KR\',sans-serif;">📊 맞춤형 절세 플랜 신청하기</button>'+
-    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#65635E;margin-bottom:12px;">'+
+    '<button onclick="location.href=\''+ctaUrl+'\'" style="width:100%;padding:18px;background:var(--toss-blue);color:#fff;border:none;border-radius:16px;font-size:16px;font-weight:700;cursor:pointer;margin:12px 0;font-family:Pretendard,sans-serif;">📊 맞춤형 절세 플랜 신청하기</button>'+
+    '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:12px;color:#4e5968;margin-bottom:12px;">'+
     '신고기한: 증여받은 날이 속하는 달의 말일로부터 <strong>3개월 이내</strong>'+
     (r.debt>0?'<br>⚠️ 부담부증여: 증여자에게 양도세가 별도 발생할 수 있어요.':'')+
     '</div>'+

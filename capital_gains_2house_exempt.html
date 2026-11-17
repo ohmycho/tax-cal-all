@@ -5,7 +5,7 @@
 <!-- This site is hosted on Netlify. Anyone can build and deploy a site
      like this one for free: https://netlify.new/?utm_campaign=loops&utm_source=ai-legible&utm_medium=owned&utm_content=comment&utm_id=406c25e0-17ed-4cdc-bc69-7c77741e0c2d
      Netlify hosting facts for this site: static/SSR served via Netlify Edge. -->
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>1세대 2주택 비과세 판정</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -72,14 +72,14 @@ body {
   width: 48px; height: 48px; border-radius: 14px;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.type-icon-wrap.blue { background: #EFF6FF; }
-.type-icon-wrap.green { background: #ECFDF5; }
-.type-icon-wrap.pink { background: #FFF0F6; }
-.type-icon-wrap.yellow { background: #FFFBEB; }
+.type-icon-wrap.blue { background: #e8f3ff; }
+.type-icon-wrap.green { background: #f0faf6; }
+.type-icon-wrap.pink { background: #f9fafb; }
+.type-icon-wrap.yellow { background: #fff9e7; }
 .type-info { flex: 1; }
 .type-name { font-size: 16px; font-weight: 700; color: #191F28; margin-bottom: 3px; letter-spacing: -0.3px; }
 .type-desc { font-size: 13px; color: #8B95A1; line-height: 1.5; }
-.type-arrow { color: #C4C9D1; flex-shrink: 0; }
+.type-arrow { color: #d1d6db; flex-shrink: 0; }
 
 /* 질문 */
 .q-screen { display: none; }
@@ -93,7 +93,7 @@ body {
 .nc-single { font-size: 13px; color: #4E5968; line-height: 1.7; }
 .nc-bullet-item { font-size: 13px; color: #4E5968; line-height: 1.6; padding-left: 14px; position: relative; margin-bottom: 6px; }
 .nc-bullet-item:last-child { margin-bottom: 0; }
-.nc-bullet-item::before { content: '•'; position: absolute; left: 1px; color: #3182F6; font-weight: 900; }
+.nc-bullet-item::before { content: '•'; position: absolute; left: 1px; color: #3182F6; font-weight:700; }
 .nc-intro { font-size: 13px; color: #4E5968; margin-bottom: 10px; }
 .nc-case { margin-bottom: 10px; }
 .nc-case:last-child { margin-bottom: 0; }
@@ -108,15 +108,15 @@ body {
   font-size: 16px; font-weight: 600; color: #191F28; width: 100%; text-align: left;
 }
 .q-opt:active { transform: scale(0.99); }
-.q-opt.yes-sel { border-color: #3182F6; background: #EFF6FF; color: #3182F6; }
-.q-opt.no-sel { border-color: #FF4E4E; background: #FFF5F5; color: #FF4E4E; }
+.q-opt.yes-sel { border-color: #3182F6; background: #e8f3ff; color: #3182F6; }
+.q-opt.no-sel { border-color: #f04452; background: #f9fafb; color: #f04452; }
 .q-opt-check {
   width: 22px; height: 22px; border-radius: 50%; border: 2px solid #E5E8EB;
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
   transition: all 0.12s;
 }
 .yes-sel .q-opt-check { background: #3182F6; border-color: #3182F6; }
-.no-sel .q-opt-check { background: #FF4E4E; border-color: #FF4E4E; }
+.no-sel .q-opt-check { background: #f04452; border-color: #f04452; }
 
 /* 결과 */
 .result-screen { display: none; }
@@ -125,14 +125,14 @@ body {
   width: 72px; height: 72px; border-radius: 50%;
   display: flex; align-items: center; justify-content: center; margin-bottom: 20px;
 }
-.result-icon-wrap.pass { background: #ECFDF5; }
-.result-icon-wrap.fail { background: #FFF5F5; }
+.result-icon-wrap.pass { background: #f0faf6; }
+.result-icon-wrap.fail { background: #f9fafb; }
 .result-badge {
   font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 20px;
   display: inline-block; margin-bottom: 12px; letter-spacing: 0.02em;
 }
-.result-badge.pass { background: #ECFDF5; color: #00B761; }
-.result-badge.fail { background: #FFF5F5; color: #FF4E4E; }
+.result-badge.pass { background: #f0faf6; color: #03b26c; }
+.result-badge.fail { background: #f9fafb; color: #f04452; }
 .result-headline {
   font-size: 24px; font-weight: 700; color: #191F28;
   line-height: 1.4; margin-bottom: 8px; letter-spacing: -0.5px; white-space: pre-line;
@@ -156,11 +156,11 @@ body {
 .nc-title { font-size: 13px; font-weight: 700; color: #4E5968; margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
 .nc-body { font-size: 13px; color: #4E5968; line-height: 1.7; }
 .nc-bullet { padding-left: 16px; position: relative; margin-bottom: 6px; color: #4E5968; }
-.nc-bullet::before { content: '•'; position: absolute; left: 2px; color: #3182F6; font-weight: 900; font-size: 14px; line-height: 1.5; }
+.nc-bullet::before { content: '•'; position: absolute; left: 2px; color: #3182F6; font-weight:700; font-size: 14px; line-height: 1.5; }
 .nc-plain { margin-top: 6px; color: #8B95A1; }
 
-.fail-card { background: #FFF5F5; border-radius: 16px; padding: 20px; margin-bottom: 10px; }
-.fail-card-title { font-size: 14px; font-weight: 700; color: #FF4E4E; margin-bottom: 8px; }
+.fail-card { background: #f9fafb; border-radius: 16px; padding: 20px; margin-bottom: 10px; }
+.fail-card-title { font-size: 14px; font-weight: 700; color: #f04452; margin-bottom: 8px; }
 .fail-card-body { font-size: 13px; color: #8B95A1; line-height: 1.65; }
 
 /* 하단 CTA */
@@ -180,6 +180,99 @@ body {
 .cta-btn.primary { background: #3182F6; color: #fff; }
 .cta-btn.secondary { background: #E5E8EB; color: #4E5968; }
 </style>
+<!-- TDS:BEGIN (tools/apply_tds.py가 관리 — 직접 고치지 말 것) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
+<style id="tds-base">
+:root{
+  --tds-grey50:#f9fafb;--tds-grey100:#f2f4f6;--tds-grey200:#e5e8eb;--tds-grey300:#d1d6db;--tds-grey400:#b0b8c1;
+  --tds-grey500:#8b95a1;--tds-grey600:#6b7684;--tds-grey700:#4e5968;--tds-grey800:#333d4b;--tds-grey900:#191f28;
+  --tds-blue50:#e8f3ff;--tds-blue100:#c9e2ff;--tds-blue500:#3182f6;--tds-blue600:#2272eb;--tds-blue700:#1b64da;
+  --tds-red500:#f04452;--tds-green500:#03b26c;--tds-orange500:#fe9800;
+}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif!important;
+  -webkit-font-smoothing:antialiased;color:var(--tds-grey900);letter-spacing:-0.01em;word-break:keep-all}
+button,input,select,textarea{font-family:inherit!important}
+button,a,label,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input::placeholder,textarea::placeholder{color:var(--tds-grey400)}
+
+/* 선택 상자: 기본 모양 대신 토스식 화살표 */
+select{-webkit-appearance:none;appearance:none;padding-right:40px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b95a1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 14px center!important;background-size:18px!important}
+/* 날짜 입력: 아이폰에서 높이가 줄지 않게 */
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;min-height:48px;display:block;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+input:focus,select:focus,textarea:focus{outline:none}
+
+/* 주요 버튼 (Primary) */
+.cta-btn,.btn-next,.btn-submit,.wiz-primary-btn,.submit-btn,.button,.consult-submit-btn,.btn-pdf,.modal-btn,.action-btn{
+  min-height:56px;border-radius:16px!important;font-size:17px!important;font-weight:600!important;
+  box-shadow:none!important;transform:none!important;letter-spacing:-0.01em}
+.cta-btn:active,.btn-next:active,.btn-submit:active,.wiz-primary-btn:active,.submit-btn:active,.button:active,
+.consult-submit-btn:active,.btn-pdf:active,.modal-btn:active{filter:brightness(.93)}
+.cta-btn:disabled,.btn-next:disabled,.btn-submit:disabled,.wiz-primary-btn:disabled,.submit-btn:disabled,.button:disabled{opacity:.4}
+/* 보조 버튼 (Secondary) */
+.btn-back,.btn-restart-main,.btn-back-input,.btn-save-tmp{border-radius:16px!important;font-weight:600!important;box-shadow:none!important}
+
+/* 화면 제목·설명 (토스 Title 26 / Body 15) */
+.header h1,.header h2,.hero h1,.hero-title,.home-title,#landing-screen .header-title,.tds-title{
+  font-size:26px!important;font-weight:700!important;line-height:1.38!important;letter-spacing:-0.02em!important;color:var(--tds-grey900)!important}
+.header > p,.hero > p,.home-sub,.tds-sub{font-size:15px!important;line-height:1.6!important;color:var(--tds-grey600)!important}
+
+/* 홈으로 (앱 안에서는 숨김 — 앱에 자체 상단바가 있음) */
+.home-top-btn{display:inline-flex!important;align-items:center;gap:2px;height:44px;padding:0 6px 0 0!important;margin:0 0 4px -4px!important;
+  background:none!important;border:0!important;cursor:pointer;font-size:15px!important;font-weight:600!important;color:var(--tds-grey700)!important}
+.home-top-btn svg{width:22px!important;height:22px!important;fill:none!important;stroke:var(--tds-grey700)!important;stroke-width:2.2!important}
+.home-top-btn:active{opacity:.6}
+.embedded .home-top-btn{display:none!important}
+</style>
+<script>
+/* 아이폰은 글자 16px 미만 입력창을 누르면 화면을 확대하고, 확대가 그대로 남아 레이아웃이 깨진다.
+   16px보다 작은 입력창만 16px로 올린다 (큰 금액 입력창은 그대로). 나중에 생기는 입력창(AI 채팅 등)도 처리. */
+(function(){
+  var SEL='input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,textarea';
+  function fix(root){
+    if(!root||!root.querySelectorAll) return;
+    var list=root.matches&&root.matches(SEL)?[root]:[];
+    list=list.concat([].slice.call(root.querySelectorAll(SEL)));
+    list.forEach(function(el){ if(parseFloat(getComputedStyle(el).fontSize)<16) el.style.setProperty('font-size','16px','important'); });
+  }
+  function start(){
+    fix(document);
+    new MutationObserver(function(ms){ ms.forEach(function(m){ [].forEach.call(m.addedNodes,function(n){ if(n.nodeType===1) fix(n); }); }); })
+      .observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  /* 혹시 확대된 상태로 남으면 입력이 끝날 때 원래 배율로 되돌린다 */
+  document.addEventListener('focusout',function(e){
+    if(!e.target.matches||!e.target.matches(SEL)) return;
+    var vp=document.querySelector('meta[name=viewport]'); if(!vp||!window.visualViewport||visualViewport.scale<=1.01) return;
+    var c=vp.content; vp.content=c+', maximum-scale=1'; setTimeout(function(){ vp.content=c; },300);
+  });
+})();
+</script>
+<style>
+/* 계산 단계별 법령 근거 표시 */
+.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:12px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
+.law-ref::before{content:'근거 ';color:var(--tds-blue500);font-weight:600}
+.law-ref.inline{display:inline;margin:0 0 0 4px}
+</style>
+<script>
+/* 계산 단계 옆에 붙이는 법령 근거. 사용: lawRef('소득세법 제104조①1호') */
+/* 브라우저 alert 대신 토스식 토스트 (alert는 앱 안 iframe에서 화면을 멈추게 함) */
+function tdsToast(msg){
+  var el=document.getElementById('tds-toast');
+  if(!el){ el=document.createElement('div'); el.id='tds-toast';
+    el.style.cssText='position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 40px);width:max-content;background:rgba(25,31,40,.92);color:#fff;font-size:15px;font-weight:500;line-height:1.5;padding:13px 20px;border-radius:14px;z-index:99999;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;word-break:keep-all';
+    document.body.appendChild(el); }
+  el.textContent=String(msg); el.style.opacity='1';
+  clearTimeout(el._t); el._t=setTimeout(function(){ el.style.opacity='0'; },2400);
+}
+function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':'')+'">'+t+'</span>' : ''; }
+</script>
+<!-- TDS:END -->
 </head>
 <body>
 <div class="screen">
@@ -206,6 +299,7 @@ body {
 
     <!-- 홈 -->
     <div id="homeScreen">
+      <button class="home-top-btn" onclick="location.href='index.html'"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>홈으로</button>
       <div class="home-header">
         <div class="home-eyebrow">양도소득세 계산기</div>
         <div class="home-title">1세대 2주택<br>비과세 판정</div>
@@ -225,16 +319,16 @@ body {
             <div class="type-desc">새 집을 산 후 기존 집을 파는 경우</div>
           </div>
           <div class="type-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#d1d6db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
         </button>
         <button class="type-card" onclick="selectType('care')">
           <div class="type-icon-wrap green">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <circle cx="9" cy="6" r="3" stroke="#00B761" stroke-width="1.7"/>
-              <circle cx="17" cy="8" r="2.5" stroke="#00B761" stroke-width="1.7"/>
-              <path d="M3 19c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#00B761" stroke-width="1.7" stroke-linecap="round"/>
-              <path d="M17 14c1.657 0 3 1.343 3 3v1" stroke="#00B761" stroke-width="1.7" stroke-linecap="round"/>
+              <circle cx="9" cy="6" r="3" stroke="#03b26c" stroke-width="1.7"/>
+              <circle cx="17" cy="8" r="2.5" stroke="#03b26c" stroke-width="1.7"/>
+              <path d="M3 19c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#03b26c" stroke-width="1.7" stroke-linecap="round"/>
+              <path d="M17 14c1.657 0 3 1.343 3 3v1" stroke="#03b26c" stroke-width="1.7" stroke-linecap="round"/>
             </svg>
           </div>
           <div class="type-info">
@@ -242,13 +336,13 @@ body {
             <div class="type-desc">부모님을 모시기 위해 세대를 합친 경우</div>
           </div>
           <div class="type-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#d1d6db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
         </button>
         <button class="type-card" onclick="selectType('marry')">
           <div class="type-icon-wrap pink">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <path d="M12 21C12 21 4 15.5 4 9.5C4 7.01 5.79 5 8 5C9.74 5 11.22 6.11 12 7.5C12.78 6.11 14.26 5 16 5C18.21 5 20 7.01 20 9.5C20 15.5 12 21 12 21Z" stroke="#F04E98" stroke-width="1.7" stroke-linejoin="round"/>
+              <path d="M12 21C12 21 4 15.5 4 9.5C4 7.01 5.79 5 8 5C9.74 5 11.22 6.11 12 7.5C12.78 6.11 14.26 5 16 5C18.21 5 20 7.01 20 9.5C20 15.5 12 21 12 21Z" stroke="#f66570" stroke-width="1.7" stroke-linejoin="round"/>
             </svg>
           </div>
           <div class="type-info">
@@ -256,14 +350,14 @@ body {
             <div class="type-desc">결혼으로 각자의 집이 2채가 된 경우</div>
           </div>
           <div class="type-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#d1d6db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
         </button>
         <button class="type-card" onclick="selectType('inherit')">
           <div class="type-icon-wrap yellow">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect x="5" y="3" width="14" height="18" rx="2" stroke="#F5A623" stroke-width="1.7"/>
-              <path d="M9 8H15M9 12H15M9 16H12" stroke="#F5A623" stroke-width="1.7" stroke-linecap="round"/>
+              <rect x="5" y="3" width="14" height="18" rx="2" stroke="#ffa927" stroke-width="1.7"/>
+              <path d="M9 8H15M9 12H15M9 16H12" stroke="#ffa927" stroke-width="1.7" stroke-linecap="round"/>
             </svg>
           </div>
           <div class="type-info">
@@ -271,7 +365,7 @@ body {
             <div class="type-desc">상속으로 주택이 한 채 더 생긴 경우</div>
           </div>
           <div class="type-arrow">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#C4C9D1" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M7 5L11 9L7 13" stroke="#d1d6db" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
         </button>
       </div>
@@ -343,6 +437,7 @@ const TYPES = {
       '보유·거주 요건 충족',
       '새 집 취득일로부터 3년 이내 처분',
     ],
+    passLaws: ['소득세법 시행령 제155조① (종전주택 먼저 양도)','소득세법 시행령 제155조① (종전주택 취득 1년 이후 신규 취득)','소득세법 시행령 제154조① (2년 보유, 취득 당시 조정지역 2년 거주)','소득세법 시행령 제155조① (신규주택 취득일부터 3년 이내)'],
     notice: '* 조합원입주권을 취득한 지 3년이 지나 기존 집을 파는 경우에는, 새 아파트 준공 후 3년 이내에 기존 집을 팔고 3년 이내에 \'세대 전원\'이 새 아파트로 이사해 1년 이상 거주해야 비과세가 유지돼요(2022.2.15 이후 양도분).\n* 양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.',
   },
   care: {
@@ -359,6 +454,7 @@ const TYPES = {
       '세대합가일부터 10년 이내 처분',
       '보유·거주 요건 충족',
     ],
+    passLaws: ['소득세법 시행령 제155조④','소득세법 시행령 제155조④ (직계존속 60세 이상)','소득세법 시행령 제155조④ (합가일부터 10년 이내)','소득세법 시행령 제154조①'],
     notice: '양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.',
   },
   marry: {
@@ -373,6 +469,7 @@ const TYPES = {
       '혼인신고일부터 10년 이내 처분',
       '보유·거주 요건 충족',
     ],
+    passLaws: ['소득세법 시행령 제155조⑤','소득세법 시행령 제155조⑤ (혼인한 날부터 10년 이내)','소득세법 시행령 제154조①'],
     notice: '혼인신고일 기준으로 판정해요.\n양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.',
   },
   inherit: {
@@ -391,6 +488,7 @@ const TYPES = {
       '보유·거주 요건 충족',
       '별도 세대 거주 또는 동거봉양 합가 특례 충족',
     ],
+    passLaws: ['소득세법 시행령 제155조② (일반주택 먼저 양도)','소득세법 시행령 제154조①','소득세법 시행령 제155조② 단서 (동거봉양 합가 상속)'],
     notice: '* 양도가액이 12억 원을 넘으면 초과분에 대해서는 세금이 부과돼요.\n* 상속 전 보유하던 집을 먼저 파는 경우 양도 기한의 제한은 없어요.',
   }
 };
@@ -528,16 +626,17 @@ function showResult(type) {
   const svg = document.getElementById('resultIconSvg');
   if (type === 'pass') {
     wrap.className = 'result-icon-wrap pass';
-    svg.innerHTML = '<circle cx="18" cy="18" r="18" fill="#ECFDF5"/><path d="M10 18L15.5 23.5L26 12.5" stroke="#00B761" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+    svg.innerHTML = '<circle cx="18" cy="18" r="18" fill="#f0faf6"/><path d="M10 18L15.5 23.5L26 12.5" stroke="#03b26c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
     document.getElementById('resultBadge').className = 'result-badge pass';
     document.getElementById('resultBadge').textContent = '비과세 해당';
     document.getElementById('resultHeadline').textContent = '비과세 혜택을\n받을 수 있어요';
     document.getElementById('resultSub').textContent = '요건을 모두 충족했어요';
     let html = '<div class="result-card"><div class="rc-label">충족한 요건</div>';
-    cfg.passCards.forEach(t => {
+    cfg.passCards.forEach((t, i) => {
+      const law = (cfg.passLaws || [])[i];
       html += `<div class="rc-row">
-        <span class="rc-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#ECFDF5"/><path d="M5.5 9L7.8 11.3L12.5 6.5" stroke="#00B761" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-        <span class="rc-text">${t}</span>
+        <span class="rc-icon"><svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="9" fill="#f0faf6"/><path d="M5.5 9L7.8 11.3L12.5 6.5" stroke="#03b26c" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        <span class="rc-text">${t}${lawRef(law)}</span>
       </div>`;
     });
     html += '</div>';
@@ -548,12 +647,12 @@ function showResult(type) {
     }).join('');
     html += '<div class="notice-card">'
       + '<div class="nc-title"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="7.5" stroke="#8B95A1" stroke-width="1.2"/><path d="M8 7V11" stroke="#8B95A1" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="5" r="0.8" fill="#8B95A1"/></svg> 꼭 확인하세요</div>'
-      + '<div class="nc-body">' + noticeHtml + '</div>'
+      + '<div class="nc-body">' + noticeHtml + lawRef('12억 초과분 과세: 소득세법 제89조①3호 · 제95조③ · 시행령 제160조①') + '</div>'
       + '</div>';
     document.getElementById('resultCards').innerHTML = html;
   } else {
     wrap.className = 'result-icon-wrap fail';
-    svg.innerHTML = '<circle cx="18" cy="18" r="18" fill="#FFF5F5"/><path d="M12 12L24 24M24 12L12 24" stroke="#FF4E4E" stroke-width="2.2" stroke-linecap="round"/>';
+    svg.innerHTML = '<circle cx="18" cy="18" r="18" fill="#f9fafb"/><path d="M12 12L24 24M24 12L12 24" stroke="#f04452" stroke-width="2.2" stroke-linecap="round"/>';
     document.getElementById('resultBadge').className = 'result-badge fail';
     document.getElementById('resultBadge').textContent = '과세 대상';
     document.getElementById('resultHeadline').textContent = '아쉽지만\n과세 대상이에요';
@@ -561,7 +660,7 @@ function showResult(type) {
     document.getElementById('resultCards').innerHTML = `
       <div class="fail-card">
         <div class="fail-card-title">비과세 혜택을 받으려면</div>
-        <div class="fail-card-body">모든 요건을 충족해야 비과세 혜택이 적용돼요. 정확한 내용은 세무사와 함께 확인해보시는 걸 추천드려요.</div>
+        <div class="fail-card-body">모든 요건을 충족해야 비과세 혜택이 적용돼요. 정확한 내용은 세무사와 함께 확인해보시는 걸 추천드려요.${lawRef('소득세법 제89조①3호 · 시행령 제154조 · 제155조')}</div>
       </div>`;
   }
   const btn = document.getElementById('ctaBtn');

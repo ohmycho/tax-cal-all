@@ -21,6 +21,7 @@
 | `consulting.html` | 상담 신청 |
 | `netlify/functions/chat.js` | AI 상담 API 프록시 (`/api/chat`) |
 | `tests/` | 계산 회귀 테스트 (배포와 무관) |
+| `tools/apply_tds.py` | 토스(TDS) 공통 스타일·스크립트를 모든 페이지에 넣는 스크립트 |
 
 ## 원칙
 
@@ -30,6 +31,17 @@
 - 계산 결과 아래에는 `taxSourceBox()`로 **계산 근거·출처·확인 기준일·미반영 사항·공통 면책문**을 표시한다.
   출처 링크는 `target="_blank" rel="noopener noreferrer"`.
 - 출처 URL은 실제로 열어서 내용을 확인한 것만 넣는다. 확인 못 한 링크는 넣지 않는다.
+- **계산 과정의 각 줄**(공제·과세표준·세율·세액 등)에는 `lawRef('소득세법 제95조②')`로 근거 조문을 붙인다.
+  정적 HTML이면 `<span class="law-ref">…</span>`. 조문 번호는 확인한 것만 쓴다 (링크 없이 조문명만).
+
+## 디자인 (토스 TDS)
+
+- 색은 토스 팔레트만 쓴다 (grey50~900, blue50~900, red, orange, yellow, green, teal). 보라·남색·그라데이션 쓰지 않음.
+- 글꼴은 Pretendard 하나, 굵기는 700까지. 화면 제목 26px, 주요 버튼 높이 56px·모서리 16px.
+- 공통 블록(`<!-- TDS:BEGIN -->` ~ `<!-- TDS:END -->`)은 **직접 고치지 말고** `tools/apply_tds.py`를 고친 뒤
+  `python3 tools/apply_tds.py`로 모든 페이지에 다시 넣는다. 새 페이지를 만들면 이 스크립트를 한 번 돌린다.
+- 공통 블록에 들어 있는 것: 아이폰 확대 방지(16px 미만 입력창 자동 16px), 앱 안(iframe)에서 '홈으로' 숨김,
+  `lawRef()`, `tdsToast()`(alert 대신 사용 — alert는 쓰지 않는다), 선택 상자·날짜 입력 모양, 버튼 공통 모양.
 
 ## 세법 기준 (확인 기준일 2026-11-16)
 

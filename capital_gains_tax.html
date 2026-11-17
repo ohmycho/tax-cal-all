@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>양도소득세 계산기</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -43,9 +43,9 @@
       transition: all 0.2s;
     }
     .step-dot.active { background: #3182f6; color: #fff; }
-    .step-dot.done   { background: #d1e5fe; color: #3182f6; }
+    .step-dot.done   { background: #c9e2ff; color: #3182f6; }
     .step-line { flex: 1; height: 2px; background: #e5e8eb; transition: background 0.2s; }
-    .step-line.done { background: #d1e5fe; }
+    .step-line.done { background: #c9e2ff; }
 
     /* ── 스텝 본문 ── */
     .step-body { padding: 24px 20px 40px; max-width: 480px; margin: 0 auto; }
@@ -93,8 +93,8 @@
       padding: 8px 14px; border-radius: 10px;
       font-size: 13px; font-weight: 600; margin-top: 10px;
     }
-    .badge-reg  { background: #fff0f1; color: #f04452; }
-    .badge-norm { background: #eff6ff; color: #3182f6; }
+    .badge-reg  { background: #f2f4f6; color: #f04452; }
+    .badge-norm { background: #e8f3ff; color: #3182f6; }
 
     /* ── 주택수 선택 ── */
     .house-tabs { display: flex; gap: 8px; }
@@ -105,7 +105,7 @@
       color: #8b95a1; cursor: pointer; text-align: center;
       transition: all 0.15s;
     }
-    .house-tab.active { border-color: #3182f6; background: #eff6ff; color: #3182f6; }
+    .house-tab.active { border-color: #3182f6; background: #e8f3ff; color: #3182f6; }
 
     /* ── 버튼: 입력단 바로 아래 ── */
     .bottom-btn-wrap {
@@ -118,7 +118,7 @@
       font-size: 16px; font-weight: 700; cursor: pointer;
       transition: background 0.15s;
     }
-    .btn-next:disabled { background: #c2d1e8; cursor: default; }
+    .btn-next:disabled { background: #c9e2ff; cursor: default; }
     .btn-next:not(:disabled):active { background: #1b64da; }
     .btn-back {
       width: 100%; padding: 13px;
@@ -129,7 +129,7 @@
 
     /* ── 에러 ── */
     .err-box {
-      background: #fff0f1; border-radius: 10px;
+      background: #f2f4f6; border-radius: 10px;
       padding: 11px 14px; font-size: 13px;
       color: #f04452; font-weight: 600;
       margin-bottom: 16px; display: none;
@@ -191,7 +191,7 @@
     .compare-sub { font-size: 12px; font-weight: 700; color: #8b95a1; margin: 14px 0 8px; }
 
     /* 절세 가이드 */
-    .guide-box { background: #f8f9fa; border-radius: 12px; padding: 14px 16px; }
+    .guide-box { background: #f9fafb; border-radius: 12px; padding: 14px 16px; }
     .guide-item { display: flex; gap: 8px; font-size: 13px; color: #4e5968; line-height: 1.55; margin-bottom: 8px; }
     .guide-item:last-child { margin-bottom: 0; }
     .gdot { color: #3182f6; font-weight: 700; flex-shrink: 0; }
@@ -258,7 +258,7 @@
       border-bottom: 1px solid #f2f4f6;
     }
     .ac-item:last-child { border-bottom: none; }
-    .ac-item.focused { background: #eff6ff; color: #3182f6; }
+    .ac-item.focused { background: #e8f3ff; color: #3182f6; }
     .ac-item mark { background: none; color: #3182f6; font-weight: 700; }
 
     /* ── 홈으로 버튼 ── */
@@ -283,7 +283,7 @@
     }
     .ai-badge {
       font-size: 11px; font-weight: 600;
-      background: #eff6ff; color: #3182f6;
+      background: #e8f3ff; color: #3182f6;
       padding: 3px 8px; border-radius: 100px;
     }
     .ai-chat-desc { font-size: 13px; color: #6b7684; margin-bottom: 16px; }
@@ -301,7 +301,7 @@
     .chat-msg.user .chat-bubble { background: #3182f6; color: #fff; border-radius: 16px 4px 16px 16px; }
     .chat-avatar {
       width: 28px; height: 28px; border-radius: 50%;
-      background: #eff6ff; color: #3182f6; font-size: 13px;
+      background: #e8f3ff; color: #3182f6; font-size: 13px;
       display: flex; align-items: center; justify-content: center;
       flex-shrink: 0; font-weight: 700;
     }
@@ -321,7 +321,7 @@
     }
     .chat-send-btn:active { background: #1b64da; }
     .chat-send-btn svg { width: 18px; height: 18px; fill: none; stroke: #fff; stroke-width: 2.5; }
-    .chat-send-btn:disabled { background: #c2d1e8; cursor: default; }
+    .chat-send-btn:disabled { background: #c9e2ff; cursor: default; }
     .typing-row { display: none; align-items: center; gap: 6px; font-size: 13px; color: #8b95a1; padding: 4px 0; }
     .typing-row.show { display: flex; }
     .typing-dot { width: 6px; height: 6px; border-radius: 50%; background: #8b95a1; animation: tBounce 1.2s infinite; }
@@ -342,7 +342,7 @@
 .tsrc-list li { padding:8px 0; border-bottom:1px solid #f2f4f6; }
 .tsrc-list a { color:#3182f6; font-weight:600; text-decoration:none; word-break:keep-all; }
 .tsrc-list small { display:block; color:#8b95a1; font-size:11px; }
-.tsrc-miss { margin-top:10px; background:#fff8e6; border-radius:10px; padding:10px 12px; font-size:12px; color:#8a5a00; }
+.tsrc-miss { margin-top:10px; background:#fff9e7; border-radius:10px; padding:10px 12px; font-size:12px; color:#4e5968; }
 .tsrc-miss ul { margin:4px 0 0; padding-left:16px; }
 .tsrc-disc { margin-top:10px; background:#f2f4f6; border-radius:10px; padding:10px 12px; font-size:12px; color:#6b7684; }
 </style>
@@ -364,7 +364,99 @@ function taxSourceBox(basis, items, missing) {
     '</div></details>';
 }
 if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
-<style>.embedded .home-top-btn{display:none!important}</style>
+<!-- TDS:BEGIN (tools/apply_tds.py가 관리 — 직접 고치지 말 것) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
+<style id="tds-base">
+:root{
+  --tds-grey50:#f9fafb;--tds-grey100:#f2f4f6;--tds-grey200:#e5e8eb;--tds-grey300:#d1d6db;--tds-grey400:#b0b8c1;
+  --tds-grey500:#8b95a1;--tds-grey600:#6b7684;--tds-grey700:#4e5968;--tds-grey800:#333d4b;--tds-grey900:#191f28;
+  --tds-blue50:#e8f3ff;--tds-blue100:#c9e2ff;--tds-blue500:#3182f6;--tds-blue600:#2272eb;--tds-blue700:#1b64da;
+  --tds-red500:#f04452;--tds-green500:#03b26c;--tds-orange500:#fe9800;
+}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif!important;
+  -webkit-font-smoothing:antialiased;color:var(--tds-grey900);letter-spacing:-0.01em;word-break:keep-all}
+button,input,select,textarea{font-family:inherit!important}
+button,a,label,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input::placeholder,textarea::placeholder{color:var(--tds-grey400)}
+
+/* 선택 상자: 기본 모양 대신 토스식 화살표 */
+select{-webkit-appearance:none;appearance:none;padding-right:40px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b95a1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 14px center!important;background-size:18px!important}
+/* 날짜 입력: 아이폰에서 높이가 줄지 않게 */
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;min-height:48px;display:block;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+input:focus,select:focus,textarea:focus{outline:none}
+
+/* 주요 버튼 (Primary) */
+.cta-btn,.btn-next,.btn-submit,.wiz-primary-btn,.submit-btn,.button,.consult-submit-btn,.btn-pdf,.modal-btn,.action-btn{
+  min-height:56px;border-radius:16px!important;font-size:17px!important;font-weight:600!important;
+  box-shadow:none!important;transform:none!important;letter-spacing:-0.01em}
+.cta-btn:active,.btn-next:active,.btn-submit:active,.wiz-primary-btn:active,.submit-btn:active,.button:active,
+.consult-submit-btn:active,.btn-pdf:active,.modal-btn:active{filter:brightness(.93)}
+.cta-btn:disabled,.btn-next:disabled,.btn-submit:disabled,.wiz-primary-btn:disabled,.submit-btn:disabled,.button:disabled{opacity:.4}
+/* 보조 버튼 (Secondary) */
+.btn-back,.btn-restart-main,.btn-back-input,.btn-save-tmp{border-radius:16px!important;font-weight:600!important;box-shadow:none!important}
+
+/* 화면 제목·설명 (토스 Title 26 / Body 15) */
+.header h1,.header h2,.hero h1,.hero-title,.home-title,#landing-screen .header-title,.tds-title{
+  font-size:26px!important;font-weight:700!important;line-height:1.38!important;letter-spacing:-0.02em!important;color:var(--tds-grey900)!important}
+.header > p,.hero > p,.home-sub,.tds-sub{font-size:15px!important;line-height:1.6!important;color:var(--tds-grey600)!important}
+
+/* 홈으로 (앱 안에서는 숨김 — 앱에 자체 상단바가 있음) */
+.home-top-btn{display:inline-flex!important;align-items:center;gap:2px;height:44px;padding:0 6px 0 0!important;margin:0 0 4px -4px!important;
+  background:none!important;border:0!important;cursor:pointer;font-size:15px!important;font-weight:600!important;color:var(--tds-grey700)!important}
+.home-top-btn svg{width:22px!important;height:22px!important;fill:none!important;stroke:var(--tds-grey700)!important;stroke-width:2.2!important}
+.home-top-btn:active{opacity:.6}
+.embedded .home-top-btn{display:none!important}
+</style>
+<script>
+/* 아이폰은 글자 16px 미만 입력창을 누르면 화면을 확대하고, 확대가 그대로 남아 레이아웃이 깨진다.
+   16px보다 작은 입력창만 16px로 올린다 (큰 금액 입력창은 그대로). 나중에 생기는 입력창(AI 채팅 등)도 처리. */
+(function(){
+  var SEL='input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,textarea';
+  function fix(root){
+    if(!root||!root.querySelectorAll) return;
+    var list=root.matches&&root.matches(SEL)?[root]:[];
+    list=list.concat([].slice.call(root.querySelectorAll(SEL)));
+    list.forEach(function(el){ if(parseFloat(getComputedStyle(el).fontSize)<16) el.style.setProperty('font-size','16px','important'); });
+  }
+  function start(){
+    fix(document);
+    new MutationObserver(function(ms){ ms.forEach(function(m){ [].forEach.call(m.addedNodes,function(n){ if(n.nodeType===1) fix(n); }); }); })
+      .observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  /* 혹시 확대된 상태로 남으면 입력이 끝날 때 원래 배율로 되돌린다 */
+  document.addEventListener('focusout',function(e){
+    if(!e.target.matches||!e.target.matches(SEL)) return;
+    var vp=document.querySelector('meta[name=viewport]'); if(!vp||!window.visualViewport||visualViewport.scale<=1.01) return;
+    var c=vp.content; vp.content=c+', maximum-scale=1'; setTimeout(function(){ vp.content=c; },300);
+  });
+})();
+</script>
+<style>
+/* 계산 단계별 법령 근거 표시 */
+.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:12px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
+.law-ref::before{content:'근거 ';color:var(--tds-blue500);font-weight:600}
+.law-ref.inline{display:inline;margin:0 0 0 4px}
+</style>
+<script>
+/* 계산 단계 옆에 붙이는 법령 근거. 사용: lawRef('소득세법 제104조①1호') */
+/* 브라우저 alert 대신 토스식 토스트 (alert는 앱 안 iframe에서 화면을 멈추게 함) */
+function tdsToast(msg){
+  var el=document.getElementById('tds-toast');
+  if(!el){ el=document.createElement('div'); el.id='tds-toast';
+    el.style.cssText='position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 40px);width:max-content;background:rgba(25,31,40,.92);color:#fff;font-size:15px;font-weight:500;line-height:1.5;padding:13px 20px;border-radius:14px;z-index:99999;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;word-break:keep-all';
+    document.body.appendChild(el); }
+  el.textContent=String(msg); el.style.opacity='1';
+  clearTimeout(el._t); el._t=setTimeout(function(){ el.style.opacity='0'; },2400);
+}
+function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':'')+'">'+t+'</span>' : ''; }
+</script>
+<!-- TDS:END -->
 </head>
 <body>
 
@@ -1921,6 +2013,7 @@ function renderResult(p) {
       <div class="sc-label">양도소득세</div>
       <div class="sc-amount">비과세</div>
       <div class="sc-note">1세대 1주택 비과세 요건 충족 — 세금 없음</div>
+      <div class="sc-note" style="opacity:.85">근거: 소득세법 제89조①3호 · 시행령 제154조 (2년 보유, 취득 당시 조정지역은 2년 거주)</div>
     </div>`;
   } else {
     html += `<div class="summary-card tax">
@@ -1936,7 +2029,7 @@ function renderResult(p) {
   html += `<div class="rcard">
     <div class="rcard-title">기본 정보</div>
     <div class="calc-row"><span class="cl">소재지</span><span class="cv">${p.region}</span></div>
-    <div class="calc-row"><span class="cl">규제지역</span><span class="cv">${regLabel}</span></div>
+    <div class="calc-row"><span class="cl">규제지역${lawRef('주택법 제63조의2 (조정대상지역 지정·공고)')}</span><span class="cv">${regLabel}</span></div>
     <div class="calc-row"><span class="cl">취득일</span><span class="cv">${fmtDate(p.acqDate)}</span></div>
     <div class="calc-row"><span class="cl">양도일</span><span class="cv">${fmtDate(p.saleDate)}</span></div>
     <div class="calc-row"><span class="cl">보유기간</span><span class="cv blue">${holdStr}</span></div>
@@ -1947,30 +2040,30 @@ function renderResult(p) {
   // 계산 상세
   if (!r.exempt) {
     html += `<div class="rcard"><div class="rcard-title">계산 상세</div>`;
-    html += `<div class="calc-row"><span class="cl">실지양도가액</span><span class="cv">${fmt(p.salePrice)}</span></div>`;
-    html += `<div class="calc-row"><span class="cl">실지취득가액</span><span class="cv red">- ${fmt(p.acqPrice)}</span></div>`;
-    html += `<div class="calc-row total"><span class="cl">양도차익</span><span class="cv blue">${fmt(p.gain)}</span></div>`;
+    html += `<div class="calc-row"><span class="cl">실지양도가액${lawRef('소득세법 제96조①')}</span><span class="cv">${fmt(p.salePrice)}</span></div>`;
+    html += `<div class="calc-row"><span class="cl">실지취득가액${lawRef('소득세법 제97조①1호')}</span><span class="cv red">- ${fmt(p.acqPrice)}</span></div>`;
+    html += `<div class="calc-row total"><span class="cl">양도차익${lawRef('소득세법 제95조①')}</span><span class="cv blue">${fmt(p.gain)}</span></div>`;
 
     if (r.isHighPrice) {
-      html += `<div class="calc-row"><span class="cl">고가주택 과세 양도차익<br><span style="font-size:11px;color:#8b95a1">(양도가 - 12억) ÷ 양도가 비율 적용</span></span><span class="cv">${fmt(r.taxGain)}</span></div>`;
+      html += `<div class="calc-row"><span class="cl">고가주택 과세 양도차익<br><span style="font-size:11px;color:#8b95a1">(양도가 - 12억) ÷ 양도가 비율 적용</span>${lawRef('소득세법 제95조③ · 시행령 제160조①')}</span><span class="cv">${fmt(r.taxGain)}</span></div>`;
     }
 
     if (r.lthdRate > 0) {
       const rateLabel = r.rr > 0
         ? `장기보유특별공제 표2 (보유 ${Math.round(r.hr*100)}% + 거주 ${Math.round(r.rr*100)}%)`
         : `장기보유특별공제 표1 (${Math.round(r.lthdRate*100)}%)`;
-      html += `<div class="calc-row"><span class="cl">${rateLabel}</span><span class="cv red">- ${fmt(r.lthd)}</span></div>`;
+      html += `<div class="calc-row"><span class="cl">${rateLabel}${lawRef(r.rr > 0 ? '소득세법 제95조② 표2 · 시행령 제159조의4' : '소득세법 제95조② 표1')}</span><span class="cv red">- ${fmt(r.lthd)}</span></div>`;
     } else if (p.holdM >= 36 && r.heavy) {
-      html += `<div class="calc-row"><span class="cl">장기보유특별공제</span><span class="cv red">중과로 배제</span></div>`;
+      html += `<div class="calc-row"><span class="cl">장기보유특별공제${lawRef('소득세법 제95조② 단서 (중과 대상 배제)')}</span><span class="cv red">중과로 배제</span></div>`;
     }
 
-    html += `<div class="calc-row"><span class="cl">기본공제</span><span class="cv red">- ${fmt(2_500_000)}</span></div>`;
-    html += `<div class="calc-row total"><span class="cl">과세표준</span><span class="cv">${fmt(r.base)}</span></div>`;
-    if (r.specialRate) html += `<div class="calc-row"><span class="cl">적용 세율</span><span class="cv red">단기 ${r.specialRate}%</span></div>`;
-    if (r.surcharge) html += `<div class="calc-row"><span class="cl">중과 가산세율</span><span class="cv red">+ ${r.surcharge}%p</span></div>`;
+    html += `<div class="calc-row"><span class="cl">양도소득 기본공제${lawRef('소득세법 제103조')}</span><span class="cv red">- ${fmt(2_500_000)}</span></div>`;
+    html += `<div class="calc-row total"><span class="cl">과세표준${lawRef('소득세법 제92조②')}</span><span class="cv">${fmt(r.base)}</span></div>`;
+    if (r.specialRate) html += `<div class="calc-row"><span class="cl">적용 세율${lawRef('소득세법 제104조①2호·3호 (기본세율과 비교해 큰 세액)')}</span><span class="cv red">단기 ${r.specialRate}%</span></div>`;
+    if (r.surcharge) html += `<div class="calc-row"><span class="cl">중과 가산세율${lawRef('소득세법 제104조⑦ (양도 당시 조정대상지역)')}</span><span class="cv red">+ ${r.surcharge}%p</span></div>`;
 
-    html += `<div class="calc-row total"><span class="cl">양도소득세 본세</span><span class="cv">${fmt(r.taxAmount)}</span></div>`;
-    html += `<div class="calc-row"><span class="cl">지방소득세 (×10%)</span><span class="cv">${fmt(r.localTax)}</span></div>`;
+    html += `<div class="calc-row total"><span class="cl">양도소득세 본세${lawRef('소득세법 제104조①1호 · 제55조① (6~45% 누진세율)')}</span><span class="cv">${fmt(r.taxAmount)}</span></div>`;
+    html += `<div class="calc-row"><span class="cl">지방소득세 (×10%)${lawRef('지방세법 제103조의3')}</span><span class="cv">${fmt(r.localTax)}</span></div>`;
     html += `<div class="calc-row total"><span class="cl">최종 납부세액</span><span class="cv blue">${fmt(r.totalTax)}</span></div>`;
     html += `</div>`;
   }

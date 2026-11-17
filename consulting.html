@@ -2,18 +2,14 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>VIP 전문 상담 신청 | 부동산중개법인</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --accent: #3182F6;
-  --accent-light: #EBF3FF;
-  --accent-dark: #1A6EE8;
+  --accent-light: #e8f3ff;
+  --accent-dark: #2272eb;
   --bg: #F2F4F6;
   --surface: #FFFFFF;
   --text: #191F28;
@@ -179,7 +175,7 @@ textarea.field-input {
   color: var(--accent); font-weight: 600;
 }
 .chip.on.purple-chip {
-  background: #eff6ff; border-color: #3182f6; color: #3182f6;
+  background: #e8f3ff; border-color: #3182f6; color: #3182f6;
 }
 
 /* ── 동의 체크박스 */
@@ -288,7 +284,7 @@ textarea.field-input {
 
 /* ── 에러 메시지 */
 .err-msg {
-  font-size: 13px; color: #E03030;
+  font-size: 13px; color: #e42939;
   margin-top: 6px; display: none;
 }
 .err-msg.show { display: block; }
@@ -310,8 +306,99 @@ textarea.field-input {
     .home-btn svg { width: 15px; height: 15px; fill: none; stroke: #8b95a1; stroke-width: 2; }
     .home-btn:active { background: #f2f4f6; }
 </style>
+<!-- TDS:BEGIN (tools/apply_tds.py가 관리 — 직접 고치지 말 것) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
-<style>.embedded .home-top-btn{display:none!important}</style>
+<style id="tds-base">
+:root{
+  --tds-grey50:#f9fafb;--tds-grey100:#f2f4f6;--tds-grey200:#e5e8eb;--tds-grey300:#d1d6db;--tds-grey400:#b0b8c1;
+  --tds-grey500:#8b95a1;--tds-grey600:#6b7684;--tds-grey700:#4e5968;--tds-grey800:#333d4b;--tds-grey900:#191f28;
+  --tds-blue50:#e8f3ff;--tds-blue100:#c9e2ff;--tds-blue500:#3182f6;--tds-blue600:#2272eb;--tds-blue700:#1b64da;
+  --tds-red500:#f04452;--tds-green500:#03b26c;--tds-orange500:#fe9800;
+}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+body{font-family:Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',system-ui,sans-serif!important;
+  -webkit-font-smoothing:antialiased;color:var(--tds-grey900);letter-spacing:-0.01em;word-break:keep-all}
+button,input,select,textarea{font-family:inherit!important}
+button,a,label,[onclick]{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+input::placeholder,textarea::placeholder{color:var(--tds-grey400)}
+
+/* 선택 상자: 기본 모양 대신 토스식 화살표 */
+select{-webkit-appearance:none;appearance:none;padding-right:40px!important;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238b95a1' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")!important;
+  background-repeat:no-repeat!important;background-position:right 14px center!important;background-size:18px!important}
+/* 날짜 입력: 아이폰에서 높이가 줄지 않게 */
+input[type=date],input[type=month]{-webkit-appearance:none;appearance:none;min-height:48px;display:block;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left}
+input:focus,select:focus,textarea:focus{outline:none}
+
+/* 주요 버튼 (Primary) */
+.cta-btn,.btn-next,.btn-submit,.wiz-primary-btn,.submit-btn,.button,.consult-submit-btn,.btn-pdf,.modal-btn,.action-btn{
+  min-height:56px;border-radius:16px!important;font-size:17px!important;font-weight:600!important;
+  box-shadow:none!important;transform:none!important;letter-spacing:-0.01em}
+.cta-btn:active,.btn-next:active,.btn-submit:active,.wiz-primary-btn:active,.submit-btn:active,.button:active,
+.consult-submit-btn:active,.btn-pdf:active,.modal-btn:active{filter:brightness(.93)}
+.cta-btn:disabled,.btn-next:disabled,.btn-submit:disabled,.wiz-primary-btn:disabled,.submit-btn:disabled,.button:disabled{opacity:.4}
+/* 보조 버튼 (Secondary) */
+.btn-back,.btn-restart-main,.btn-back-input,.btn-save-tmp{border-radius:16px!important;font-weight:600!important;box-shadow:none!important}
+
+/* 화면 제목·설명 (토스 Title 26 / Body 15) */
+.header h1,.header h2,.hero h1,.hero-title,.home-title,#landing-screen .header-title,.tds-title{
+  font-size:26px!important;font-weight:700!important;line-height:1.38!important;letter-spacing:-0.02em!important;color:var(--tds-grey900)!important}
+.header > p,.hero > p,.home-sub,.tds-sub{font-size:15px!important;line-height:1.6!important;color:var(--tds-grey600)!important}
+
+/* 홈으로 (앱 안에서는 숨김 — 앱에 자체 상단바가 있음) */
+.home-top-btn{display:inline-flex!important;align-items:center;gap:2px;height:44px;padding:0 6px 0 0!important;margin:0 0 4px -4px!important;
+  background:none!important;border:0!important;cursor:pointer;font-size:15px!important;font-weight:600!important;color:var(--tds-grey700)!important}
+.home-top-btn svg{width:22px!important;height:22px!important;fill:none!important;stroke:var(--tds-grey700)!important;stroke-width:2.2!important}
+.home-top-btn:active{opacity:.6}
+.embedded .home-top-btn{display:none!important}
+</style>
+<script>
+/* 아이폰은 글자 16px 미만 입력창을 누르면 화면을 확대하고, 확대가 그대로 남아 레이아웃이 깨진다.
+   16px보다 작은 입력창만 16px로 올린다 (큰 금액 입력창은 그대로). 나중에 생기는 입력창(AI 채팅 등)도 처리. */
+(function(){
+  var SEL='input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=hidden]),select,textarea';
+  function fix(root){
+    if(!root||!root.querySelectorAll) return;
+    var list=root.matches&&root.matches(SEL)?[root]:[];
+    list=list.concat([].slice.call(root.querySelectorAll(SEL)));
+    list.forEach(function(el){ if(parseFloat(getComputedStyle(el).fontSize)<16) el.style.setProperty('font-size','16px','important'); });
+  }
+  function start(){
+    fix(document);
+    new MutationObserver(function(ms){ ms.forEach(function(m){ [].forEach.call(m.addedNodes,function(n){ if(n.nodeType===1) fix(n); }); }); })
+      .observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start); else start();
+  /* 혹시 확대된 상태로 남으면 입력이 끝날 때 원래 배율로 되돌린다 */
+  document.addEventListener('focusout',function(e){
+    if(!e.target.matches||!e.target.matches(SEL)) return;
+    var vp=document.querySelector('meta[name=viewport]'); if(!vp||!window.visualViewport||visualViewport.scale<=1.01) return;
+    var c=vp.content; vp.content=c+', maximum-scale=1'; setTimeout(function(){ vp.content=c; },300);
+  });
+})();
+</script>
+<style>
+/* 계산 단계별 법령 근거 표시 */
+.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:12px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
+.law-ref::before{content:'근거 ';color:var(--tds-blue500);font-weight:600}
+.law-ref.inline{display:inline;margin:0 0 0 4px}
+</style>
+<script>
+/* 계산 단계 옆에 붙이는 법령 근거. 사용: lawRef('소득세법 제104조①1호') */
+/* 브라우저 alert 대신 토스식 토스트 (alert는 앱 안 iframe에서 화면을 멈추게 함) */
+function tdsToast(msg){
+  var el=document.getElementById('tds-toast');
+  if(!el){ el=document.createElement('div'); el.id='tds-toast';
+    el.style.cssText='position:fixed;left:50%;bottom:calc(32px + env(safe-area-inset-bottom));transform:translateX(-50%);max-width:calc(100% - 40px);width:max-content;background:rgba(25,31,40,.92);color:#fff;font-size:15px;font-weight:500;line-height:1.5;padding:13px 20px;border-radius:14px;z-index:99999;text-align:center;opacity:0;transition:opacity .2s;pointer-events:none;word-break:keep-all';
+    document.body.appendChild(el); }
+  el.textContent=String(msg); el.style.opacity='1';
+  clearTimeout(el._t); el._t=setTimeout(function(){ el.style.opacity='0'; },2400);
+}
+function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':'')+'">'+t+'</span>' : ''; }
+</script>
+<!-- TDS:END -->
 </head>
 <body>
 
@@ -383,7 +470,7 @@ textarea.field-input {
       <div class="agree-check" id="agree-check"></div>
       <div>
         <div class="agree-text">
-          <strong>개인정보 수집 및 이용 동의 <span style="color:#E03030">*</span></strong>
+          <strong>개인정보 수집 및 이용 동의 <span style="color:#e42939">*</span></strong>
           상담 진행을 위해 입력하신 개인정보를 수집·이용합니다.
         </div>
         <div class="agree-detail">
@@ -448,10 +535,10 @@ function fmtWon(mw) {
 (function applyTheme() {
   if (!pType) return;
   var color = '#3182f6';
-  var lightBg = isPurple ? '#F0EBFF' : '#EBF3FF';
+  var lightBg = isPurple ? '#e8f3ff' : '#e8f3ff';
   document.documentElement.style.setProperty('--accent', color);
   document.documentElement.style.setProperty('--accent-light', lightBg);
-  document.documentElement.style.setProperty('--accent-dark', isPurple ? '#1b64da' : '#1A6EE8');
+  document.documentElement.style.setProperty('--accent-dark', isPurple ? '#1b64da' : '#2272eb');
   if (isPurple) document.getElementById('report-card').classList.add('purple');
 })();
 
@@ -573,7 +660,7 @@ function showSuccess() {
   var desc  = document.getElementById('modal-desc');
   var mbtn  = document.getElementById('modal-btn');
 
-  icon.style.background = isPurple ? '#F0EBFF' : 'var(--accent-light)';
+  icon.style.background = isPurple ? '#e8f3ff' : 'var(--accent-light)';
   icon.textContent = '🎉';
   title.textContent = name + '님, 신청이 완료됐어요!';
   desc.innerHTML = '담당 전문가가 영업일 기준 <strong>24시간 이내</strong>에<br>직접 연락드릴게요.<br><br><span id="redirect-count" style="font-size:13px;color:#8b95a1;">3초 후 홈으로 이동합니다...</span>';
