@@ -1,0 +1,33 @@
+<style id="tds-page">
+@@RESULT_CSS@@
+</style>
+<script>
+(function(){
+  var last = { type:'house' };
+  function start(){
+    TDSWizard({
+      title:'법인 부동산 양도', init:last,
+      steps:[
+        { id:'type', type:'choice', q:'법인이 파는 부동산이\n무엇인가요?', sub:'등기된 부동산 기준이에요.',
+          options:[{v:'house',l:'주택',d:'일반 법인세 + 주택 추가 법인세 20%'},{v:'commercial',l:'상가·빌딩',d:'일반 법인세만 계산해요'}] },
+        { id:'acquireDate', type:'date', q:'언제 취득했나요?', sub:'잔금일 또는 등기접수일 중 빠른 날이에요.' },
+        { id:'saleDate', type:'date', q:'언제 파나요?', sub:'잔금일 기준이에요.',
+          validate:function(v,a){ return a.acquireDate && v<=a.acquireDate ? '취득일보다 뒤 날짜를 선택해 주세요' : ''; } },
+        { id:'acquirePrice', type:'money', unit:'만원', q:'얼마에 취득했나요?', sub:'장부가액이 다르면 장부가액을 입력해 주세요.', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
+        { id:'salePrice', type:'money', unit:'만원', q:'얼마에 파나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } }
+      ],
+      onDone:function(a){
+        last=a;
+        document.querySelector('.type-card[data-type="'+a.type+'"]').click();
+        document.getElementById('acquireDate').value=a.acquireDate;
+        document.getElementById('saleDate').value=a.saleDate;
+        document.getElementById('acquirePrice').value=Number(a.acquirePrice).toLocaleString('ko-KR');
+        document.getElementById('salePrice').value=Number(a.salePrice).toLocaleString('ko-KR');
+        calculateTax();
+        tdsResultChrome(document.getElementById('result'), '법인 양도 계산 결과', start);
+      }
+    });
+  }
+  start();
+})();
+</script>

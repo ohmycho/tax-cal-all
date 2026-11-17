@@ -1,0 +1,73 @@
+<style id="tds-page">
+/* 질문 넘기기 방식: 예전 한 페이지 입력은 숨기고 결과만 보여 준다 */
+.page > .header, .page > .card, .home-top-btn{display:none!important}
+body{background:#f2f4f6!important;padding:0 16px 48px!important}
+.result-card,.ai-chat-section,#note-box .note,.note{border:0!important;box-shadow:none!important;border-radius:20px!important}
+.result-top{background:#fff!important;color:#191f28!important;padding:28px 24px 20px!important}
+.result-top-label{font-size:15px!important;font-weight:600!important;color:#6b7684!important;margin-bottom:8px!important}
+.result-total-num{font-size:32px!important;font-weight:700!important;color:#191f28!important;min-height:0!important}
+.meta-badge{font-size:13px!important;padding:5px 10px!important;background:#f2f4f6!important;color:#4e5968!important;font-weight:500}
+.meta-badge.hi{background:#e8f3ff!important;color:#1b64da!important;font-weight:600}
+.breakdown{padding:0 24px!important}
+.brow{padding:16px 0!important;align-items:flex-start!important;border-bottom:1px solid #f2f4f6!important}
+.brow-left .name{font-size:16px!important;color:#4e5968!important;font-weight:500!important}
+.brow-left .desc{font-size:14px!important;color:#8b95a1!important;margin-top:3px!important}
+.brow-right{font-size:17px!important;font-weight:600!important;color:#191f28!important;padding-left:12px;white-space:nowrap}
+.brow-right.exempt{font-size:16px!important}
+.total-footer{padding:18px 24px!important;background:#fff!important;border-top:1px solid #e5e8eb!important}
+.total-footer .t-label{font-size:17px!important;font-weight:700!important}
+.total-footer .t-val{font-size:20px!important;font-weight:700!important;color:#3182f6!important}
+.note{font-size:15px!important;line-height:1.6!important;padding:16px 20px!important;background:#fff!important;color:#4e5968!important;margin:12px 0!important}
+.note.warn{background:#fff3e0!important;color:#4e5968!important}
+.note.danger{background:#ffeeee!important;color:#4e5968!important}
+.ai-chat-section{padding:24px 20px!important;margin-top:12px}
+.ai-chat-title{font-size:18px!important}
+.ai-chat-desc{font-size:15px!important}
+.chat-bubble{font-size:16px!important;line-height:1.6!important}
+.footer{font-size:13px!important;line-height:1.7!important}
+.page{max-width:560px!important}
+</style>
+<script>
+(function(){
+  var last = { buyer:'individual', use:'housing' };
+  var YN = [{v:true,l:'네'},{v:false,l:'아니요'}];
+  function start(){
+    TDSWizard({
+      title:'취득세 계산기', init:last,
+      steps:[
+        { id:'buyer', type:'choice', q:'누가 사시나요?', options:[{v:'individual',l:'개인'},{v:'corp',l:'법인'}] },
+        { id:'use', type:'choice', q:'어떤 부동산인가요?', options:[{v:'housing',l:'주택',d:'아파트·빌라·단독주택'},{v:'commercial',l:'상가·업무용',d:'상가·오피스·토지 등'}] },
+        { id:'house', type:'choice', q:'이번에 사면\n주택이 모두 몇 채가 되나요?', sub:'세대 전체 기준, 이번에 사는 집을 포함해요.',
+          when:function(a){return a.buyer==='individual'&&a.use==='housing';},
+          options:[{v:'1',l:'1주택'},{v:'2',l:'2주택'},{v:'3',l:'3주택'},{v:'4',l:'4주택 이상'}] },
+        { id:'tempTwo', type:'choice', q:'일시적 2주택에 해당하나요?', sub:'원래 집을 정해진 기한(보통 3년) 안에 팔 예정이면 일반세율(1~3%)을 적용해요.',
+          when:function(a){return a.buyer==='individual'&&a.use==='housing'&&a.house==='2';}, options:YN, row:true },
+        { id:'hasExclude', type:'choice', q:'주택 수에서 빠지는 집이 있나요?', sub:'상속받은 지 5년이 안 된 주택, 공시가격 1억 원 이하 주택 등은 주택 수에 넣지 않을 수 있어요.',
+          when:function(a){return a.buyer==='individual'&&a.use==='housing'&&a.house!=='1';}, options:YN, row:true },
+        { id:'region', type:'choice', q:'사려는 집이\n조정대상지역에 있나요?', sub:'서울 전역과 경기 일부 지역이 조정대상지역이에요.',
+          when:function(a){return a.use==='housing';},
+          options:[{v:'regulated',l:'조정대상지역이에요'},{v:'normal',l:'조정대상지역이 아니에요'}] },
+        { id:'areaOver', type:'choice', q:'전용면적이 85㎡를 넘나요?', sub:'85㎡ 이하(국민주택 규모)면 농어촌특별세가 없어요.',
+          when:function(a){return a.use==='housing';}, options:[{v:true,l:'85㎡ 초과'},{v:false,l:'85㎡ 이하'}], row:true },
+        { id:'metro', type:'choice', q:'어느 지역에 있나요?',
+          when:function(a){return a.buyer==='corp'&&a.use==='commercial';},
+          options:[{v:'metro',l:'과밀억제권역',d:'서울·인천 일부·경기 일부 대도시'},{v:'other',l:'그 외 지역'}] },
+        { id:'corpAge', type:'choice', q:'법인을 세운 지 얼마나 됐나요?',
+          when:function(a){return a.buyer==='corp'&&a.use==='commercial'&&a.metro==='metro';},
+          options:[{v:'under5',l:'5년 이내',d:'중과세율 적용 (총 9.4%)'},{v:'over5',l:'5년 넘음',d:'일반세율 적용 (총 4.6%)'}] },
+        { id:'price', type:'money', unit:'만원', q:'얼마에 사시나요?', sub:'실제 거래가격(계약서 금액)을 입력해 주세요.',
+          validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } }
+      ],
+      onDone:function(a){
+        last=a;
+        Object.assign(S,{ buyer:a.buyer, use:a.use, house:a.house||'1', tempTwo:!!a.tempTwo, hasExclude:!!a.hasExclude,
+          region:a.region||'regulated', areaOver:!!a.areaOver, metro:a.metro||'metro', corpAge:a.corpAge||'under5' });
+        document.getElementById('price').value=a.price;
+        updateDyn(); calc();
+        tdsResultChrome(document.querySelector('.page'), '취득세 계산 결과', start);
+      }
+    });
+  }
+  start();
+})();
+</script>

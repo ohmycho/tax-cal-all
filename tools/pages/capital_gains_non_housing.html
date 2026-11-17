@@ -1,0 +1,50 @@
+<style id="tds-page">
+.hero,.container > .section,.cta-btn,#calcBtn,.home-top-btn,.error-msg{display:none!important}
+body{background:#f2f4f6!important}
+.container{max-width:560px!important;padding:0 16px 48px!important}
+.result-card{border:0!important;border-radius:20px!important;padding:28px 24px 20px!important;margin-top:0!important}
+.result-header{margin-bottom:12px!important;align-items:flex-start!important;flex-direction:column;gap:10px}
+.result-eyebrow{font-size:15px!important;font-weight:600;color:#6b7684!important;margin-bottom:8px!important}
+.result-total{font-size:32px!important;font-weight:700!important}
+.result-badge{font-size:13px!important;padding:5px 10px!important}
+.result-divider{margin:4px 0!important;background:#f2f4f6!important}
+.result-row{padding:14px 0!important;align-items:flex-start!important;gap:12px}
+.result-row-label{font-size:16px!important;color:#4e5968!important;font-weight:500;flex:1}
+.result-row-val{font-size:17px!important;color:#191f28;white-space:nowrap}
+.result-row.strong .result-row-label{font-size:17px!important;font-weight:700!important;color:#191f28!important}
+.result-row.strong .result-row-val{font-size:20px!important;font-weight:700}
+.period-chip,.rate-chip{font-size:13px!important;padding:3px 8px!important}
+.notice{font-size:14px!important;color:#6b7684!important;line-height:1.6!important}
+.notice strong{color:#4e5968!important}
+</style>
+<script>
+(function(){
+  var last = {};
+  function setDate(prefix, v){ var p=v.split('-'); document.getElementById(prefix+'Y').value=p[0]; document.getElementById(prefix+'M').value=String(+p[1]); document.getElementById(prefix+'D').value=String(+p[2]); }
+  function won(id, man){ document.getElementById(id).value = man ? (man*10000).toLocaleString('ko-KR') : ''; }
+  function start(){
+    var rc=document.getElementById('resultCard'); if(rc) rc.style.display='none';
+    TDSWizard({
+      title:'주택 외 양도세', init:last,
+      steps:[
+        { id:'acqDate', type:'date', q:'언제 취득했나요?', sub:'상가·빌딩·토지의 잔금일 또는 등기접수일 중 빠른 날이에요.' },
+        { id:'trfDate', type:'date', q:'언제 파나요?', sub:'잔금일 기준이에요.',
+          validate:function(v,a){ return v<=a.acqDate ? '취득일보다 뒤 날짜를 선택해 주세요' : ''; } },
+        { id:'acqPrice', type:'money', unit:'만원', q:'얼마에 취득했나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
+        { id:'trfPrice', type:'money', unit:'만원', q:'얼마에 파나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
+        { id:'expense', type:'money', unit:'만원', q:'필요경비는 모두 얼마인가요?', optional:true,
+          sub:'없으면 비워 두고 다음을 누르세요.', help:'넣을 수 있는 것\n· 취득세, 중개수수료, 법무사 비용\n· 자본적 지출 (대수선비 등)\n· 양도할 때 낸 중개수수료' }
+      ],
+      onDone:function(a){
+        last=a;
+        setDate('acq', a.acqDate); setDate('trf', a.trfDate);
+        won('acqPrice', a.acqPrice); won('trfPrice', a.trfPrice); won('expense', a.expense||0);
+        document.getElementById('calcBtn').click();
+        tdsResultChrome(document.querySelector('.container'), '주택 외 양도세 결과', start);
+        window.scrollTo(0,0);
+      }
+    });
+  }
+  start();
+})();
+</script>

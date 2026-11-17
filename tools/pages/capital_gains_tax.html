@@ -1,0 +1,64 @@
+<style id="tds-page">
+#wizard-section,.result-header,.btn-reset,.home-top-btn{display:none!important}
+body{background:#f2f4f6!important;padding:0!important}
+.result-body{max-width:560px!important;padding:0 16px 48px!important}
+.summary-card{background:#fff!important;color:#191f28!important;border-radius:20px!important;padding:28px 24px!important}
+.sc-label{font-size:15px!important;font-weight:600;color:#6b7684;opacity:1!important}
+.sc-amount{font-size:32px!important;font-weight:700!important;color:#191f28}
+.summary-card.free .sc-amount{color:#03b26c}
+.sc-note{font-size:15px!important;opacity:1!important;color:#4e5968;margin-top:6px;line-height:1.5}
+.sc-row{font-size:16px!important;opacity:1!important;color:#4e5968;border-top-color:#f2f4f6!important}
+.rcard{border-radius:20px!important;box-shadow:none!important;padding:24px!important}
+.rcard-title{font-size:18px!important;margin-bottom:8px!important}
+.calc-row{font-size:16px!important;padding:14px 0!important;align-items:flex-start!important}
+.cl{color:#4e5968!important}
+.cv{font-size:17px;max-width:62%;word-break:keep-all}
+.calc-row.total .cv,.calc-row .cv.red,.calc-row .cv.blue{white-space:nowrap}
+.calc-row.total .cv{font-size:18px!important}
+.compare-sub{font-size:14px!important}
+.guide-item{font-size:15px!important}
+.notice{font-size:14px!important}
+.ai-chat-section{border-radius:20px!important;box-shadow:none!important;padding:24px 20px!important}
+.ai-chat-title{font-size:18px!important}
+.ai-chat-desc{font-size:15px!important}
+.chat-bubble{font-size:16px!important;line-height:1.6!important}
+</style>
+<script>
+(function(){
+  var last = { houseN:1 };
+  function start(){
+    document.getElementById('result-section').style.display='none';
+    document.getElementById('wizard-section').style.display='none';
+    TDSWizard({
+      title:'주택 양도소득세', init:last,
+      steps:[
+        { id:'region', type:'search', q:'파는 집이 어디에 있나요?', sub:'시·군·구 또는 동 이름으로 찾아 주세요.', placeholder:'예: 강남구, 반곡동',
+          suggest:function(q){ return REGIONS.filter(function(r){ return r.indexOf(q)>=0; }); },
+          validate:function(v){ return REGIONS.indexOf(v)>=0 ? '' : '목록에서 지역을 골라 주세요'; } },
+        { id:'houseN', type:'choice', q:'팔 때 집이 모두 몇 채인가요?', sub:'세대 전체 기준, 파는 집을 포함해요.',
+          options:[{v:1,l:'1주택'},{v:2,l:'2주택'},{v:3,l:'3주택 이상'}] },
+        { id:'acqDate', type:'date', q:'언제 샀나요?', sub:'잔금일 또는 등기접수일 중 빠른 날이에요.' },
+        { id:'acqPrice', type:'money', unit:'만원', q:'얼마에 샀나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
+        { id:'saleDate', type:'date', q:'언제 파나요?', sub:'잔금일 기준이에요.',
+          validate:function(v,a){ return v<=a.acqDate ? '산 날짜보다 뒤 날짜를 선택해 주세요' : ''; } },
+        { id:'salePrice', type:'money', unit:'만원', q:'얼마에 파나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
+        { id:'live', type:'multi', q:'그 집에 얼마나 살았나요?', sub:'안 살았으면 0으로 두세요.',
+          fields:[{id:'liveY',unit:'년'},{id:'liveM',unit:'개월'}],
+          validate:function(v){ return v.liveM>11 ? '개월은 11 이하로 입력해 주세요' : ''; } }
+      ],
+      onDone:function(a){
+        last=a;
+        document.getElementById('region').value=a.region;
+        document.getElementById('acqDate').value=a.acqDate; document.getElementById('saleDate').value=a.saleDate;
+        document.getElementById('acqPrice').value=a.acqPrice; document.getElementById('salePrice').value=a.salePrice;
+        document.getElementById('resideYear').value=a.liveY||0; document.getElementById('resideMonth').value=a.liveM||0;
+        selectedHouse=a.houseN;
+        calculate();
+        tdsResultChrome(document.querySelector('.result-body'), '주택 양도소득세 결과', start);
+        window.scrollTo(0,0);
+      }
+    });
+  }
+  start();
+})();
+</script>

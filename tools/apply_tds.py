@@ -135,7 +135,7 @@ input:focus,select:focus,textarea:focus{outline:none}
 </script>
 <style>
 /* 계산 단계별 법령 근거 표시 */
-.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:12px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
+.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:13px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
 .law-ref::before{content:'근거 ';color:var(--tds-blue500);font-weight:600}
 .law-ref.inline{display:inline;margin:0 0 0 4px}
 </style>
@@ -157,6 +157,9 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 
 VIEWPORT = '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">'
 
+WIZARD = open(os.path.join(ROOT, 'tools', 'tds_wizard.html'), encoding='utf-8').read().strip()
+BLOCK = BLOCK.replace('<!-- TDS:END -->', WIZARD + '\n<!-- TDS:END -->')
+
 def process(path):
     s = open(path, encoding='utf-8').read()
     o = s
@@ -177,6 +180,13 @@ def process(path):
     # viewport
     s = re.sub(r'<meta\s+name="viewport"[^>]*>', VIEWPORT, s, count=1)
     s = s.replace('</head>', BLOCK + '</head>', 1)
+    # 페이지별 화면 코드 (tools/pages/<이름>.html) → </body> 앞
+    s = re.sub(r'<!-- TDS:PAGE.*?<!-- /TDS:PAGE -->\n?', '', s, flags=re.S)
+    pg = os.path.join(ROOT, 'tools', 'pages', os.path.basename(path))
+    if os.path.exists(pg):
+        part = open(pg, encoding='utf-8').read().strip()
+        part = part.replace('@@RESULT_CSS@@', open(os.path.join(ROOT, 'tools', 'pages', '_template_result.css'), encoding='utf-8').read().strip())
+        s = s.replace('</body>', '<!-- TDS:PAGE (tools/pages/' + os.path.basename(path) + ' — 직접 고치지 말 것) -->\n' + part + '\n<!-- /TDS:PAGE -->\n</body>', 1)
     if s != o:
         open(path, 'w', encoding='utf-8').write(s)
     return s != o

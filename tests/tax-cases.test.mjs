@@ -132,7 +132,8 @@ test('주택 외 양도세: 1년 미만 50%', async () => {
     s('acqY', 2025); s('acqM', 6); s('acqD', 1); s('trfY', 2026); s('trfM', 3); s('trfD', 1);
     s('acqPrice', '500,000,000'); s('trfPrice', '600,000,000'); s('expense', '0');
   });
-  await p.click('#calcBtn');
+  // 화면은 질문 넘기기 방식이라 원래 계산 버튼은 숨겨져 있음 → 직접 실행
+  await p.evaluate(() => document.getElementById('calcBtn').click());
   assert.equal(await p.textContent('#r12'), '53,625,000원', '(1억 − 250만) × 50% × 1.1');
 });
 
@@ -189,4 +190,19 @@ test('상속세: 공제 한도·배우자·금융·미성년·동거주택·취�
   assert.equal(onlyKids.finalTax, 20224, '자녀만 2명');
   assert.equal(spouseOnly.finalTax, 0, '배우자 단독');
   assert.equal(both.finalTax, 3963, '배우자 + 자녀 2명');
+});
+
+// ───────────────────────── 질문 넘기기 화면 (TDSWizard) — 끝까지 눌러서 결과가 나오는지
+test('질문 넘기기: 취득세 화면을 끝까지 진행하면 결과가 나온다', async () => {
+  const p = await open('acquisition.html');
+  for (const t of ['개인', '주택', '1주택', '조정대상지역이에요', '85㎡ 이하']) {
+    await p.locator('.tds-choice', { hasText: t }).first().click();
+    await p.waitForTimeout(250);
+  }
+  await p.fill('.tds-input', '70000');
+  await p.click('#tds-next');
+  await p.waitForTimeout(200);
+  assert.equal(await p.locator('#tds-wiz').count(), 0, '질문 화면이 닫혀야 함');
+  assert.match(await p.textContent('#r-total'), /1,283/, '7억 1주택: 1.6667% + 교육세');
+  assert.ok(await p.locator('.law-ref').count() >= 3, '계산 줄마다 근거 조문');
 });

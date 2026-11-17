@@ -1,0 +1,43 @@
+<style id="tds-page">
+.container > .header,.input-group,.home-top-btn{display:none!important}
+body{padding:0 16px 48px!important;display:block!important}
+.container{max-width:560px!important;margin:0 auto!important}
+#result-section{margin-top:0!important}
+.card{border-radius:20px!important;box-shadow:none!important;padding:24px!important;margin-bottom:12px!important}
+.card-title{font-size:18px!important}
+.info-row{font-size:16px!important;margin-bottom:16px!important}
+.badge-red,.badge-blue{font-size:14px!important;padding:5px 10px!important;border-radius:8px!important}
+#out-detail{font-size:15px!important;line-height:1.6!important;color:#6b7684!important}
+#out-requirement{font-size:16px!important;line-height:1.6!important}
+.progress-header{font-size:16px!important}
+.result-box{font-size:16px!important;line-height:1.65!important;background:#f9fafb!important;border-radius:16px!important}
+.notice{font-size:14px!important;color:#8b95a1!important}
+</style>
+<script>
+(function(){
+  var last = {};
+  function start(){
+    document.getElementById('result-section').style.display='none';
+    TDSWizard({
+      title:'조정대상지역 진단', init:last, doneLabel:'진단하기',
+      steps:[
+        { id:'region', type:'search', q:'집이 어디에 있나요?', sub:'시·군·구 또는 동 이름으로 찾아 주세요.', placeholder:'예: 강남구, 수지구',
+          suggest:function(q){ return Object.keys(regulatoryDB).filter(function(r){ return r.indexOf(q)>=0; }).sort(); } },
+        { id:'acqDate', type:'date', q:'언제 취득했나요?', sub:'잔금일 또는 등기접수일 중 빠른 날이에요.\n취득 당시 조정대상지역이었는지에 따라 거주 요건이 달라져요.' },
+        { id:'live', type:'multi', q:'그 집에 얼마나 살았나요?', sub:'주민등록 전입 후 실제로 산 기간이에요. 안 살았으면 0으로 두세요.',
+          fields:[{id:'liveY',unit:'년'},{id:'liveM',unit:'개월'}],
+          validate:function(v){ return v.liveM>11 ? '개월은 11 이하로 입력해 주세요' : ''; } }
+      ],
+      onDone:function(a){
+        last=a;
+        document.getElementById('region').value=a.region;
+        document.getElementById('acqDate').value=a.acqDate;
+        document.getElementById('residenceMonths').value=(a.liveY||0)*12+(a.liveM||0);
+        runDiagnosis();
+        tdsResultChrome(document.querySelector('.container'), '조정대상지역 진단 결과', start);
+      }
+    });
+  }
+  if(document.readyState==='complete') start(); else window.addEventListener('load', start);
+})();
+</script>

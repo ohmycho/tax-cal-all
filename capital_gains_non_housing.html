@@ -528,7 +528,7 @@ input:focus,select:focus,textarea:focus{outline:none}
 </script>
 <style>
 /* 계산 단계별 법령 근거 표시 */
-.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:12px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
+.law-ref,span.law-ref,strong .law-ref,.tax-box .law-ref,.summary-row .law-ref{display:block!important;flex-basis:100%;margin-top:3px!important;font-size:13px!important;line-height:1.5!important;color:var(--tds-grey500)!important;font-weight:500!important;letter-spacing:0!important;word-break:keep-all;text-align:left!important;white-space:normal!important}
 .law-ref::before{content:'근거 ';color:var(--tds-blue500);font-weight:600}
 .law-ref.inline{display:inline;margin:0 0 0 4px}
 </style>
@@ -544,6 +544,217 @@ function tdsToast(msg){
   clearTimeout(el._t); el._t=setTimeout(function(){ el.style.opacity='0'; },2400);
 }
 function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':'')+'">'+t+'</span>' : ''; }
+</script>
+<style id="tds-wizard-css">
+/* ── 토스 글자 크기 체계 ── 질문 24 / 본문 17 / 보조 15 / 캡션 13 */
+.tds-wiz{position:fixed;inset:0;z-index:900;background:#fff;display:flex;flex-direction:column;overflow:hidden}
+.tds-wiz-on{overflow:hidden}
+.tds-topbar{flex-shrink:0;height:56px;display:flex;align-items:center;gap:4px;padding:0 8px;padding-top:env(safe-area-inset-top);box-sizing:content-box;background:#fff}
+.tds-topbar .tds-back{width:44px;height:44px;border:0;background:none;display:grid;place-items:center;border-radius:12px;cursor:pointer;color:var(--tds-grey900)}
+.tds-topbar .tds-back svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tds-topbar .tds-back:active{background:var(--tds-grey100)}
+.tds-topbar-title{font-size:17px;font-weight:600;color:var(--tds-grey900);flex:1;padding-left:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tds-progress{flex-shrink:0;height:3px;background:var(--tds-grey100)}
+.tds-progress i{display:block;height:100%;background:var(--tds-blue500);transition:width .3s ease;border-radius:0 2px 2px 0}
+.tds-wiz-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:28px 24px 140px;max-width:560px;width:100%;margin:0 auto;box-sizing:border-box}
+.tds-step-count{display:none}
+.tds-q{font-size:24px;font-weight:700;line-height:1.42;color:var(--tds-grey900);margin:0 0 10px;letter-spacing:-0.02em;white-space:pre-line}
+.tds-q-sub{font-size:16px;line-height:1.6;color:var(--tds-grey600);margin:0 0 28px;white-space:pre-line}
+.tds-q-sub:empty{display:none}
+.tds-q + .tds-control{margin-top:28px}
+/* 입력칸 (금액·숫자·날짜·검색) */
+.tds-input-wrap{display:flex;align-items:center;gap:8px;border-bottom:2px solid var(--tds-grey200);padding:8px 0 10px;transition:border-color .15s}
+.tds-input-wrap:focus-within{border-color:var(--tds-blue500)}
+.tds-input-wrap.err{border-color:var(--tds-red500)}
+.tds-input{flex:1;min-width:0;width:auto!important;height:auto!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important;background:transparent!important;-webkit-appearance:none;appearance:none;margin:0!important;font-size:26px!important;font-weight:700;color:var(--tds-grey900);padding:0!important;font-family:inherit;letter-spacing:-0.01em}
+.tds-input::placeholder{color:var(--tds-grey300);font-weight:600}
+.tds-input[type=date]{font-size:22px!important;min-height:40px}
+.tds-unit{font-size:22px;font-weight:600;color:var(--tds-grey600);flex-shrink:0}
+.tds-hint{font-size:16px;font-weight:600;color:var(--tds-blue500);margin-top:12px;min-height:24px}
+.tds-help{font-size:15px;line-height:1.6;color:var(--tds-grey600);background:var(--tds-grey50);border-radius:14px;padding:14px 16px;margin-top:24px;white-space:pre-line}
+.tds-err{font-size:15px;color:var(--tds-red500);margin-top:12px;min-height:22px;font-weight:500}
+.tds-multi{display:flex;gap:16px}
+.tds-multi > div{flex:1;min-width:0}
+.tds-multi label{display:block;font-size:15px;font-weight:600;color:var(--tds-grey600);margin-bottom:4px}
+/* 선택 버튼 */
+.tds-choices{display:flex;flex-direction:column;gap:10px}
+.tds-choice{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;border-radius:16px;background:var(--tds-grey100);padding:18px 20px;cursor:pointer;font-family:inherit;color:var(--tds-grey900);box-shadow:inset 0 0 0 1.5px transparent;transition:background .12s,box-shadow .12s}
+.tds-choice:active{background:var(--tds-grey200)}
+.tds-choice.on{background:var(--tds-blue50);box-shadow:inset 0 0 0 1.5px var(--tds-blue500)}
+.tds-choice .t{display:block;font-size:17px;font-weight:600;line-height:1.4}
+.tds-choice .d{display:block;font-size:14px;color:var(--tds-grey600);margin-top:3px;line-height:1.5;font-weight:400}
+.tds-choice.on .t{color:var(--tds-blue600)}
+.tds-choice > span:first-child{flex:1}
+.tds-choice .ck{width:24px;height:24px;border-radius:50%;flex-shrink:0;background:var(--tds-grey200);display:grid;place-items:center}
+.tds-choice.on .ck{background:var(--tds-blue500)}
+.tds-choice .ck svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.tds-choices.row{flex-direction:row}
+.tds-choices.row .tds-choice{justify-content:center;text-align:center}
+.tds-choices.row .ck{display:none}
+/* 검색 제안 */
+.tds-suggest{margin-top:8px;border-radius:14px;overflow:hidden}
+.tds-suggest button{display:block;width:100%;text-align:left;border:0;background:#fff;padding:14px 4px;font-size:17px;color:var(--tds-grey800);font-family:inherit;border-bottom:1px solid var(--tds-grey100);cursor:pointer}
+.tds-suggest button:active{background:var(--tds-grey50)}
+.tds-suggest b{color:var(--tds-blue500);font-weight:700}
+/* 하단 고정 버튼 */
+.tds-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:910;padding:12px 20px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(to top,#fff 75%,rgba(255,255,255,0));will-change:transform}
+.tds-cta-bar > div{max-width:520px;margin:0 auto;display:flex;gap:8px}
+.tds-btn{flex:1;height:56px;border:0;border-radius:16px;background:var(--tds-blue500);color:#fff;font-size:17px;font-weight:600;font-family:inherit;cursor:pointer;transition:filter .1s,opacity .15s}
+.tds-btn:active{filter:brightness(.93)}
+.tds-btn:disabled{opacity:.35;cursor:default}
+.tds-btn.sub{background:var(--tds-grey100);color:var(--tds-grey700)}
+/* 결과 화면 공통 */
+.tds-result-top{position:sticky;top:0;z-index:50;background:#fff;height:56px;display:flex;align-items:center;gap:4px;padding:0 8px;margin:0 -9999px 0;padding-left:calc(9999px + 8px);padding-right:9999px}
+.tds-result-actions{display:flex;gap:8px;margin:24px 0 8px}
+.tds-result-actions .tds-btn{height:52px;font-size:16px}
+.tds-result-actions .tds-btn.sub{background:#fff;color:var(--tds-grey800)}
+.embedded .tds-topbar .tds-back.home{visibility:hidden}
+/* 너무 작은 글자(10~12px) → 13px 이상 */
+[style*="font-size:10px"],[style*="font-size: 10px"],[style*="font-size:11px"],[style*="font-size: 11px"],[style*="font-size:12px"],[style*="font-size: 12px"]{font-size:13px!important}
+/* AI 상담 배지 */
+.ai-badge{font-size:13px!important}
+/* 계산 근거·출처 상자 (모든 계산기 공통) */
+.tsrc{font-size:15px!important;border-radius:20px!important;border:0!important;padding:0 20px!important;margin:12px 0!important}
+.tsrc summary{font-size:16px!important;padding:18px 0!important}
+.tsrc summary::after{font-size:14px!important}
+.tsrc-basis{font-size:14px!important}
+.tsrc-list li{padding:10px 0!important}
+.tsrc-list small{font-size:13px!important;margin-top:2px}
+.tsrc-miss{font-size:14px!important}
+.tsrc-disc{font-size:13px!important;line-height:1.6!important}
+</style>
+<script id="tds-wizard-js">
+/* 토스식 질문 넘기기 엔진
+   TDSWizard({ title, steps:[{id, q, sub, type:'choice'|'money'|'number'|'multi'|'date'|'search', ...}], onDone(answers), init })
+   - choice: options:[{v,l,d}], row:true(가로 2~3개) → 누르면 바로 다음
+   - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
+   - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
+   - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
+(function(){
+  var ICON_BACK='<svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>';
+  var ICON_CK='<svg viewBox="0 0 24 24"><polyline points="5 12.5 10 17 19 7"/></svg>';
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+  function kor(n, unit){
+    n=Number(n)||0; if(n<=0) return '';
+    var won = unit==='만원' ? n*10000 : n;
+    var jo=Math.floor(won/1e12), eok=Math.floor(won%1e12/1e8), man=Math.floor(won%1e8/1e4), rest=Math.round(won%1e4), out=[];
+    if(jo) out.push(jo.toLocaleString()+'조'); if(eok) out.push(eok.toLocaleString()+'억'); if(man) out.push(man.toLocaleString()+'만');
+    if(!out.length || (rest && unit!=='만원')) out.push((rest||0).toLocaleString());
+    return out.join(' ')+' 원';
+  }
+  function digits(s){ return String(s||'').replace(/[^0-9]/g,''); }
+  window.tdsKor = kor;
+
+  window.TDSWizard = function(cfg){
+    var a = Object.assign({}, cfg.init||{}), hist=[], idx=0;
+    var root=document.createElement('div'); root.className='tds-wiz'; root.id='tds-wiz';
+    root.innerHTML='<div class="tds-topbar"><button class="tds-back" aria-label="뒤로">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(cfg.title)+'</div></div>'+
+      '<div class="tds-progress"><i></i></div><div class="tds-wiz-body"></div>'+
+      '<div class="tds-cta-bar"><div><button class="tds-btn" id="tds-next">다음</button></div></div>';
+    document.body.appendChild(root); document.documentElement.classList.add('tds-wiz-on');
+    var body=root.querySelector('.tds-wiz-body'), bar=root.querySelector('.tds-cta-bar'), next=root.querySelector('#tds-next'), back=root.querySelector('.tds-back');
+    var steps=cfg.steps;
+    function visible(i){ var s=steps[i]; return !s.when || s.when(a); }
+    function nextIdx(i){ for(var j=i+1;j<steps.length;j++) if(visible(j)) return j; return -1; }
+    function countVisible(){ var n=0,pos=0; for(var j=0;j<steps.length;j++){ if(visible(j)){ n++; if(j<=idx) pos=n; } } return [pos,n]; }
+    function err(msg){ var e=body.querySelector('.tds-err'); if(e) e.textContent=msg||''; var w=body.querySelector('.tds-input-wrap'); if(w) w.classList.toggle('err',!!msg); }
+    function value(s){
+      if(s.type==='multi'){ var o={}; s.fields.forEach(function(f){ o[f.id]=Number(digits(body.querySelector('[data-f="'+f.id+'"]').value))||0; }); return o; }
+      var el=body.querySelector('.tds-input'); if(!el) return a[s.id];
+      if(s.type==='money'||s.type==='number') return el.value===''?null:Number(digits(el.value));
+      return el.value.trim();
+    }
+    function empty(s,v){ if(s.type==='multi') return false; return v===null||v===undefined||v===''; }
+    function go(){
+      var s=steps[idx], v=value(s);
+      if(s.type!=='choice'){
+        if(empty(s,v) && !s.optional){ err(s.type==='date'?'날짜를 선택해 주세요':'값을 입력해 주세요'); return; }
+        if(s.validate){ var m=s.validate(v,a); if(m){ err(m); return; } }
+        a[s.id]=empty(s,v)?(s.type==='money'||s.type==='number'?0:''):v;
+        if(s.type==='multi') s.fields.forEach(function(f){ a[f.id]=v[f.id]; });
+      }
+      var n=nextIdx(idx);
+      if(n<0){ finish(); return; }
+      hist.push(idx); idx=n; render();
+    }
+    function finish(){
+      root.remove(); document.documentElement.classList.remove('tds-wiz-on'); window.scrollTo(0,0);
+      cfg.onDone(a);
+    }
+    function render(){
+      var s=steps[idx], c=countVisible(); err('');
+      root.querySelector('.tds-progress i').style.width=Math.round(c[0]/c[1]*100)+'%';
+      back.classList.toggle('home', hist.length===0);
+      var h='<div class="tds-step-count">'+c[0]+' / '+c[1]+'</div><h2 class="tds-q">'+esc(typeof s.q==='function'?s.q(a):s.q)+'</h2><p class="tds-q-sub">'+esc(typeof s.sub==='function'?s.sub(a):(s.sub||''))+'</p><div class="tds-control">';
+      var cur=a[s.id];
+      if(s.type==='choice'){
+        h+='<div class="tds-choices'+(s.row?' row':'')+'">'+s.options.filter(function(o){return !o.when||o.when(a);}).map(function(o){
+          return '<button class="tds-choice'+(cur===o.v?' on':'')+'" data-v="'+esc(o.v)+'"><span><span class="t">'+esc(o.l)+'</span>'+(o.d?'<span class="d">'+esc(o.d)+'</span>':'')+'</span><span class="ck">'+ICON_CK+'</span></button>';
+        }).join('')+'</div>';
+      } else if(s.type==='multi'){
+        h+='<div class="tds-multi">'+s.fields.map(function(f){ var v=a[f.id];
+          return '<div><div class="tds-input-wrap"><input class="tds-input" data-f="'+f.id+'" inputmode="numeric" placeholder="0" value="'+(v||v===0?v:'')+'"><span class="tds-unit">'+esc(f.unit||'')+'</span></div></div>'; }).join('')+'</div>';
+      } else {
+        var type = s.type==='date'?'date':'text', im = (s.type==='money'||s.type==='number')?' inputmode="numeric"':'';
+        var val = cur==null||cur===''?'':(s.type==='money'?Number(cur).toLocaleString():cur);
+        h+='<div class="tds-input-wrap"><input class="tds-input" type="'+type+'"'+im+' autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.placeholder||(s.type==='money'?'0':''))+'" value="'+esc(val)+'"'+(s.max?' max="'+s.max+'"':'')+'>'+(s.unit?'<span class="tds-unit">'+esc(s.unit)+'</span>':'')+'</div>';
+        if(s.type==='money') h+='<div class="tds-hint"></div>';
+        if(s.type==='search') h+='<div class="tds-suggest"></div>';
+      }
+      h+='<div class="tds-err"></div>'+(s.help?'<div class="tds-help">'+esc(typeof s.help==='function'?s.help(a):s.help)+'</div>':'')+'</div>';
+      body.innerHTML=h; body.scrollTop=0;
+      bar.style.display = s.type==='choice' ? 'none' : '';
+      next.textContent = nextIdx(idx)<0 ? (cfg.doneLabel||'결과 보기') : '다음';
+      if(s.type==='choice'){
+        body.querySelectorAll('.tds-choice').forEach(function(b){ b.onclick=function(){
+          body.querySelectorAll('.tds-choice').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
+          var raw=b.getAttribute('data-v'), o=s.options.find(function(x){return String(x.v)===raw;}); a[s.id]=o?o.v:raw;
+          setTimeout(go,160);
+        }; });
+        return;
+      }
+      var inp=body.querySelector('.tds-input');
+      if(s.type==='money'){
+        var hint=body.querySelector('.tds-hint');
+        var upd=function(){ var d=digits(inp.value); inp.value=d?Number(d).toLocaleString():''; hint.textContent=kor(d,s.unit); };
+        inp.addEventListener('input',upd); upd();
+      }
+      if(s.type==='search'){
+        var box=body.querySelector('.tds-suggest');
+        var show=function(){ var q=inp.value.trim(); var list=q?(s.suggest(q)||[]).slice(0,8):[];
+          box.innerHTML=list.map(function(t){ var i=t.indexOf(q); return '<button type="button">'+(i>=0?esc(t.slice(0,i))+'<b>'+esc(q)+'</b>'+esc(t.slice(i+q.length)):esc(t))+'</button>'; }).join('');
+          box.querySelectorAll('button').forEach(function(b,i){ b.onclick=function(){ inp.value=list[i]; box.innerHTML=''; go(); }; }); };
+        inp.addEventListener('input',show);
+      }
+      body.querySelectorAll('.tds-input').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); go(); } }); });
+      if(s.type!=='date' && !('ontouchstart' in window)) setTimeout(function(){ inp && inp.focus(); },50);
+    }
+    next.onclick=go;
+    back.onclick=function(){
+      if(hist.length){ idx=hist.pop(); render(); return; }
+      if(cfg.onExit) cfg.onExit(); else if(window.self===window.top) location.href='index.html';
+    };
+    function lift(){ if(!window.visualViewport) return; var off=Math.max(0, window.innerHeight-visualViewport.height-visualViewport.offsetTop); bar.style.transform=off>0?'translateY('+(-off)+'px)':''; }
+    if(window.visualViewport){ visualViewport.addEventListener('resize',lift); visualViewport.addEventListener('scroll',lift); }
+    render();
+    return { answers:a, restart:function(){ window.TDSWizard(cfg); } };
+  };
+
+  /* 결과 화면 상단바 + 하단 '다시 계산하기' 를 붙인다 */
+  window.tdsResultChrome = function(container, title, restart){
+    if(!container) return;
+    var old=container.querySelector(':scope > .tds-result-head'); if(old) old.remove();
+    var head=document.createElement('div'); head.className='tds-result-head';
+    head.innerHTML='<div class="tds-topbar" style="margin:0 -20px 8px;padding:0 4px"><button class="tds-back" aria-label="다시 계산">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(title)+'</div></div>';
+    head.querySelector('.tds-back').onclick=restart;
+    container.insertBefore(head, container.firstChild);
+    var oldA=container.querySelector(':scope > .tds-result-actions'); if(oldA) oldA.remove();
+    var act=document.createElement('div'); act.className='tds-result-actions';
+    act.innerHTML='<button class="tds-btn sub">다시 계산하기</button>'+(window.self===window.top?'<button class="tds-btn sub">다른 계산기</button>':'');
+    act.children[0].onclick=restart; if(act.children[1]) act.children[1].onclick=function(){ location.href='index.html'; };
+    container.appendChild(act);
+  };
+})();
 </script>
 <!-- TDS:END -->
 </head>
@@ -884,5 +1095,57 @@ function taxSourceBox(basis, items, missing) {
       ]);
     });
   </script>
+<!-- TDS:PAGE (tools/pages/capital_gains_non_housing.html — 직접 고치지 말 것) -->
+<style id="tds-page">
+.hero,.container > .section,.cta-btn,#calcBtn,.home-top-btn,.error-msg{display:none!important}
+body{background:#f2f4f6!important}
+.container{max-width:560px!important;padding:0 16px 48px!important}
+.result-card{border:0!important;border-radius:20px!important;padding:28px 24px 20px!important;margin-top:0!important}
+.result-header{margin-bottom:12px!important;align-items:flex-start!important;flex-direction:column;gap:10px}
+.result-eyebrow{font-size:15px!important;font-weight:600;color:#6b7684!important;margin-bottom:8px!important}
+.result-total{font-size:32px!important;font-weight:700!important}
+.result-badge{font-size:13px!important;padding:5px 10px!important}
+.result-divider{margin:4px 0!important;background:#f2f4f6!important}
+.result-row{padding:14px 0!important;align-items:flex-start!important;gap:12px}
+.result-row-label{font-size:16px!important;color:#4e5968!important;font-weight:500;flex:1}
+.result-row-val{font-size:17px!important;color:#191f28;white-space:nowrap}
+.result-row.strong .result-row-label{font-size:17px!important;font-weight:700!important;color:#191f28!important}
+.result-row.strong .result-row-val{font-size:20px!important;font-weight:700}
+.period-chip,.rate-chip{font-size:13px!important;padding:3px 8px!important}
+.notice{font-size:14px!important;color:#6b7684!important;line-height:1.6!important}
+.notice strong{color:#4e5968!important}
+</style>
+<script>
+(function(){
+  var last = {};
+  function setDate(prefix, v){ var p=v.split('-'); document.getElementById(prefix+'Y').value=p[0]; document.getElementById(prefix+'M').value=String(+p[1]); document.getElementById(prefix+'D').value=String(+p[2]); }
+  function won(id, man){ document.getElementById(id).value = man ? (man*10000).toLocaleString('ko-KR') : ''; }
+  function start(){
+    var rc=document.getElementById('resultCard'); if(rc) rc.style.display='none';
+    TDSWizard({
+      title:'주택 외 양도세', init:last,
+      steps:[
+        { id:'acqDate', type:'date', q:'언제 취득했나요?', sub:'상가·빌딩·토지의 잔금일 또는 등기접수일 중 빠른 날이에요.' },
+        { id:'trfDate', type:'date', q:'언제 파나요?', sub:'잔금일 기준이에요.',
+          validate:function(v,a){ return v<=a.acqDate ? '취득일보다 뒤 날짜를 선택해 주세요' : ''; } },
+        { id:'acqPrice', type:'money', unit:'만원', q:'얼마에 취득했나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
+        { id:'trfPrice', type:'money', unit:'만원', q:'얼마에 파나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
+        { id:'expense', type:'money', unit:'만원', q:'필요경비는 모두 얼마인가요?', optional:true,
+          sub:'없으면 비워 두고 다음을 누르세요.', help:'넣을 수 있는 것\n· 취득세, 중개수수료, 법무사 비용\n· 자본적 지출 (대수선비 등)\n· 양도할 때 낸 중개수수료' }
+      ],
+      onDone:function(a){
+        last=a;
+        setDate('acq', a.acqDate); setDate('trf', a.trfDate);
+        won('acqPrice', a.acqPrice); won('trfPrice', a.trfPrice); won('expense', a.expense||0);
+        document.getElementById('calcBtn').click();
+        tdsResultChrome(document.querySelector('.container'), '주택 외 양도세 결과', start);
+        window.scrollTo(0,0);
+      }
+    });
+  }
+  start();
+})();
+</script>
+<!-- /TDS:PAGE -->
 </body>
 </html>

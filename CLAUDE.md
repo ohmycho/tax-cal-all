@@ -22,6 +22,8 @@
 | `netlify/functions/chat.js` | AI 상담 API 프록시 (`/api/chat`) |
 | `tests/` | 계산 회귀 테스트 (배포와 무관) |
 | `tools/apply_tds.py` | 토스(TDS) 공통 스타일·스크립트를 모든 페이지에 넣는 스크립트 |
+| `tools/tds_wizard.html` | 질문 넘기기 엔진 `TDSWizard()`·공통 부품 CSS (공통 블록에 포함됨) |
+| `tools/pages/<파일명>.html` | 페이지별 질문 목록·결과 화면 CSS (`</body>` 앞에 들어감) |
 
 ## 원칙
 
@@ -38,7 +40,11 @@
 
 - 색은 토스 팔레트만 쓴다 (grey50~900, blue50~900, red, orange, yellow, green, teal). 보라·남색·그라데이션 쓰지 않음.
 - 글꼴은 Pretendard 하나, 굵기는 700까지. 화면 제목 26px, 주요 버튼 높이 56px·모서리 16px.
-- 공통 블록(`<!-- TDS:BEGIN -->` ~ `<!-- TDS:END -->`)은 **직접 고치지 말고** `tools/apply_tds.py`를 고친 뒤
+- **모든 계산기는 한 화면에 질문 하나씩 넘기는 방식**이다 (`TDSWizard`). 예전 입력 폼은 숨겨 두고,
+  마지막 질문에서 그 입력칸에 값을 넣은 뒤 원래 계산 함수를 부른다 → 계산 로직·테스트는 그대로.
+  질문을 바꾸려면 `tools/pages/<파일명>.html`의 steps를 고친다. 금액 질문은 만원 단위로 받는다.
+- 글자 크기: 질문 24px, 본문·선택지 17px, 보조 15px, 캡션 13px. **13px보다 작은 글자는 쓰지 않는다.**
+- 공통 블록(`<!-- TDS:BEGIN -->` ~ `<!-- TDS:END -->`)과 페이지 블록(`<!-- TDS:PAGE -->`)은 **직접 고치지 말고** `tools/apply_tds.py`를 고친 뒤
   `python3 tools/apply_tds.py`로 모든 페이지에 다시 넣는다. 새 페이지를 만들면 이 스크립트를 한 번 돌린다.
 - 공통 블록에 들어 있는 것: 아이폰 확대 방지(16px 미만 입력창 자동 16px), 앱 안(iframe)에서 '홈으로' 숨김,
   `lawRef()`, `tdsToast()`(alert 대신 사용 — alert는 쓰지 않는다), 선택 상자·날짜 입력 모양, 버튼 공통 모양.
