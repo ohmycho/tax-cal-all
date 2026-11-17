@@ -48,6 +48,13 @@ body{background:#f2f4f6!important;padding:0 0 48px!important}
           sub:'같은 분께 10년 안에 받은 증여에서 혼인·출산 공제를 썼다면, 합쳐서 계산할 때도 그 공제를 다시 빼 줘요.',
           when:function(a){return kid(a)&&a.hasPrior&&a.isMarriage&&(a.priorMarriageDeduct||0)>0;}, options:YN, row:true },
         { id:'priorDeduct', type:'money', unit:'만원', q:'그때 공제받은 금액을\n아시나요?', sub:'혼인·출산 공제는 빼고 기본 증여재산공제만 적어 주세요. 모르면 비워 두세요. 한도를 모두 쓴 것으로 계산해요.', optional:true, when:function(a){return a.hasPrior;} },
+        { id:'assetKind', type:'choice', q:'무엇을 주시나요?', sub:'부동산이면 받는 분이 내는 취득세도 같이 계산해 드려요.',
+          options:[{v:'house',l:'주택',d:'아파트·빌라·단독주택'},{v:'other',l:'주택 외 부동산',d:'상가·토지·오피스텔 등'},{v:'cash',l:'현금·주식 등',d:'취득세 없음'}] },
+        { id:'small85', type:'choice', q:'전용면적이 85㎡ 이하인가요?', sub:'85㎡ 이하 주택은 농어촌특별세가 없어요.', when:function(a){return a.assetKind==='house';}, options:YN, row:true },
+        { id:'zone3', type:'choice', q:'조정대상지역에 있고\n공시가격이 3억 원 이상인가요?', sub:'둘 다 해당하면 취득세가 12%로 무거워질 수 있어요. 공시가격(시가표준액) 기준이에요.',
+          when:function(a){return a.assetKind==='house';}, options:YN, row:true },
+        { id:'giverOne', type:'choice', q:'주시는 분이\n1세대 1주택자인가요?', sub:'1세대 1주택자가 배우자·직계가족에게 주면 12% 대신 3.5%예요.',
+          when:function(a){return a.assetKind==='house'&&a.zone3&&a.target!=='other';}, options:YN, row:true },
         { id:'onTime', type:'choice', q:'기한 안에 신고하실 건가요?', sub:'받은 달의 말일부터 3개월 안에 신고하면 세금을 3% 줄여 줘요.',
           options:[{v:true,l:'네, 기한 안에 신고할게요'},{v:false,l:'아니요'}] }
       ],
@@ -58,7 +65,9 @@ body{background:#f2f4f6!important;padding:0 0 48px!important}
           isMarriage:kid(a)&&!!a.isMarriage, priorMarriageDeduct:(kid(a)&&a.isMarriage)?Math.min(10000,a.priorMarriageDeduct||0):0,
           assetValue:a.assetValue, debtAmount:a.hasDebt?a.debtAmount:0, priorGift:a.hasPrior?a.priorGift:0,
           priorDeductUsed:(a.hasPrior&&a.priorDeduct)?a.priorDeduct:null, onTime:a.onTime!==false,
-          priorMarriageInPrior: kid(a)&&a.hasPrior&&a.isMarriage&&(a.priorMarriageDeduct||0)>0&&!!a.priorMarriageInPrior });
+          priorMarriageInPrior: kid(a)&&a.hasPrior&&a.isMarriage&&(a.priorMarriageDeduct||0)>0&&!!a.priorMarriageInPrior,
+          assetKind:a.assetKind||'cash', small85:a.assetKind==='house'&&!!a.small85, zone3:a.assetKind==='house'&&!!a.zone3,
+          giverOne:a.assetKind==='house'&&!!a.zone3&&a.target!=='other'&&!!a.giverOne });
         document.getElementById('landing-screen').classList.add('hidden');
         var mc=document.getElementById('main-calc'); mc.classList.remove('hidden');
         var r=calcGiftFromUserData(userData);

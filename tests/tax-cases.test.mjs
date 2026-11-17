@@ -163,6 +163,16 @@ test('증여세: 10년 합산·할증·신고세액공제', async () => {
     '과거 혼인·출산 공제 사용분 반영');
   // 상증법 제53조의2: 혼인·출산 공제는 직계존속 → 직계비속 증여만. 배우자에게는 없음 (세무사 검토 2026-11-17)
   assert.equal(await g({ target: 'spouse', relation: 'spouse', assetValue: 70000, isMarriage: true }), 970, '배우자 7억: 6억 공제만 (혼인공제 없음)');
+  // 증여받은 부동산 취득세 (세무사 검토 Q1, 2026-11-17): 지방세법 제11조①2호·제13조의2②·제151조, 농특세법 제5조①6호·제4조11호
+  const aq = d => p.evaluate(d => { const r = calcGiftAcqTax(Object.assign({ target: 'child', assetValue: 30000, debtAmount: 0 }, d)); return r && Math.round(r.total); }, d);
+  assert.equal(await aq({ assetKind: 'cash' }), null, '현금은 취득세 없음');
+  assert.equal(await aq({ assetKind: 'house' }), 1200, '주택 3억 일반 4.0%');
+  assert.equal(await aq({ assetKind: 'house', zone3: true }), 4020, '조정 3억↑ 중과 13.4%');
+  assert.equal(await aq({ assetKind: 'house', zone3: true, small85: true }), 3720, '중과 85㎡ 이하 12.4%');
+  assert.equal(await aq({ assetKind: 'house', zone3: true, giverOne: true }), 1200, '1세대1주택자 → 자녀: 중과 제외 4.0%');
+  assert.equal(await aq({ assetKind: 'house', zone3: true, giverOne: true, target: 'other' }), 4020, '기타친족은 중과 제외 안 됨');
+  assert.equal(await aq({ assetKind: 'house', small85: true, debtAmount: 10000 }), 760, '부담부증여: 증여 부분 2억 × 3.8%');
+  assert.equal(await aq({ assetKind: 'other' }), 1200, '주택 외 4.0%');
 });
 
 // ───────────────────────── 상속세 (inheritance.html) — 단위: 만원
