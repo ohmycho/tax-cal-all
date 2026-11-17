@@ -357,7 +357,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.4.2', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.4.3', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -632,42 +632,42 @@ const CALCULATORS = [
   },
   {
     icon: '📈',
-    title: '양도세 — 주택 (일반)',
+    title: '주택 (일반)',
     desc: '1주택·다주택 양도소득세 계산',
     link: 'capital_gains_tax.html',
     group: '양도세',
   },
   {
     icon: '🏘️',
-    title: '양도세 — 1세대2주택 비과세',
+    title: '1세대 2주택 비과세 판정',
     desc: '일시적 2주택 등 비과세 요건 판정',
     link: 'capital_gains_2house_exempt.html',
     group: '양도세',
   },
   {
     icon: '🔨',
-    title: '양도세 — 재건축·재개발',
+    title: '재건축·재개발',
     desc: '1세대1주택 재건축·재개발 양도세',
     link: 'capital_gains_rebuild.html',
     group: '양도세',
   },
   {
     icon: '🏢',
-    title: '양도세 — 주택 외 (상가·빌딩)',
+    title: '주택 외 (상가·빌딩·토지)',
     desc: '상가, 빌딩 등 주택 외 부동산 양도세',
     link: 'capital_gains_non_housing.html',
     group: '양도세',
   },
   {
     icon: '🏗️',
-    title: '양도세 — 법인 부동산',
+    title: '법인 부동산 (법인세)',
     desc: '법인이 부동산 양도 시 법인세 계산',
     link: 'capital_gains_corporate.html',
     group: '양도세',
   },
   {
     icon: '📍',
-    title: '양도세 — 조정지역 사전진단',
+    title: '조정대상지역 사전진단',
     desc: '조정/비조정 지역 여부 및 세율 사전 확인',
     link: 'capital_gains_zone_check.html',
     group: '양도세',
@@ -675,31 +675,28 @@ const CALCULATORS = [
 ];
 
 const list = document.getElementById('card-list');
-let lastGroup = null;
+const GROUP_NAMES = { null: '취득·증여·상속', '양도세': '양도소득세' };
+let lastGroup, curList = list, first = true;
 
 CALCULATORS.forEach(calc => {
-  // 그룹 헤더 삽입
-  if (calc.group && calc.group !== lastGroup) {
-    // 그룹 헤더를 card-list 바깥에 삽입
-    const divider = document.createElement('div');
-    divider.className = 'group-divider';
-    list.parentNode.insertBefore(divider, list);
-
+  // 그룹이 바뀔 때마다 제목 + 새 목록을 차례로 이어 붙인다
+  if (calc.group !== lastGroup) {
     const gh = document.createElement('div');
     gh.className = 'group-header';
-    gh.textContent = '양도소득세';
-    list.parentNode.insertBefore(gh, list);
-
-    // 새 card-list 시작
-    const newList = document.createElement('div');
-    newList.className = 'card-list';
-    list.parentNode.insertBefore(newList, list.nextSibling);
-    // 이후 카드는 newList에 추가
-    list.parentNode._yangdoseList = newList;
+    gh.textContent = GROUP_NAMES[calc.group];
+    if (first) {
+      list.parentNode.insertBefore(gh, list);
+    } else {
+      const newList = document.createElement('div');
+      newList.className = 'card-list';
+      curList.parentNode.insertBefore(gh, curList.nextSibling);
+      gh.parentNode.insertBefore(newList, gh.nextSibling);
+      curList = newList;
+    }
+    first = false;
     lastGroup = calc.group;
   }
-
-  const targetList = (calc.group && list.parentNode._yangdoseList) ? list.parentNode._yangdoseList : list;
+  const targetList = curList;
 
   const card = document.createElement('div');
   card.className = 'calc-card';
@@ -750,7 +747,7 @@ window.addEventListener('scroll', () => {
 .card-desc{font-size:14px!important;color:#6b7684!important}
 .notice-text{font-size:13px!important}
 .hero-tag{font-size:13px!important}
-.group-header{font-size:14px!important}
+.group-header{font-size:15px!important;color:#4e5968!important;padding-top:20px!important}
 .consult-title{font-size:18px!important}
 .consult-desc{font-size:15px!important}
 .btn-consult{font-size:16px!important}
@@ -759,7 +756,11 @@ window.addEventListener('scroll', () => {
 .tds-hub-ver span{font-size:14px}
 /* 바탕화면·홈 화면에 추가 안내 */
 .tds-install{margin:12px 16px 4px;background:#fff;border-radius:20px;box-shadow:inset 0 0 0 2px #3182f6;padding:18px 18px 16px}
-.tds-install h3{font-size:18px;font-weight:700;margin:0 0 4px;color:#191f28}
+.tds-install .head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 4px}
+.tds-install h3{font-size:18px;font-weight:700;margin:0;color:#191f28}
+.tds-install .fold{flex:none;border:0;background:#e8f3ff;color:#1b64da;font-size:14px;font-weight:700;border-radius:999px;padding:7px 12px;cursor:pointer}
+.tds-install.folded{padding-bottom:18px}
+.tds-install.folded .head{margin:0}
 .tds-install .lead{font-size:15px;color:#4e5968;margin:0 0 12px;line-height:1.5}
 .tds-install .url{display:flex;align-items:center;gap:8px;background:#f2f4f6;border-radius:12px;padding:10px 12px;margin-bottom:12px}
 .tds-install .url code{flex:1;min-width:0;font-family:inherit;font-size:15px;font-weight:600;color:#1b64da;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -771,7 +772,6 @@ window.addEventListener('scroll', () => {
 .tds-install ol{margin:0;padding-left:20px;font-size:15px;line-height:1.7;color:#333d4b}
 .tds-install ol b{color:#191f28}
 .tds-install .tip{font-size:14px;color:#6b7684;background:#f9fafb;border-radius:10px;padding:8px 10px;margin-top:8px;line-height:1.55}
-.tds-install .fold{display:block;width:100%;border:0;background:none;color:#8b95a1;font-size:14px;margin-top:10px;cursor:pointer}
 .embedded .tds-install{display:none}
 @media (display-mode: standalone){ .tds-install{display:none} }
 </style>
@@ -782,7 +782,7 @@ window.addEventListener('scroll', () => {
   var isPhone=/iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   var box=document.createElement('section'); box.className='tds-install'; box.id='install-guide';
   box.innerHTML=
-    '<h3>📌 바탕화면·홈 화면에 추가하기</h3>'+
+    '<div class="head"><h3>📌 바탕화면·홈 화면에 추가</h3><button type="button" class="fold" id="fold-guide">접기 ▲</button></div>'+
     '<p class="lead">아래 주소를 저장해 두면 앱처럼 바로 열 수 있어요.</p>'+
     '<div class="url"><code>'+URL_.replace('https://','')+'</code><button type="button" id="copy-url">주소 복사</button></div>'+
     '<div class="tabs"><button type="button" data-t="phone">휴대폰</button><button type="button" data-t="pc">PC</button></div>'+
@@ -805,7 +805,7 @@ window.addEventListener('scroll', () => {
       '<div class="os">맥 사파리</div><ol><li>메뉴 막대 <b>파일 → Dock에 추가</b></li></ol>'+
       '<div class="os">어떤 브라우저든</div><ol><li>주소창 왼쪽 <b>자물쇠(또는 ⓘ) 아이콘</b>을 바탕화면으로 끌어다 놓아요</li></ol>'+
     '</div>'+
-    '<button type="button" class="fold" id="fold-guide">접기</button>';
+    '';
   var anchor=document.querySelector('.hero'); if(!anchor) return;
   anchor.parentNode.insertBefore(box, anchor);
   function show(t){ box.querySelectorAll('.tabs button').forEach(function(b){ b.classList.toggle('on', b.getAttribute('data-t')===t); });
@@ -817,9 +817,14 @@ window.addEventListener('scroll', () => {
     if(navigator.clipboard) navigator.clipboard.writeText(URL_).then(done, function(){ tdsToast(URL_); });
     else tdsToast(URL_);
   };
-  var folded=false, body=[].slice.call(box.children).filter(function(el){ return el.tagName!=='H3' && el.id!=='fold-guide'; });
-  document.getElementById('fold-guide').onclick=function(){ folded=!folded; body.forEach(function(el){ el.style.display = folded ? 'none' : ''; });
-    if(!folded) show(box.querySelector('.tabs .on').getAttribute('data-t')); this.textContent = folded ? '펼치기' : '접기'; };
+  var body=[].slice.call(box.children).filter(function(el){ return !el.classList.contains('head'); });
+  var fb=document.getElementById('fold-guide');
+  function setFold(f){ box.classList.toggle('folded', f); body.forEach(function(el){ el.style.display = f ? 'none' : ''; });
+    if(!f) show(box.querySelector('.tabs .on').getAttribute('data-t'));
+    fb.textContent = f ? '펼치기 ▼' : '접기 ▲'; try{ localStorage.setItem('tdsInstallFolded', f?'1':'0'); }catch(e){} }
+  var saved=null; try{ saved=localStorage.getItem('tdsInstallFolded'); }catch(e){}
+  setFold(saved==='1');
+  fb.onclick=function(){ setFold(!box.classList.contains('folded')); };
 })();
 </script>
 <!-- /TDS:PAGE -->
