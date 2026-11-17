@@ -171,10 +171,11 @@ test('증여세: 10년 합산·할증·신고세액공제', async () => {
   assert.equal(await aq({ assetKind: 'house', zone3: true, small85: true }), 3720, '중과 85㎡ 이하 12.4%');
   assert.equal(await aq({ assetKind: 'house', zone3: true, giverOne: true }), 1200, '1세대1주택자 → 자녀: 중과 제외 4.0%');
   assert.equal(await aq({ assetKind: 'house', zone3: true, giverOne: true, target: 'other' }), 4020, '기타친족은 중과 제외 안 됨');
-  // 부담부증여 빚 부분 = 유상취득 (세무사 검토 v1.5-2, 2026-11-17): 매매 세율, 세율 구간은 주택 전체 시가
+  // 부담부증여 빚 부분 = 유상취득 (세무사 검토 v1.5-2, 2026-11-17): 매매 세율, 세율 구간도 빚 금액 기준 (세무사 답변 v1.8-1)
   assert.equal(await aq({ assetKind: 'house', small85: true, debtAmount: 10000 }), 760 + 110, '증여 2억×3.8% + 빚 1억×(1%+0.1%)');
   assert.equal(await aq({ assetKind: 'house', zone: true, houseN: 2, debtAmount: 10000 }), 800 + 900, '조정 2주택: 증여 2억×4.0% + 빚 1억×(8%+0.4%+0.6%)');
-  assert.equal(await aq({ assetKind: 'house', assetValue: 70000, debtAmount: 20000 }), 2000 + 407, '7억 1주택: 증여 5억×4.0% + 빚 2억×(1.67%+0.167%+0.2%)');
+  assert.equal(await aq({ assetKind: 'house', assetValue: 70000, debtAmount: 20000 }), 2000 + 260, '7억 1주택: 증여 5억×4.0% + 빚 2억×(1%+0.1%+0.2%) — 구간은 빚 2억 기준');
+  assert.equal(await aq({ assetKind: 'house', assetValue: 120000, debtAmount: 70000 }), 2000 + 1426, '12억 중 빚 7억: 빚 7억 → 6~9억 산식 1.67% (+0.167%+0.2%)');
   assert.equal(await aq({ assetKind: 'other', debtAmount: 10000 }), 800 + 460, '주택 외: 증여 2억×4.0% + 빚 1억×4.6%');
   assert.equal(await aq({ assetKind: 'other' }), 1200, '주택 외 4.0%');
 });
