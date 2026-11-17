@@ -402,7 +402,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.7', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.8', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -1136,8 +1136,34 @@ function calcGiftAcqTax(d){
   var nongRate = (house && d.small85) ? 0 : (heavy ? 0.01 : 0.002);
   var won = function(rate){ return Math.floor(base*10000*rate)/10000; };
   var acq = won(acqRate), edu = won(eduRate), nong = won(nongRate);
+  // 떠안는 빚 부분 = 유상승계취득 (세무사 검토 v1.5-2, 2026-11-17) — 매매와 같은 세율
+  // 주택: 지방세법 제11조①8호(1~3%, 6~9억 산식) · 제13조의2①(조정 2주택·비조정 3주택 8%, 그 외 12%)
+  //   세율 구간은 주택 전체 시가로 판정 (세무사 확인 요청 중) · 지방교육세 제151조①1호 · 농특세 제5조①6호 / 85㎡ 이하 제4조11호
+  // 주택 외: 제11조①7호나목 4% + 지방교육세 0.4% + 농특세 0.2%
+  var debt = Math.min(d.debtAmount||0, d.assetValue||0), dp = null;
+  if (debt > 0) {
+    var r1, rDesc, rLaw, e1, f1;
+    if (house) {
+      var h = d.houseN||1, reg = !!d.zone, price = (d.assetValue||0)*10000;
+      if (h===1 || (h===2 && !reg)) {
+        if (price <= 6e8) { r1 = 0.01; rDesc = '6억 이하 1%'; }
+        else if (price <= 9e8) { r1 = Math.round(((price*2/3e8)-3)/100*10000)/10000; rDesc = '6~9억 산식 '+(Math.round(r1*10000)/100)+'%'; }
+        else { r1 = 0.03; rDesc = '9억 초과 3%'; }
+        rLaw = '지방세법 제11조①8호';
+      } else if ((h===2 && reg) || (h===3 && !reg)) { r1 = 0.08; rDesc = '중과 8% ('+(reg?'조정 ':'비조정 ')+h+'주택)'; rLaw = '지방세법 제13조의2①2호'; }
+      else { r1 = 0.12; rDesc = '중과 12% ('+(reg?'조정 ':'비조정 ')+(h>=4?'4주택 이상':h+'주택')+')'; rLaw = '지방세법 제13조의2①3호'; }
+      e1 = r1 <= 0.03 ? r1*0.1 : 0.004;
+      f1 = d.small85 ? 0 : (r1 <= 0.03 ? 0.002 : (r1 === 0.08 ? 0.006 : 0.01));
+    } else { r1 = 0.04; rDesc = '4%'; rLaw = '지방세법 제11조①7호나목'; e1 = 0.004; f1 = 0.002; }
+    var w = function(rate){ return Math.floor(debt*10000*rate)/10000; };
+    dp = { base: debt, acqRate: r1, acqDesc: rDesc, acqLaw: rLaw, eduRate: e1, nongRate: f1,
+           acq: w(r1), edu: w(e1), nong: w(f1) };
+    dp.total = dp.acq + dp.edu + dp.nong;
+  }
+  var giftTotal = acq+edu+nong;
   return { base:base, heavy:heavy, house:house, acqRate:acqRate, eduRate:eduRate, nongRate:nongRate,
-           acq:acq, edu:edu, nong:nong, total:acq+edu+nong, totalRate:acqRate+eduRate+nongRate, debt:d.debtAmount||0 };
+           acq:acq, edu:edu, nong:nong, giftTotal:giftTotal, debtPart:dp, total:giftTotal+(dp?dp.total:0),
+           totalRate:acqRate+eduRate+nongRate, debt:debt };
 }
 
 function calcGiftFromUserData(d){
@@ -1259,12 +1285,19 @@ function renderGiftResult(r, d){
       row('취득세', pct(aq.acqRate)+(aq.heavy?' 중과':''), aq.acq, '', aq.heavy?'지방세법 제13조의2② · 시행령 제28조의6':'지방세법 제11조①2호')+
       row('지방교육세', pct(aq.eduRate), aq.edu, '', '지방세법 제151조①1호')+
       row('농어촌특별세', aq.nongRate===0?'전용 85㎡ 이하 주택 비과세':pct(aq.nongRate), aq.nong, '', aq.nongRate===0?'농어촌특별세법 제4조11호':'농어촌특별세법 제5조①6호')+
+      (aq.debtPart ? totalBox('증여 부분 소계', aq.giftTotal, 'light')+
+        '<div style="font-size:15px;font-weight:700;color:#191f28;margin:16px 0 2px">떠안는 빚 부분 (유상취득)</div>'+
+        row('과세표준', '떠안는 빚', aq.debtPart.base, '', '지방세법 제10조의3 (유상승계취득)')+
+        row('취득세', aq.debtPart.acqDesc, aq.debtPart.acq, '', aq.debtPart.acqLaw)+
+        row('지방교육세', pct(aq.debtPart.eduRate), aq.debtPart.edu, '', '지방세법 제151조①1호')+
+        row('농어촌특별세', aq.debtPart.nongRate===0?'전용 85㎡ 이하 주택 비과세':pct(aq.debtPart.nongRate), aq.debtPart.nong, '', aq.debtPart.nongRate===0?'농어촌특별세법 제4조11호':'농어촌특별세법 제5조①6호')+
+        totalBox('빚 부분 소계', aq.debtPart.total, 'light') : '')+
       totalBox('취득세 합계', aq.total, 'light')+
       totalBox('증여세 + 취득세', r.finalTax + aq.total, 'primary')+
       '<div style="background:#F2F4F6;border-radius:10px;padding:10px 14px;font-size:13px;color:#4e5968;line-height:1.65;margin-top:8px">'+
       '· 신고·납부: 증여받은 날이 속하는 달의 말일부터 3개월 안 (시·군·구청)'+lawRef('지방세법 제20조①')+
       (aq.house && d.zone3 && !aq.heavy ? '<br>· 1세대 1주택자가 배우자·직계가족에게 줘서 중과(12%) 대신 3.5%로 계산했어요.' : '')+
-      (aq.debt>0 ? '<br>· 떠안는 빚 부분은 유상취득(매매)이라 취득세를 따로 내요. 취득세 계산기로 계산해 주세요.' : '')+
+      (aq.debtPart ? '<br>· 빚 부분 세율은 받은 뒤 주택 수와 주택 전체 시가로 정했어요. 일시적 2주택 등 예외는 반영하지 않았어요. 받는 분이 빚을 갚을 능력(소득·재산)을 증명하지 못하면 전액 증여(무상취득)로 볼 수 있어요.' : '')+
       '<br>· 시가인정액(매매사례·감정가)이 입력한 금액과 다르면 취득세도 달라져요.'+
       '</div></div></div>';
   }
@@ -1373,10 +1406,14 @@ body{background:#f2f4f6!important;padding:0 0 48px!important}
         { id:'assetKind', type:'choice', q:'무엇을 주시나요?', sub:'부동산이면 받는 분이 내는 취득세도 같이 계산해 드려요.',
           options:[{v:'house',l:'주택',d:'아파트·빌라·단독주택'},{v:'other',l:'주택 외 부동산',d:'상가·토지·오피스텔 등'},{v:'cash',l:'현금·주식 등',d:'취득세 없음'}] },
         { id:'small85', type:'choice', q:'전용면적이 85㎡ 이하인가요?', sub:'85㎡ 이하 주택은 농어촌특별세가 없어요.', when:function(a){return a.assetKind==='house';}, options:YN, row:true },
-        { id:'zone3', type:'choice', q:'조정대상지역에 있고\n공시가격이 3억 원 이상인가요?', sub:'둘 다 해당하면 취득세가 12%로 무거워질 수 있어요. 공시가격(시가표준액) 기준이에요.',
-          when:function(a){return a.assetKind==='house';}, options:YN, row:true },
+        { id:'zone', type:'choice', q:'조정대상지역에 있나요?', sub:'증여받는 날 기준이에요.', when:function(a){return a.assetKind==='house';}, options:YN, row:true },
+        { id:'over3', type:'choice', q:'공시가격이 3억 원 이상인가요?', sub:'조정대상지역의 공시가격(시가표준액) 3억 원 이상 주택은 취득세가 12%로 무거워질 수 있어요.',
+          when:function(a){return a.assetKind==='house'&&a.zone;}, options:YN, row:true },
         { id:'giverOne', type:'choice', q:'주시는 분이\n1세대 1주택자인가요?', sub:'1세대 1주택자가 배우자·직계가족에게 주면 12% 대신 3.5%예요.',
-          when:function(a){return a.assetKind==='house'&&a.zone3&&a.target!=='other';}, options:YN, row:true },
+          when:function(a){return a.assetKind==='house'&&a.zone&&a.over3&&a.target!=='other';}, options:YN, row:true },
+        { id:'houseN', type:'choice', q:'받은 뒤 받는 분 세대의\n주택은 모두 몇 채인가요?', sub:'떠안는 빚 부분은 집을 산 것(유상취득)으로 봐서 주택 수에 따라 세율이 달라져요.',
+          when:function(a){return a.assetKind==='house'&&a.hasDebt;},
+          options:[{v:1,l:'1주택'},{v:2,l:'2주택'},{v:3,l:'3주택'},{v:4,l:'4주택 이상'}] },
         { id:'onTime', type:'choice', q:'기한 안에 신고하실 건가요?', sub:'받은 달의 말일부터 3개월 안에 신고하면 세금을 3% 줄여 줘요.',
           options:[{v:true,l:'네, 기한 안에 신고할게요'},{v:false,l:'아니요'}] }
       ],
@@ -1388,8 +1425,9 @@ body{background:#f2f4f6!important;padding:0 0 48px!important}
           assetValue:a.assetValue, debtAmount:a.hasDebt?a.debtAmount:0, priorGift:a.hasPrior?a.priorGift:0,
           priorDeductUsed:(a.hasPrior&&a.priorDeduct!=null)?a.priorDeduct:null /* 0원 입력은 0, 비우면 null(추정) */, onTime:a.onTime!==false,
           priorMarriageInPrior: kid(a)&&a.hasPrior&&a.isMarriage&&(a.priorMarriageDeduct||0)>0&&!!a.priorMarriageInPrior,
-          assetKind:a.assetKind||'cash', small85:a.assetKind==='house'&&!!a.small85, zone3:a.assetKind==='house'&&!!a.zone3,
-          giverOne:a.assetKind==='house'&&!!a.zone3&&a.target!=='other'&&!!a.giverOne });
+          assetKind:a.assetKind||'cash', small85:a.assetKind==='house'&&!!a.small85, zone:a.assetKind==='house'&&!!a.zone,
+          zone3:a.assetKind==='house'&&!!a.zone&&!!a.over3, houseN:(a.assetKind==='house'&&a.hasDebt)?(a.houseN||1):1,
+          giverOne:a.assetKind==='house'&&!!a.zone&&!!a.over3&&a.target!=='other'&&!!a.giverOne });
         document.getElementById('landing-screen').classList.add('hidden');
         var mc=document.getElementById('main-calc'); mc.classList.remove('hidden');
         var r=calcGiftFromUserData(userData);
