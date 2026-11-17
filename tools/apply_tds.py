@@ -12,7 +12,7 @@ import colorsys, glob, os, re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── 계산기 버전 ── 바꿀 때마다 여기만 올리고 CHANGELOG.md에 한 줄 적은 뒤 이 스크립트를 실행한다.
-VERSION = 'v1.4.1'
+VERSION = 'v1.4.2'
 VERSION_DATE = '2026.11.17'
 LAW_DATE = '2026.11.16'   # 세법 확인 기준일 (CLAUDE.md '세법 기준'과 같게)
 
@@ -66,6 +66,12 @@ def map_hex(m):
 RGBA_MAP = {'107,53,207': '49,130,246', '5,150,105': '3,178,108', '99,102,241': '49,130,246'}
 
 BLOCK = r'''<!-- TDS:BEGIN (tools/apply_tds.py가 관리 — 직접 고치지 말 것) -->
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="세금계산기">
+<meta name="theme-color" content="#ffffff">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <script>if(window.self!==window.top)document.documentElement.classList.add('embedded');</script>
 <style id="tds-base">
