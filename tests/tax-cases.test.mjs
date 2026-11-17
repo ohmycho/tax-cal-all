@@ -161,6 +161,8 @@ test('증여세: 10년 합산·할증·신고세액공제', async () => {
   // 과거분: 1.6억 − 5천 − 6천 = 5천 → 500만 ⇒ 2,700만 − 신고공제 81만 = 2,619만
   assert.equal(await g({ assetValue: 20000, isMarriage: true, priorMarriageDeduct: 6000, priorMarriageInPrior: true, priorGift: 16000 }), 2619,
     '과거 혼인·출산 공제 사용분 반영');
+  // 상증법 제53조의2: 혼인·출산 공제는 직계존속 → 직계비속 증여만. 배우자에게는 없음 (세무사 검토 2026-11-17)
+  assert.equal(await g({ target: 'spouse', relation: 'spouse', assetValue: 70000, isMarriage: true }), 970, '배우자 7억: 6억 공제만 (혼인공제 없음)');
 });
 
 // ───────────────────────── 상속세 (inheritance.html) — 단위: 만원
@@ -250,4 +252,13 @@ test('상속세: 증여세액공제 수증자별·기한 내 신고 여부', asy
   const c = await run({ onTime: false });
   assert.equal(c.reportDeduct, 0, '기한 내 신고 안 하면 신고세액공제 없음');
   assert.equal(c.finalTax, c.grossTax - c.priorTaxPaid);
+});
+
+test('질문 넘기기: 증여세 배우자는 혼인·출산 질문을 건너뛴다', async () => {
+  const p = await open('gift.html');
+  await p.locator('.tds-choice', { hasText: '배우자' }).first().click(); await p.waitForTimeout(250);
+  assert.match(await p.textContent('.tds-q'), /얼마를 주시나요/, '배우자 → 바로 금액 질문');
+  await p.fill('.tds-input', '70000'); await p.click('#tds-next'); await p.waitForTimeout(250);
+  await p.locator('.tds-choice', { hasText: '아니요' }).first().click(); await p.waitForTimeout(250);
+  assert.match(await p.textContent('.tds-q'), /10년 안에/, '빚 없음 → 혼인·출산 질문 없이 10년 합산 질문');
 });

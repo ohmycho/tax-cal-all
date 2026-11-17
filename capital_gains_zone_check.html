@@ -233,7 +233,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.3', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.4', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -417,7 +417,7 @@ document.addEventListener('DOMContentLoaded', function(){
             <input type="date" id="acqDate" value="2019-05-20">
         </div>
         <div class="input-item">
-            <label for="residenceMonths">실제 거주 기간 (개월)</label>
+            <label for="residenceMonths">실제 거주 기간 (총 개월 수 — 화면에서는 년·개월로 입력)</label>
             <input type="number" id="residenceMonths" placeholder="예: 18" value="18">
         </div>
         <button class="btn-submit" onclick="runDiagnosis()">AI 진단 시작하기</button>
@@ -436,7 +436,7 @@ document.addEventListener('DOMContentLoaded', function(){
             <h3 class="card-title">📊 비과세 요건 달성 현황</h3>
             <p style="font-size: 14px; color: #4e5968; margin-bottom: 20px;" id="out-requirement"></p>
             <div class="progress-section" id="residence-progress-area">
-                <div class="progress-header"><span id="out-residence-text">실거주 기간 (0개월)</span><span class="target">목표 24개월</span></div>
+                <div class="progress-header"><span id="out-residence-text">실거주 기간 (0개월)</span><span class="target">목표 2년</span></div>
                 <div class="progress-bar-bg"><div id="out-residence-bar" class="progress-bar-fill"></div></div>
             </div>
             <div class="result-box" id="out-conclusion"></div>
@@ -1450,6 +1450,8 @@ function checkRegulatoryStatus(regionName, targetDateStr) {
 }
 
 // 5. 버튼 클릭 시 실행
+// 개월 수 → 'N년 M개월'
+function ymText(m) { m = Math.max(0, m|0); const y = Math.floor(m / 12), r = m % 12; return (y ? y + '년' : '') + (y && r ? ' ' : '') + (r || !y ? r + '개월' : ''); }
 function runDiagnosis() {
     const region = document.getElementById("region").value.trim();
     const acqDate = document.getElementById("acqDate").value;
@@ -1479,7 +1481,7 @@ function runDiagnosis() {
         progressArea.style.display = "block"; 
         let percent = (residenceMonths / 24) * 100;
         if (percent > 100) percent = 100;
-        progressText.innerText = `실거주 기간 (${residenceMonths}개월)`;
+        progressText.innerText = `실거주 기간 (${ymText(residenceMonths)})`;
         
         setTimeout(() => {
             progressBar.style.width = percent + "%";
@@ -1490,7 +1492,7 @@ function runDiagnosis() {
             } else {
                 progressBar.style.backgroundColor = "#f04452"; 
                 progressText.style.color = "#f04452";
-                conclusionBox.innerHTML = `💡 <strong>진단 결과</strong><br>거주요건 미달로 <strong>비과세 혜택을 받을 수 없습니다.</strong> 100% 혜택을 받으려면 <strong>최소 ${24 - residenceMonths}개월의 추가 거주</strong>가 필요합니다.`;
+                conclusionBox.innerHTML = `💡 <strong>진단 결과</strong><br>거주요건 미달로 <strong>비과세 혜택을 받을 수 없습니다.</strong> 100% 혜택을 받으려면 <strong>최소 ${ymText(24 - residenceMonths)} 더 거주</strong>가 필요합니다.`;
             }
         }, 100);
     } else {

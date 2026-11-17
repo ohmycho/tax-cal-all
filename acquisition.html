@@ -349,7 +349,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.3', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.4', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -522,7 +522,7 @@ document.addEventListener('DOMContentLoaded', function(){
 <header class="header">
     <div class="badge">🏢 취득세 계산기</div>
     <h1>부동산 취득세<br>계산기</h1>
-    <p>개인·법인 / 주택·상가 전용 · 최신 지방세법 기준<br>취득세 + 지방교육세 + 농어촌특별세 자동 합산</p>
+    <p>매매(유상취득) 전용 · 상속·증여 제외 · 개인·법인 / 주택·상가<br>취득세 + 지방교육세 + 농어촌특별세 자동 합산</p>
   </header>
 
   <div class="card">
@@ -878,7 +878,7 @@ function calc() {
     noteEl.textContent='✅ 법인 설립 5년 이후로 과밀억제권역 중과세 대상에서 제외됩니다. 일반과세율(4.6%)이 적용됩니다.';
   } else {
     noteEl.className='note';
-    noteEl.textContent='본 계산기는 참고용이며, 실제 납부세액은 관할 지자체 고지서 기준입니다. 생애최초 감면 등 특례는 별도 적용됩니다.';
+    noteEl.textContent='매매(유상취득) 기준 계산이에요. 상속·증여로 받는 경우는 세율이 달라 이 계산에 해당하지 않아요. 실제 납부세액은 관할 지자체 고지서 기준이고, 생애최초 감면 등 특례는 별도예요.';
   }
 
   if(S.hasExclude && S.use==='housing' && S.buyer==='individual' && S.houseRaw!==S.house) {
@@ -1009,7 +1009,7 @@ body{background:#f2f4f6!important;padding:0 16px 48px!important}
     TDSWizard({
       title:'취득세 계산기', init:last,
       steps:[
-        { id:'buyer', type:'choice', q:'누가 사시나요?', options:[{v:'individual',l:'개인'},{v:'corp',l:'법인'}] },
+        { id:'buyer', type:'choice', q:'누가 사시나요?', sub:'매매로 사는 경우(유상취득)만 계산해요. 상속·증여로 받는 경우는 계산하지 않아요.', options:[{v:'individual',l:'개인'},{v:'corp',l:'법인'}] },
         { id:'use', type:'choice', q:'어떤 부동산인가요?', options:[{v:'housing',l:'주택',d:'아파트·빌라·단독주택'},{v:'commercial',l:'상가·업무용',d:'상가·오피스·토지 등'}] },
         { id:'house', type:'choice', q:'이번에 사면\n주택이 모두 몇 채가 되나요?', sub:'세대 전체 기준, 이번에 사는 집을 포함해요.',
           when:indivHouse, options:[{v:'1',l:'1주택'},{v:'2',l:'2주택'},{v:'3',l:'3주택'},{v:'4',l:'4주택 이상'}] },

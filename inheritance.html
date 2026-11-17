@@ -761,7 +761,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.3', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.4', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -2452,7 +2452,7 @@ function generateReportHTML(type) {
   rows4 += '<tr><td>즉시</td><td>상속재산 목록 작성, 금융기관 사망 신고</td><td>사망진단서, 가족관계증명서</td></tr>';
   if (type === 'B') rows4 += '<tr><td style="color:#d22030;font-weight:700;">5개월 이내</td><td><strong>분할협의서 작성 — 전원 인감 날인 필수</strong></td><td>분할협의서, 인감증명서 각 1통</td></tr>';
   rows4 += '<tr><td style="color:#d22030;font-weight:700;">6개월 이내</td><td><strong>취득세 신고·납부 / 상속세 신고·납부</strong></td><td>상속세 신고서, 재산평가서</td></tr>';
-  if (S.hasSpouse) rows4 += '<tr><td>9개월 이내</td><td>배우자 명의 등기 완료 (5억 초과 공제 조건)</td><td>등기신청서, 취득세 납부확인서</td></tr>';
+  if (S.hasSpouse) rows4 += '<tr><td style="color:#d22030;font-weight:700;">신고기한 다음 날부터 9개월 이내<br><span style="font-weight:500;color:#6b7684">(상속개시일부터 약 15~16개월)</span></td><td><strong>배우자 상속재산 분할 + 등기·명의개서 완료 + 분할사실 신고</strong> (배우자공제 5억 초과분 조건)' + lawRef('상증법 제19조②') + '</td><td>분할협의서, 등기신청서, 상속재산 분할 신고서</td></tr>';
   if (type === 'C') rows4 += '<tr><td>사전 (생전)</td><td><strong>유언공정증서 작성 (공증인 + 증인 2명)</strong></td><td>유언공정증서</td></tr>';
   rows4 += '<tr><td>납세 어려울 시</td><td>연부연납 신청 (최대 10년 분할 납부)</td><td>연부연납 신청서</td></tr>';
   html += tbl(['기한','할 일','필수 서류'], rows4);

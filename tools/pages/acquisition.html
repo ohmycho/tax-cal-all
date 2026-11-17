@@ -39,7 +39,7 @@ body{background:#f2f4f6!important;padding:0 16px 48px!important}
     TDSWizard({
       title:'취득세 계산기', init:last,
       steps:[
-        { id:'buyer', type:'choice', q:'누가 사시나요?', options:[{v:'individual',l:'개인'},{v:'corp',l:'법인'}] },
+        { id:'buyer', type:'choice', q:'누가 사시나요?', sub:'매매로 사는 경우(유상취득)만 계산해요. 상속·증여로 받는 경우는 계산하지 않아요.', options:[{v:'individual',l:'개인'},{v:'corp',l:'법인'}] },
         { id:'use', type:'choice', q:'어떤 부동산인가요?', options:[{v:'housing',l:'주택',d:'아파트·빌라·단독주택'},{v:'commercial',l:'상가·업무용',d:'상가·오피스·토지 등'}] },
         { id:'house', type:'choice', q:'이번에 사면\n주택이 모두 몇 채가 되나요?', sub:'세대 전체 기준, 이번에 사는 집을 포함해요.',
           when:indivHouse, options:[{v:'1',l:'1주택'},{v:'2',l:'2주택'},{v:'3',l:'3주택'},{v:'4',l:'4주택 이상'}] },
