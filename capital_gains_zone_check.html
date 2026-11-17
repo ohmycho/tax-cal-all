@@ -248,7 +248,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.5', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.6', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -302,6 +302,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
   window.TDSWizard = function(cfg){
     var a = Object.assign({}, cfg.init||{}), hist=[], idx=0;
+    /* 중복 진행 방지: 한 질문에서 넘어가는 동작은 한 번만. 다음 질문이 그려질 때 풀린다 */
+    var locked=false, tapLockUntil=0;
+    /* 넘기는 탭 직후 350ms는 다음 탭을 무시 → 빠른 두 번 탭이 새 질문의 선택지·버튼에 떨어져도 건너뛰지 않음 */
+    function tapOK(){ var t=Date.now(); if(t<tapLockUntil) return false; tapLockUntil=t+350; return true; }
     var root=document.createElement('div'); root.className='tds-wiz'; root.id='tds-wiz';
     root.innerHTML='<div class="tds-topbar"><button class="tds-back" aria-label="뒤로">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(cfg.title)+'</div><span class="tds-ver-badge">'+tdsVersionText()+'</span></div>'+
       '<div class="tds-progress"><i></i></div><div class="tds-wiz-body"></div>'+
@@ -321,14 +325,16 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     function empty(s,v){ if(s.type==='multi') return false; return v===null||v===undefined||v===''; }
     function go(){
+      if(locked) return;
       var s=steps[idx], v=value(s);
       if(s.type!=='choice'){
         if(empty(s,v) && !s.optional){ err(s.type==='date'?'날짜를 선택해 주세요':'값을 입력해 주세요'); return; }
         if(s.validate){ var m=s.validate(v,a); if(m){ err(m); return; } }
-        a[s.id]=empty(s,v)?(s.type==='money'||s.type==='number'?0:''):v;
+        a[s.id]=empty(s,v)?(s.type==='money'||s.type==='number'?null:''):v; /* 비운 칸은 null, 입력한 0은 0 */
         if(s.type==='multi') s.fields.forEach(function(f){ a[f.id]=v[f.id]; });
       }
       var n=nextIdx(idx);
+      locked=true;
       if(n<0){ finish(); return; }
       hist.push(idx); idx=n; render();
     }
@@ -338,7 +344,7 @@ document.addEventListener('DOMContentLoaded', function(){
       setTimeout(function(){ document.querySelectorAll(COUNT_SEL).forEach(function(el){ delete el.dataset.counted; if(el.offsetParent) tdsCountUp(el); }); }, 30);
     }
     function render(){
-      var s=steps[idx], c=countVisible(); err('');
+      var s=steps[idx], c=countVisible(); err(''); locked=false;
       root.querySelector('.tds-progress i').style.width=Math.round(c[0]/c[1]*100)+'%';
       back.classList.toggle('home', hist.length===0);
       var h='<div class="tds-step-count">'+c[0]+' / '+c[1]+'</div><h2 class="tds-q">'+esc(typeof s.q==='function'?s.q(a):s.q)+'</h2><p class="tds-q-sub">'+esc(typeof s.sub==='function'?s.sub(a):(s.sub||''))+'</p><div class="tds-control">';
@@ -364,7 +370,9 @@ document.addEventListener('DOMContentLoaded', function(){
       bar.style.display = s.type==='choice' ? 'none' : '';
       next.textContent = nextIdx(idx)<0 ? (cfg.doneLabel||'결과 보기') : '다음';
       if(s.type==='choice'){
+        var picked=false;
         body.querySelectorAll('.tds-choice').forEach(function(b){ b.onclick=function(){
+          if(picked||locked||!tapOK()) return; picked=true;
           haptic(); body.querySelectorAll('.tds-choice').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
           var raw=b.getAttribute('data-v'), o=s.options.find(function(x){return String(x.v)===raw;}); a[s.id]=o?o.v:raw;
           setTimeout(go,160);
@@ -390,19 +398,19 @@ document.addEventListener('DOMContentLoaded', function(){
       refresh();
       /* 날짜는 고르면 바로 다음으로 (토스처럼). 아이폰은 날짜 창의 '완료'를 누르면 넘어감 */
       if(s.type==='date'){
-        inp.addEventListener('change',function(){ if(!inp.value) return; var m=s.validate?s.validate(inp.value,a):''; if(m){ err(m); return; } haptic(); setTimeout(go,250); });
+        inp.addEventListener('change',function(){ if(!inp.value) return; var m=s.validate?s.validate(inp.value,a):''; if(m){ err(m); return; } haptic(); setTimeout(function(){ if(steps[idx]===s) go(); },250); });
       }
       if(s.type==='search'){
         var box=body.querySelector('.tds-suggest');
         var show=function(){ var q=inp.value.trim(); var list=q?(s.suggest(q)||[]).slice(0,8):[];
           box.innerHTML=list.map(function(t){ var i=t.indexOf(q); return '<button type="button">'+(i>=0?esc(t.slice(0,i))+'<b>'+esc(q)+'</b>'+esc(t.slice(i+q.length)):esc(t))+'</button>'; }).join('');
-          box.querySelectorAll('button').forEach(function(b,i){ b.onclick=function(){ inp.value=list[i]; box.innerHTML=''; go(); }; }); };
+          box.querySelectorAll('button').forEach(function(b,i){ b.onclick=function(){ inp.value=list[i]; box.innerHTML=''; if(!tapOK()) return; go(); }; }); };
         inp.addEventListener('input',show);
       }
-      body.querySelectorAll('.tds-input').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); go(); } }); });
+      body.querySelectorAll('.tds-input').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); if(!tapOK()) return; go(); } }); });
       if(s.type!=='date' && !('ontouchstart' in window)) setTimeout(function(){ inp && inp.focus(); },50);
     }
-    next.onclick=function(){ haptic(); go(); };
+    next.onclick=function(){ if(!tapOK()) return; haptic(); go(); };
     back.onclick=function(){
       if(hist.length){ idx=hist.pop(); render(); return; }
       if(cfg.onExit) cfg.onExit(); else if(window.self===window.top) location.href='index.html';
@@ -1479,8 +1487,11 @@ window.onload = function() {
 };
 
 // 4. 판정 로직
+// regulatoryDB에 있는 지역 이름(목록에서 고른 값)만 판정한다. 미등록·오타를 비규제지역으로 판정하지 않는다.
+function zoneRegionKnown(name) { return typeof name === 'string' && Object.prototype.hasOwnProperty.call(regulatoryDB, name.trim()); }
 function checkRegulatoryStatus(regionName, targetDateStr) {
     if (!targetDateStr) return null;
+    if (!zoneRegionKnown(regionName)) return { error: true, message: "목록에 없는 지역이에요. 목록에서 지역을 골라 주세요. (지정 이력을 확인할 수 없는 지역은 판정하지 않아요)" };
     const targetDate = new Date(targetDateStr);
     // 입력 지역 + 상위 지역(시·구) 이력을 모두 합쳐 판정 (동 단위 과거 이력이 구 단위 현재 지정을 가리지 않도록)
     let regionHistory = [];
@@ -1489,10 +1500,6 @@ function checkRegulatoryStatus(regionName, targetDateStr) {
     });
     if (!regionHistory.length) regionHistory = null;
 
-    // 사용자가 입력한 지역이 DB에 아예 없거나 오타가 난 경우 -> 비규제지역으로 판정
-    if (!regionHistory) {
-        return { isRegulated: false, badgeClass: "badge-blue", badgeText: "✅ 비규제지역 취득", detail: "해당 지역은 조정대상지역 지정 이력이 없거나 비규제지역입니다.", requirement: "거주 요건 없이 <strong>2년 이상 보유</strong>만으로 비과세가 가능합니다." };
-    }
 
     for (let i = 0; i < regionHistory.length; i++) {
         const record = regionHistory[i];
@@ -1519,6 +1526,7 @@ function runDiagnosis() {
     if(!acqDate) { tdsToast("취득 일자를 입력해주세요."); return; }
 
     const result = checkRegulatoryStatus(region, acqDate);
+    if (!result || result.error) { tdsToast(result ? result.message : "판정할 수 없어요."); return; }
 
     document.getElementById("out-region").innerText = region;
     document.getElementById("out-date").innerText = acqDate;
@@ -1585,7 +1593,8 @@ body{padding:0 16px 48px!important;display:block!important}
       title:'조정대상지역 진단', init:last, doneLabel:'진단하기',
       steps:[
         { id:'region', type:'search', q:'집이 어디에 있나요?', sub:'시·군·구 또는 동 이름으로 찾아 주세요.', placeholder:'예: 강남구, 수지구',
-          suggest:function(q){ return Object.keys(regulatoryDB).filter(function(r){ return r.indexOf(q)>=0; }).sort(); } },
+          suggest:function(q){ return Object.keys(regulatoryDB).filter(function(r){ return r.indexOf(q)>=0; }).sort(); },
+          validate:function(v){ return zoneRegionKnown(v) ? '' : '목록에서 지역을 골라 주세요. 목록에 없는 지역은 지정 이력을 확인할 수 없어 판정하지 않아요.'; } },
         { id:'acqDate', type:'date', q:'언제 취득했나요?', sub:'잔금일 또는 등기접수일 중 빠른 날이에요.\n취득 당시 조정대상지역이었는지에 따라 거주 요건이 달라져요.' },
         { id:'live', type:'multi', q:'그 집에 얼마나 살았나요?', sub:'주민등록 전입 후 실제로 산 기간이에요. 안 살았으면 0으로 두세요.',
           fields:[{id:'liveY',unit:'년'},{id:'liveM',unit:'개월'}],

@@ -215,7 +215,7 @@ test('질문 넘기기: 취득세 화면을 끝까지 진행하면 결과가 나
   const p = await open('acquisition.html');
   for (const t of ['개인', '주택', '1주택', '조정대상지역이에요', '85㎡ 이하']) {
     await p.locator('.tds-choice', { hasText: t }).first().click();
-    await p.waitForTimeout(250);
+    await p.waitForTimeout(400);
   }
   await p.fill('.tds-input', '70000');
   await p.click('#tds-next');
@@ -227,7 +227,7 @@ test('질문 넘기기: 취득세 화면을 끝까지 진행하면 결과가 나
 
 test('질문 넘기기: 취득세 주택 수 제외·일시적 2주택 처분기한', async () => {
   const p = await open('acquisition.html');
-  const pick = async t => { await p.locator('.tds-choice', { hasText: t }).first().click(); await p.waitForTimeout(250); };
+  const pick = async t => { await p.locator('.tds-choice', { hasText: t }).first().click(); await p.waitForTimeout(400); };
   await pick('개인'); await pick('주택'); await pick('3주택');
   await pick('네');                       // 주택 수에서 빠지는 집 있음
   await pick('2주택');                    // 빼면 2채
@@ -266,9 +266,65 @@ test('상속세: 증여세액공제 수증자별·기한 내 신고 여부', asy
 
 test('질문 넘기기: 증여세 배우자는 혼인·출산 질문을 건너뛴다', async () => {
   const p = await open('gift.html');
-  await p.locator('.tds-choice', { hasText: '배우자' }).first().click(); await p.waitForTimeout(250);
+  await p.locator('.tds-choice', { hasText: '배우자' }).first().click(); await p.waitForTimeout(400);
   assert.match(await p.textContent('.tds-q'), /얼마를 주시나요/, '배우자 → 바로 금액 질문');
-  await p.fill('.tds-input', '70000'); await p.click('#tds-next'); await p.waitForTimeout(250);
-  await p.locator('.tds-choice', { hasText: '아니요' }).first().click(); await p.waitForTimeout(250);
+  await p.fill('.tds-input', '70000'); await p.click('#tds-next'); await p.waitForTimeout(400);
+  await p.locator('.tds-choice', { hasText: '아니요' }).first().click(); await p.waitForTimeout(400);
   assert.match(await p.textContent('.tds-q'), /10년 안에/, '빚 없음 → 혼인·출산 질문 없이 10년 합산 질문');
+});
+
+// ───────────────────────── 질문 넘기기 안전장치 (2026-11-17)
+test('질문 넘기기: 선택지를 빠르게 두 번 눌러도 한 단계만 넘어간다', async () => {
+  const p = await open('gift.html');
+  await p.locator('.tds-choice', { hasText: '배우자' }).first().dblclick(); await p.waitForTimeout(600);
+  assert.match(await p.textContent('.tds-q'), /얼마를 주시나요/, '더블클릭 → 금액 질문에서 멈춤');
+
+  const q = await open('gift.html');
+  await q.locator('.tds-choice', { hasText: '자녀' }).first().click();
+  await q.waitForTimeout(200);   // 다음 질문이 그려진 직후(손가락 두 번째 탭이 새 화면에 떨어지는 경우)
+  await q.locator('.tds-choice', { hasText: '네' }).first().click({ force: true });
+  await q.waitForTimeout(600);
+  assert.match(await q.textContent('.tds-q'), /미성년자/, '두 번째 탭은 무시 → 미성년 질문에 그대로');
+});
+
+test('조정지역 진단: 목록에 없는 지역은 다음으로 못 가고, 비규제로 판정하지 않는다', async () => {
+  const p = await open('capital_gains_zone_check.html');
+  await p.waitForTimeout(300);
+  await p.fill('.tds-input', '서울특별시 없는구'); await p.click('#tds-next'); await p.waitForTimeout(400);
+  assert.match(await p.textContent('.tds-q'), /어디에 있나요/, '없는 지역 → 같은 질문');
+  assert.match(await p.textContent('.tds-err'), /목록에서 지역을 골라/, '오류 문구 표시');
+  await p.fill('.tds-input', '강남구'); await p.click('#tds-next'); await p.waitForTimeout(400);
+  assert.match(await p.textContent('.tds-q'), /어디에 있나요/, '목록에 없는 줄임말도 진행 불가');
+  const r = await p.evaluate(() => [checkRegulatoryStatus('부산광역시 오타구', '2025-01-01'), checkRegulatoryStatus('서울특별시 강남구', '2025-01-01')]);
+  assert.equal(r[0].error, true, '미등록 지역은 오류');
+  assert.notEqual(r[0].isRegulated, false, '미등록 지역을 비규제로 판정하지 않음');
+  assert.equal(r[1].isRegulated, true, '등록 지역은 정상 판정');
+  await p.locator('.tds-input').fill('서울특별시 강남'); await p.waitForTimeout(100);
+  await p.locator('.tds-suggest button', { hasText: '서울특별시 강남구' }).first().click(); await p.waitForTimeout(400);
+  assert.match(await p.textContent('.tds-q'), /언제 취득/, '목록에서 고르면 다음으로');
+});
+
+test('증여세 질문: 기사용 공제 0원과 빈칸을 구분한다', async () => {
+  const flow = async deduct => {
+    const p = await open('gift.html');
+    const pick = async t => { await p.locator('.tds-choice', { hasText: t }).first().click(); await p.waitForTimeout(400); };
+    const money = async v => { await p.fill('.tds-input', v); await p.click('#tds-next'); await p.waitForTimeout(400); };
+    await pick('자녀'); await pick('아니요');                 // 성인 자녀
+    await money('30000'); await pick('아니요');               // 3억, 빚 없음
+    await pick('아니요'); await pick('네');                   // 혼인·출산 아님, 10년 내 증여 있음
+    await money('10000');                                     // 그때 1억
+    assert.match(await p.textContent('.tds-q'), /공제받은 금액/);
+    await money(deduct);                                      // '0' 또는 '' (비움)
+    await pick('현금'); await pick('네, 기한');
+    await p.waitForTimeout(300);
+    return p.evaluate(() => ({ used: userData.priorDeductUsed, r: calcGiftFromUserData(userData) }));
+  };
+  const zero = await flow('0');
+  assert.equal(zero.used, 0, '0 입력 → 숫자 0');
+  assert.equal(zero.r.priorDeductEstimated, false, '0 입력이면 추정 안 함');
+  assert.equal(zero.r.finalTax, 4850, '기사용 공제 0원 → 4,850만원');
+  const blank = await flow('');
+  assert.equal(blank.used, null, '비우면 null');
+  assert.equal(blank.r.priorDeductEstimated, true, '비웠을 때만 추정');
+  assert.equal(blank.r.finalTax, 5335, '추정(한도 모두 사용) → 5,335만원');
 });

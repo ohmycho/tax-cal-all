@@ -22,7 +22,8 @@ body{padding:0 16px 48px!important;display:block!important}
       title:'조정대상지역 진단', init:last, doneLabel:'진단하기',
       steps:[
         { id:'region', type:'search', q:'집이 어디에 있나요?', sub:'시·군·구 또는 동 이름으로 찾아 주세요.', placeholder:'예: 강남구, 수지구',
-          suggest:function(q){ return Object.keys(regulatoryDB).filter(function(r){ return r.indexOf(q)>=0; }).sort(); } },
+          suggest:function(q){ return Object.keys(regulatoryDB).filter(function(r){ return r.indexOf(q)>=0; }).sort(); },
+          validate:function(v){ return zoneRegionKnown(v) ? '' : '목록에서 지역을 골라 주세요. 목록에 없는 지역은 지정 이력을 확인할 수 없어 판정하지 않아요.'; } },
         { id:'acqDate', type:'date', q:'언제 취득했나요?', sub:'잔금일 또는 등기접수일 중 빠른 날이에요.\n취득 당시 조정대상지역이었는지에 따라 거주 요건이 달라져요.' },
         { id:'live', type:'multi', q:'그 집에 얼마나 살았나요?', sub:'주민등록 전입 후 실제로 산 기간이에요. 안 살았으면 0으로 두세요.',
           fields:[{id:'liveY',unit:'년'},{id:'liveM',unit:'개월'}],

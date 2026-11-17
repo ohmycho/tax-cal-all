@@ -64,7 +64,7 @@ body{background:#f2f4f6!important;padding:0 0 48px!important}
         Object.assign(userData,{ target:a.target, relation:rel, isGrand:a.target==='grand', isMinor:kid(a)&&!!a.isMinor,
           isMarriage:kid(a)&&!!a.isMarriage, priorMarriageDeduct:(kid(a)&&a.isMarriage)?Math.min(10000,a.priorMarriageDeduct||0):0,
           assetValue:a.assetValue, debtAmount:a.hasDebt?a.debtAmount:0, priorGift:a.hasPrior?a.priorGift:0,
-          priorDeductUsed:(a.hasPrior&&a.priorDeduct)?a.priorDeduct:null, onTime:a.onTime!==false,
+          priorDeductUsed:(a.hasPrior&&a.priorDeduct!=null)?a.priorDeduct:null /* 0원 입력은 0, 비우면 null(추정) */, onTime:a.onTime!==false,
           priorMarriageInPrior: kid(a)&&a.hasPrior&&a.isMarriage&&(a.priorMarriageDeduct||0)>0&&!!a.priorMarriageInPrior,
           assetKind:a.assetKind||'cash', small85:a.assetKind==='house'&&!!a.small85, zone3:a.assetKind==='house'&&!!a.zone3,
           giverOne:a.assetKind==='house'&&!!a.zone3&&a.target!=='other'&&!!a.giverOne });

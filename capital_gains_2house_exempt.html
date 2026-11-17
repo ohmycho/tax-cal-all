@@ -379,7 +379,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.5', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.6', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -433,6 +433,10 @@ document.addEventListener('DOMContentLoaded', function(){
 
   window.TDSWizard = function(cfg){
     var a = Object.assign({}, cfg.init||{}), hist=[], idx=0;
+    /* 중복 진행 방지: 한 질문에서 넘어가는 동작은 한 번만. 다음 질문이 그려질 때 풀린다 */
+    var locked=false, tapLockUntil=0;
+    /* 넘기는 탭 직후 350ms는 다음 탭을 무시 → 빠른 두 번 탭이 새 질문의 선택지·버튼에 떨어져도 건너뛰지 않음 */
+    function tapOK(){ var t=Date.now(); if(t<tapLockUntil) return false; tapLockUntil=t+350; return true; }
     var root=document.createElement('div'); root.className='tds-wiz'; root.id='tds-wiz';
     root.innerHTML='<div class="tds-topbar"><button class="tds-back" aria-label="뒤로">'+ICON_BACK+'</button><div class="tds-topbar-title">'+esc(cfg.title)+'</div><span class="tds-ver-badge">'+tdsVersionText()+'</span></div>'+
       '<div class="tds-progress"><i></i></div><div class="tds-wiz-body"></div>'+
@@ -452,14 +456,16 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     function empty(s,v){ if(s.type==='multi') return false; return v===null||v===undefined||v===''; }
     function go(){
+      if(locked) return;
       var s=steps[idx], v=value(s);
       if(s.type!=='choice'){
         if(empty(s,v) && !s.optional){ err(s.type==='date'?'날짜를 선택해 주세요':'값을 입력해 주세요'); return; }
         if(s.validate){ var m=s.validate(v,a); if(m){ err(m); return; } }
-        a[s.id]=empty(s,v)?(s.type==='money'||s.type==='number'?0:''):v;
+        a[s.id]=empty(s,v)?(s.type==='money'||s.type==='number'?null:''):v; /* 비운 칸은 null, 입력한 0은 0 */
         if(s.type==='multi') s.fields.forEach(function(f){ a[f.id]=v[f.id]; });
       }
       var n=nextIdx(idx);
+      locked=true;
       if(n<0){ finish(); return; }
       hist.push(idx); idx=n; render();
     }
@@ -469,7 +475,7 @@ document.addEventListener('DOMContentLoaded', function(){
       setTimeout(function(){ document.querySelectorAll(COUNT_SEL).forEach(function(el){ delete el.dataset.counted; if(el.offsetParent) tdsCountUp(el); }); }, 30);
     }
     function render(){
-      var s=steps[idx], c=countVisible(); err('');
+      var s=steps[idx], c=countVisible(); err(''); locked=false;
       root.querySelector('.tds-progress i').style.width=Math.round(c[0]/c[1]*100)+'%';
       back.classList.toggle('home', hist.length===0);
       var h='<div class="tds-step-count">'+c[0]+' / '+c[1]+'</div><h2 class="tds-q">'+esc(typeof s.q==='function'?s.q(a):s.q)+'</h2><p class="tds-q-sub">'+esc(typeof s.sub==='function'?s.sub(a):(s.sub||''))+'</p><div class="tds-control">';
@@ -495,7 +501,9 @@ document.addEventListener('DOMContentLoaded', function(){
       bar.style.display = s.type==='choice' ? 'none' : '';
       next.textContent = nextIdx(idx)<0 ? (cfg.doneLabel||'결과 보기') : '다음';
       if(s.type==='choice'){
+        var picked=false;
         body.querySelectorAll('.tds-choice').forEach(function(b){ b.onclick=function(){
+          if(picked||locked||!tapOK()) return; picked=true;
           haptic(); body.querySelectorAll('.tds-choice').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
           var raw=b.getAttribute('data-v'), o=s.options.find(function(x){return String(x.v)===raw;}); a[s.id]=o?o.v:raw;
           setTimeout(go,160);
@@ -521,19 +529,19 @@ document.addEventListener('DOMContentLoaded', function(){
       refresh();
       /* 날짜는 고르면 바로 다음으로 (토스처럼). 아이폰은 날짜 창의 '완료'를 누르면 넘어감 */
       if(s.type==='date'){
-        inp.addEventListener('change',function(){ if(!inp.value) return; var m=s.validate?s.validate(inp.value,a):''; if(m){ err(m); return; } haptic(); setTimeout(go,250); });
+        inp.addEventListener('change',function(){ if(!inp.value) return; var m=s.validate?s.validate(inp.value,a):''; if(m){ err(m); return; } haptic(); setTimeout(function(){ if(steps[idx]===s) go(); },250); });
       }
       if(s.type==='search'){
         var box=body.querySelector('.tds-suggest');
         var show=function(){ var q=inp.value.trim(); var list=q?(s.suggest(q)||[]).slice(0,8):[];
           box.innerHTML=list.map(function(t){ var i=t.indexOf(q); return '<button type="button">'+(i>=0?esc(t.slice(0,i))+'<b>'+esc(q)+'</b>'+esc(t.slice(i+q.length)):esc(t))+'</button>'; }).join('');
-          box.querySelectorAll('button').forEach(function(b,i){ b.onclick=function(){ inp.value=list[i]; box.innerHTML=''; go(); }; }); };
+          box.querySelectorAll('button').forEach(function(b,i){ b.onclick=function(){ inp.value=list[i]; box.innerHTML=''; if(!tapOK()) return; go(); }; }); };
         inp.addEventListener('input',show);
       }
-      body.querySelectorAll('.tds-input').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); go(); } }); });
+      body.querySelectorAll('.tds-input').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); if(!tapOK()) return; go(); } }); });
       if(s.type!=='date' && !('ontouchstart' in window)) setTimeout(function(){ inp && inp.focus(); },50);
     }
-    next.onclick=function(){ haptic(); go(); };
+    next.onclick=function(){ if(!tapOK()) return; haptic(); go(); };
     back.onclick=function(){
       if(hist.length){ idx=hist.pop(); render(); return; }
       if(cfg.onExit) cfg.onExit(); else if(window.self===window.top) location.href='index.html';
