@@ -776,7 +776,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.6', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.7', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -1635,7 +1635,8 @@ function addHouse() {
     '<div class="num-row"><input type="text" inputmode="numeric" pattern="[0-9]*" class="price-input" style="font-size:18px;padding:14px 16px;" id="hval-' + i + '" placeholder="평가액" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');kor(this,\'prev-h' + i + '\');updateHouseFeedback()"><span>만원</span></div>' +
     '<div class="kor-preview" id="prev-h' + i + '"></div>' +
     '<div class="num-row" style="margin-top:8px;"><input type="text" inputmode="numeric" pattern="[0-9]*" class="price-input" style="font-size:16px;padding:12px 16px;" id="hdebt-' + i + '" placeholder="이 주택 담보대출 (없으면 비워두세요)" oninput="this.value=this.value.replace(/[^0-9]/g,\'\');kor(this,\'prev-hd' + i + '\')"><span>만원</span></div>' +
-    '<div class="kor-preview" id="prev-hd' + i + '"></div>';
+    '<div class="kor-preview" id="prev-hd' + i + '"></div>' +
+    '<label style="display:flex;align-items:center;gap:8px;margin-top:10px;font-size:15px;color:#4e5968;cursor:pointer"><input type="checkbox" id="h85-' + i + '" style="width:20px;height:20px;accent-color:#3182f6"> 전용면적 85㎡ 이하 (농어촌특별세 비과세)</label>';
   document.getElementById('house-list').appendChild(div);
 }
 function updateHouseFeedback() {
@@ -1855,7 +1856,7 @@ function collectAll() {
   document.querySelectorAll('#house-list .asset-card').forEach(function(el) {
     var id = el.id.replace('house-','');
     var val = v('hval-'+id);
-    if (val > 0) S.houses.push({ name: (document.getElementById('hname-'+id)||{}).value||'', value: val, securedDebt: Math.min(val, v('hdebt-'+id)) });
+    if (val > 0) S.houses.push({ name: (document.getElementById('hname-'+id)||{}).value||'', value: val, securedDebt: Math.min(val, v('hdebt-'+id)), small85: !!(document.getElementById('h85-'+id)||{}).checked });
   });
   S.nhouses = [];
   document.querySelectorAll('#nhouse-list .asset-card').forEach(function(el) {
@@ -2002,25 +2003,36 @@ function computeInheritance(mode) {
   var priorChildTaxBase  = S.priorChildren.reduce(function(s,c){ return s + Math.max(0, c.amount - 5000); }, 0);
   var priorTaxBase = priorSpouseTaxBase + priorChildTaxBase;
   // 수증자별 증여재산 과세표준 (자녀는 성인 5천만 원 공제로 가정)
-  var priorDonees = [{ base: priorSpouseTaxBase, tax: S.priorSpouseTax }].concat(
-    S.priorChildren.map(function(c){ return { base: Math.max(0, c.amount - 5000), tax: c.tax }; }));
+  var priorDonees = [{ who: 'spouse', amount: S.priorSpouse, base: priorSpouseTaxBase, tax: S.priorSpouseTax }].concat(
+    S.priorChildren.map(function(c){ return { who: 'child', amount: c.amount, base: Math.max(0, c.amount - 5000), tax: c.tax }; }));
   // 상속공제 종합한도 (상증세법 제24조): 상속세 과세가액 − (과세가액 5억 초과 시) 가산한 증여재산의 과세표준
   var deductLimit = Math.max(0, taxableBase - (taxableBase > 50000 ? priorTaxBase : 0));
 
   // 배우자공제·동거주택공제 조합에 따른 최종세액 산출 헬퍼
-  function evalPlan(spouseDeductIn, cohouseDeductIn) {
+  // spouseNetIn: 이 분할안에서 배우자가 실제 받는 상속재산(순액). 자녀는 나머지를 균등하게 받는 것으로 본다.
+  function evalPlan(spouseDeductIn, cohouseDeductIn, spouseNetIn) {
     var sumDeductions = chosenDeduct + spouseDeductIn + cohouseDeductIn + financeDeduct;
     var totalDeductV = Math.min(sumDeductions, deductLimit);
     var taxStandardV = Math.max(0, taxableBase - totalDeductV);
     var grossTaxV    = Math.round(calcInheritTax(taxStandardV) / 10000);
-    // 증여세액공제 (상증법 제28조): 수증자별로 증여 당시 증여세 산출세액을 따로 구하고(입력값 우선),
-    // 한도 = 상속세 산출세액 × (그 증여재산 과세표준 ÷ 상속세 과세표준) — 전체 상속세 기준으로 단순화
-    var priorTaxPaidV = 0;
+    // 증여세액공제 (상증법 제28조①, 시행령 제21조①·제3조①) — 상속인별 계산 (세무사 검토 Q5, 2026-11-17)
+    // 수증자(상속인)별로 증여 당시 증여세 산출세액(입력값 우선)을 구하고,
+    // 한도 = 그 상속인이 낼 상속세 × (그 상속인의 증여재산 과세표준 ÷ 그 상속인의 상속세 과세표준 상당액)
+    //   그 상속인이 낼 상속세 = 산출세액 × (그 상속인 과세표준 상당액 ÷ 상속세 과세표준)
+    //   과세표준 상당액 = 상속세 과세표준 × (그 상속인이 받은 상속재산 순액 + 사전증여재산) ÷ 상속세 과세가액
+    // → 한도 = 산출세액 × min(증여 과세표준 ÷ 상속세 과세표준, 그 상속인 몫 ÷ 과세가액)
+    var spouseNet = S.hasSpouse ? Math.max(0, Math.min(netAsset, spouseNetIn || 0)) : 0;
+    var childNet  = S.childCount > 0 ? Math.max(0, netAsset - spouseNet) / S.childCount : 0;
+    var priorTaxPaidV = 0, priorDetail = [];
     priorDonees.forEach(function(d){
+      if (d.who === 'spouse' && !S.hasSpouse) return;
       if (d.base <= 0 && !d.tax) return;
       var paid  = (d.tax != null) ? d.tax : Math.round(calcInheritTax(d.base) / 10000);  // 증여세율 = 상속세율 (제56조→제26조)
-      var limit = taxStandardV > 0 ? Math.round(grossTaxV * Math.min(1, d.base / taxStandardV)) : 0;
+      var heirShare = taxableBase > 0 ? ((d.who === 'spouse' ? spouseNet : childNet) + d.amount) / taxableBase : 0;
+      var ratio = taxStandardV > 0 ? Math.min(d.base / taxStandardV, heirShare, 1) : 0;
+      var limit = Math.round(grossTaxV * ratio);
       priorTaxPaidV += Math.min(paid, limit);
+      priorDetail.push({ who: d.who, paid: paid, limit: limit });
     });
     priorTaxPaidV = Math.min(grossTaxV, priorTaxPaidV);
     // 신고세액공제 3% (제69조①): 기한 내 신고할 때만
@@ -2029,7 +2041,7 @@ function computeInheritance(mode) {
     return {
       spouseDeduct: spouseDeductIn, cohouseDeduct: cohouseDeductIn,
       totalDeduct: totalDeductV, taxStandard: taxStandardV, grossTax: grossTaxV,
-      reportDeduct: reportDeductV, priorTaxPaid: priorTaxPaidV, finalTax: finalTaxV
+      reportDeduct: reportDeductV, priorTaxPaid: priorTaxPaidV, finalTax: finalTaxV, priorDetail: priorDetail
     };
   }
 
@@ -2052,7 +2064,7 @@ function computeInheritance(mode) {
       var childHouseShareWon0 = houseNetValueWon0 * childShareRatioLegal;
       cohouseDeduct = Math.round(Math.min(childHouseShareWon0, toWon(cohouseMaxDeduct)) / 10000);
     }
-    plan = evalPlan(spouseDeduct, cohouseDeduct);
+    plan = evalPlan(spouseDeduct, cohouseDeduct, spouseActualLegal);
   } else {
     // ── 협의분할 최적화 (세법 전문가 로직) ──
     // 동거주택 상속공제는 자격 요건을 충족했다면 "포기하는 것이 유리한 경우가 없다"(수학적으로
@@ -2075,7 +2087,7 @@ function computeInheritance(mode) {
       var spouseActual = Math.max(0, spousePoolAssets - debt - funeral);
       var sd = S.hasSpouse ? Math.max(Math.min(spouseActual, spouseLegal, 300000), 50000) : 0;
       var cd = (cohouseEligible && primaryHouseVal > 0) ? Math.round(Math.min(childHouseShare * houseNetRatio, cohouseMaxDeduct)) : 0;
-      var pl = evalPlan(sd, cd);
+      var pl = evalPlan(sd, cd, spouseActual);
       var childPoolAssets = Math.max(0, grossAsset - (S.hasSpouse ? spousePoolAssets : 0));
       return {
         childHouseShare: childHouseShare, spouseHouseShare: spouseHouseShare, remainderShare: remainderShare,
@@ -2097,7 +2109,7 @@ function computeInheritance(mode) {
       var spousePoolAssetsSkip = spouseHouseShareSkip + otherHouseVal + nT + S.finance + S.insurance + S.general;
       var spouseActualSkip = Math.max(0, spousePoolAssetsSkip - debt - funeral);
       var sdSkip = S.hasSpouse ? Math.max(Math.min(spouseActualSkip, spouseLegal, 300000), 50000) : 0;
-      var planSkip = evalPlan(sdSkip, 0);
+      var planSkip = evalPlan(sdSkip, 0, spouseActualSkip);
       cohouseCompare = {
         withTax: plan.finalTax, withoutTax: planSkip.finalTax,
         diff: Math.max(0, planSkip.finalTax - plan.finalTax),
@@ -2113,7 +2125,7 @@ function computeInheritance(mode) {
       reportDeduct = plan.reportDeduct, priorTaxPaid = plan.priorTaxPaid, finalTax = plan.finalTax;
 
   // 상속 취득세 (지방세법 제11조①1호 2.8%, 제15조① 상속 1가구 1주택 특례 2.8%−2% = 0.8%)
-  // 지방교육세 0.16% 포함, 농어촌특별세 0.2%(일반)·특례 시 비과세 → 특례 0.96% / 일반 3.16%
+  // 지방교육세 0.16% 포함, 농어촌특별세 0.2%(일반)·특례 시 비과세 → 특례 0.96% / 일반 3.16% / 전용 85㎡ 이하 주택 2.96%
   var acquisitionTax = 0;
   var acqDetails = [];
   var houseGetsSpecialRate = S.houses.length === 1 && S.heirNoHouse === true;
@@ -2123,9 +2135,18 @@ function computeInheritance(mode) {
       acquisitionTax += hTax;
       acqDetails.push({ name: '주택 (상속 1가구 1주택 특례)', value: hT, rate: '0.96%', special: true, law: '지방세법 제15조①2호가목 · 시행령 제29조 (2.8%−2%) + 제151조 (지방교육세)', tax: hTax / 10000 });
     } else {
-      var hTax2 = Math.round(toWon(hT) * 0.0316);
-      acquisitionTax += hTax2;
-      acqDetails.push({ name: '주택', value: hT, rate: '3.16%', special: false, law: '지방세법 제11조①1호나목 (2.8%) · 제151조 (지방교육세) · 농어촌특별세법 제5조①6호', tax: hTax2 / 10000 });
+      // 전용 85㎡ 이하 주택은 농어촌특별세 비과세 → 2.96% (농어촌특별세법 제4조11호). 세무사 검토 Q4 (2026-11-17) 반영
+      var h85 = S.houses.filter(function(h){ return h.small85; }).reduce(function(t,h){ return t+h.value; },0), hBig = hT - h85;
+      if (h85 > 0) {
+        var hTax3 = Math.round(toWon(h85) * 0.0296);
+        acquisitionTax += hTax3;
+        acqDetails.push({ name: '주택 (전용 85㎡ 이하)', value: h85, rate: '2.96%', special: false, law: '지방세법 제11조①1호나목 (2.8%) · 제151조 (지방교육세) · 농어촌특별세법 제4조11호 (비과세)', tax: hTax3 / 10000 });
+      }
+      if (hBig > 0) {
+        var hTax2 = Math.round(toWon(hBig) * 0.0316);
+        acquisitionTax += hTax2;
+        acqDetails.push({ name: h85 > 0 ? '주택 (85㎡ 초과)' : '주택', value: hBig, rate: '3.16%', special: false, law: '지방세법 제11조①1호나목 (2.8%) · 제151조 (지방교육세) · 농어촌특별세법 제5조①6호', tax: hTax2 / 10000 });
+      }
     }
   }
   if (nT > 0) {
@@ -2455,7 +2476,7 @@ function generateReportHTML(type) {
   html += (S.onTime === false
     ? '⑤ 신고세액공제 = <strong>0원</strong> (기한 내 신고하지 않음 · 무신고가산세 별도)' + lawRef('상증법 제69조① · 국세기본법 제47조의2')
     : '⑤ 신고세액공제 3% = △<strong>' + formatKor(r.reportDeduct) + '</strong> (기한 내 신고 가정)' + lawRef('상증법 제69조①')) + '<br>';
-  if (r.priorTaxPaid > 0) html += '⑥ 기납부증여세 = △<strong>' + formatKor(r.priorTaxPaid) + '</strong>' + lawRef('상증법 제28조 (증여세액공제)') + '<br>';
+  if (r.priorTaxPaid > 0) html += '⑥ 기납부증여세 = △<strong>' + formatKor(r.priorTaxPaid) + '</strong>' + lawRef('상증법 제28조① · 시행령 제21조① (상속인별 한도)') + '<br>';
   html += '</div><div style="font-size:16px;font-weight:700;color:' + C.amount + ';margin-top:12px;text-align:center;">최종 납부세액 = <strong>' + formatKor(r.finalTax) + '</strong></div></div></details>';
 
   // 취득세 아코디언
@@ -2662,7 +2683,7 @@ function generateReportHTML(type) {
     '연로자·장애인 공제 등 자녀·미성년자 외 인적공제',
     '재산 평가(시가·감정가·기준시가)의 세부 판단',
     '가업·영농상속공제, 연부연납·물납',
-    '증여세액공제: 그때 낸 증여세를 입력하지 않으면 수증자별 과세표준으로 추정하고, 한도는 상속인별이 아닌 전체 상속세 기준으로 단순 계산',
+    '증여세액공제: 그때 낸 증여세를 입력하지 않으면 수증자별 과세표준으로 추정하고, 한도는 상속인별로 계산하되 자녀는 상속재산을 균등하게 받는 것으로 가정',
     '자녀 사전증여의 증여재산공제는 성인 5천만 원으로 가정 (혼인·출산 공제, 미성년 공제 미반영)',
     '배우자 사전증여의 증여세 과세표준은 배우자 증여재산공제 6억원만 반영해 추정'
   ]);

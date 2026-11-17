@@ -199,6 +199,9 @@ test('상속세: 공제 한도·배우자·금융·미성년·동거주택·취�
   assert.equal((await run(house(60000))).cohouseDeduct, 40000, '주택 10억·담보 6억 → 4억');
   assert.equal((await run({ hasSpouse: true, childCount: 1, houses: [{ name: 'A', value: 50000 }], heirNoHouse: true })).acquisitionTax, 480, '1가구1주택 특례 0.96%');
   assert.equal((await run({ hasSpouse: true, childCount: 1, houses: [{ name: 'A', value: 50000 }], heirNoHouse: false })).acquisitionTax, 1580, '일반 3.16%');
+  // 세무사 검토 Q4 (2026-11-17): 전용 85㎡ 이하 주택은 농어촌특별세 비과세 → 2.8% + 0.16% = 2.96%
+  assert.equal((await run({ hasSpouse: true, childCount: 1, houses: [{ name: 'A', value: 50000, small85: true }], heirNoHouse: false })).acquisitionTax, 1480, '85㎡ 이하 2.96%');
+  assert.equal((await run({ hasSpouse: true, childCount: 1, houses: [{ name: 'A', value: 50000, small85: true }, { name: 'B', value: 30000 }], heirNoHouse: false })).acquisitionTax, 1480 + 948, '85㎡ 이하 2.96% + 초과 3.16%');
 
   // 상속인 구성에 따라 결과가 달라져야 함 (15억: 주택 10억 + 금융 5억)
   const fam = s => run({ houses: [{ name: '아파트', value: 100000 }], finance: 50000, ...s });
@@ -262,6 +265,14 @@ test('상속세: 증여세액공제 수증자별·기한 내 신고 여부', asy
   const c = await run({ onTime: false });
   assert.equal(c.reportDeduct, 0, '기한 내 신고 안 하면 신고세액공제 없음');
   assert.equal(c.finalTax, c.grossTax - c.priorTaxPaid);
+  // 세무사 검토 Q5 (2026-11-17): 한도는 상속인별 (상증법 제28조①, 시행령 제21조①·제3조①)
+  // 배우자 없음·자녀 2명, 순상속재산 5억(균등 2.5억씩), 자녀A만 사전증여 5억 → 과세가액 10억
+  // 공제 일괄 5억(종합한도 10억−4.5억=5.5억 이내) → 과표 5억 → 산출세액 9,000만
+  // 자녀A 증여세 산출세액(과표 4.5억) 8,000만, 한도 = 9,000만 × min(4.5억/5억, (2.5억+5억)/10억) = 9,000만 × 0.75 = 6,750만
+  // (전체 기준이면 9,000만 × 0.9 = 8,100만 → 8,000만 전액 공제되어 상속세가 과소 표시됨)
+  const d = await run({ general: 50500, hasSpouse: false, childCount: 2, priorSpouse: 0, priorChildren: [{ amount: 50000, tax: null }, { amount: 0, tax: null }] });
+  assert.equal(d.grossTax, 9000, '산출세액 9천만');
+  assert.equal(d.priorTaxPaid, 6750, '상속인별 한도 6,750만');
 });
 
 test('질문 넘기기: 증여세 배우자는 혼인·출산 질문을 건너뛴다', async () => {
