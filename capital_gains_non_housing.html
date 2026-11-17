@@ -569,6 +569,15 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 .tds-input{flex:1;min-width:0;width:auto!important;height:auto!important;border:0!important;outline:0!important;box-shadow:none!important;border-radius:0!important;background:transparent!important;-webkit-appearance:none;appearance:none;margin:0!important;font-size:26px!important;font-weight:700;color:var(--tds-grey900);padding:0!important;font-family:inherit;letter-spacing:-0.01em}
 .tds-input::placeholder{color:var(--tds-grey300);font-weight:600}
 .tds-input[type=date]{font-size:22px!important;min-height:40px}
+.tds-num{position:relative;flex:1;min-width:0;display:flex}
+.tds-num .tds-input{color:transparent!important;caret-color:var(--tds-blue500)}
+.tds-num-view{position:absolute;left:0;top:0;bottom:0;display:flex;align-items:center;pointer-events:none;white-space:pre;font-size:26px;font-weight:700;color:var(--tds-grey900);letter-spacing:-0.01em;overflow:hidden}
+.tds-num-view i{font-style:normal;display:inline-block}
+.tds-num-view i.pop{animation:tdsDigitIn .22s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes tdsDigitIn{from{transform:translateY(45%);opacity:0}to{transform:none;opacity:1}}
+.tds-hint{transition:opacity .2s}
+.tds-choice.on{animation:tdsTap .18s ease-out}
+@keyframes tdsTap{50%{transform:scale(.98)}}
 .tds-unit{font-size:22px;font-weight:600;color:var(--tds-grey600);flex-shrink:0}
 .tds-hint{font-size:16px;font-weight:600;color:var(--tds-blue500);margin-top:12px;min-height:24px}
 .tds-help{font-size:15px;line-height:1.6;color:var(--tds-grey600);background:var(--tds-grey50);border-radius:14px;padding:14px 16px;margin-top:24px;white-space:pre-line}
@@ -637,7 +646,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.4', date:'2026.11.17', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.4.1', date:'2026.11.17', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -662,6 +671,31 @@ document.addEventListener('DOMContentLoaded', function(){
     return out.join(' ')+' 원';
   }
   function digits(s){ return String(s||'').replace(/[^0-9]/g,''); }
+  /* 햅틱: 안드로이드는 진동 API, 아이폰(Safari 18+)은 switch 체크박스를 누르는 방식으로 짧은 진동 */
+  var hapticEl=null;
+  function haptic(){
+    try{
+      if(navigator.vibrate){ navigator.vibrate(8); return; }
+      if(!hapticEl){ hapticEl=document.createElement('label'); hapticEl.setAttribute('aria-hidden','true');
+        hapticEl.style.cssText='position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none';
+        var c=document.createElement('input'); c.type='checkbox'; c.setAttribute('switch',''); c.tabIndex=-1; hapticEl.appendChild(c); document.body.appendChild(hapticEl); }
+      hapticEl.click();
+    }catch(e){}
+  }
+  window.tdsHaptic = haptic;
+  /* 결과 금액이 0부터 올라가는 애니메이션 (토스식). 글자 안 첫 숫자만 움직이고 단위는 그대로 */
+  window.tdsCountUp = function(el, ms){
+    if(!el || el.dataset.counted) return; var txt=el.textContent, m=txt.match(/[\d,]+(\.\d+)?/); if(!m) return;
+    var target=parseFloat(m[0].replace(/,/g,'')); if(!(target>0)) return;
+    var dec=(m[1]||'').length? m[1].length-1 : 0, pre=txt.slice(0,m.index), post=txt.slice(m.index+m[0].length), t0=null; ms=ms||700;
+    el.dataset.counted='1';
+    if(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    function fmt(v){ return v.toLocaleString('ko-KR',{minimumFractionDigits:dec,maximumFractionDigits:dec}); }
+    function step(ts){ if(!t0) t0=ts; var k=Math.min(1,(ts-t0)/ms), e=1-Math.pow(1-k,3);
+      el.textContent=pre+fmt(k<1?target*e:target)+post; if(k<1) requestAnimationFrame(step); }
+    requestAnimationFrame(step);
+  };
+  var COUNT_SEL='.result-total-num,.result-amount,.result-total,.sc-amount,#r-total,#totalTax,#resFinal';
   window.tdsKor = kor;
 
   window.TDSWizard = function(cfg){
@@ -698,7 +732,8 @@ document.addEventListener('DOMContentLoaded', function(){
     }
     function finish(){
       root.remove(); document.documentElement.classList.remove('tds-wiz-on'); window.scrollTo(0,0);
-      cfg.onDone(a);
+      cfg.onDone(a); haptic();
+      setTimeout(function(){ document.querySelectorAll(COUNT_SEL).forEach(function(el){ delete el.dataset.counted; if(el.offsetParent) tdsCountUp(el); }); }, 30);
     }
     function render(){
       var s=steps[idx], c=countVisible(); err('');
@@ -716,7 +751,9 @@ document.addEventListener('DOMContentLoaded', function(){
       } else {
         var type = s.type==='date'?'date':'text', im = (s.type==='money'||s.type==='number')?' inputmode="numeric"':'';
         var val = cur==null||cur===''?'':(s.type==='money'?Number(cur).toLocaleString():cur);
-        h+='<div class="tds-input-wrap"><input class="tds-input" type="'+type+'"'+im+' autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.placeholder||(s.type==='money'?'0':''))+'" value="'+esc(val)+'"'+(s.max?' max="'+s.max+'"':'')+'>'+(s.unit?'<span class="tds-unit">'+esc(s.unit)+'</span>':'')+'</div>';
+        var numeric = s.type==='money'||s.type==='number';
+        var field='<input class="tds-input" type="'+type+'"'+im+' autocomplete="off" enterkeyhint="next" placeholder="'+esc(s.placeholder||(s.type==='money'?'0':''))+'" value="'+esc(val)+'"'+(s.max?' max="'+s.max+'"':'')+'>';
+        h+='<div class="tds-input-wrap">'+(numeric?'<div class="tds-num">'+field+'<div class="tds-num-view"></div></div>':field)+(s.unit?'<span class="tds-unit">'+esc(s.unit)+'</span>':'')+'</div>';
         if(s.type==='money') h+='<div class="tds-hint"></div>';
         if(s.type==='search') h+='<div class="tds-suggest"></div>';
       }
@@ -726,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function(){
       next.textContent = nextIdx(idx)<0 ? (cfg.doneLabel||'결과 보기') : '다음';
       if(s.type==='choice'){
         body.querySelectorAll('.tds-choice').forEach(function(b){ b.onclick=function(){
-          body.querySelectorAll('.tds-choice').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
+          haptic(); body.querySelectorAll('.tds-choice').forEach(function(x){x.classList.remove('on');}); b.classList.add('on');
           var raw=b.getAttribute('data-v'), o=s.options.find(function(x){return String(x.v)===raw;}); a[s.id]=o?o.v:raw;
           setTimeout(go,160);
         }; });
@@ -738,6 +775,21 @@ document.addEventListener('DOMContentLoaded', function(){
         var upd=function(){ var d=digits(inp.value); inp.value=d?Number(d).toLocaleString():''; hint.textContent=kor(d,s.unit); };
         inp.addEventListener('input',upd); upd();
       }
+      var view=body.querySelector('.tds-num-view');
+      if(view){
+        var prev=inp.value;
+        var paint=function(grow){ var t=inp.value; view.innerHTML=t.split('').map(function(ch,i){ return '<i'+(grow&&i===t.length-1?' class="pop"':'')+'>'+esc(ch)+'</i>'; }).join(''); };
+        inp.addEventListener('input',function(){ var grow=digits(inp.value).length>digits(prev).length; if(grow||inp.value!==prev) haptic(); paint(grow); prev=inp.value; refresh(); });
+        paint(false);
+      }
+      /* 필수 칸이 비어 있으면 [다음]을 흐리게 */
+      var refresh=function(){ var v=value(s); next.disabled = !s.optional && s.type!=='multi' && (empty(s,v) || ((s.type==='money')&&!(v>0))); };
+      body.querySelectorAll('.tds-input').forEach(function(el){ el.addEventListener('input',refresh); });
+      refresh();
+      /* 날짜는 고르면 바로 다음으로 (토스처럼). 아이폰은 날짜 창의 '완료'를 누르면 넘어감 */
+      if(s.type==='date'){
+        inp.addEventListener('change',function(){ if(!inp.value) return; var m=s.validate?s.validate(inp.value,a):''; if(m){ err(m); return; } haptic(); setTimeout(go,250); });
+      }
       if(s.type==='search'){
         var box=body.querySelector('.tds-suggest');
         var show=function(){ var q=inp.value.trim(); var list=q?(s.suggest(q)||[]).slice(0,8):[];
@@ -748,7 +800,7 @@ document.addEventListener('DOMContentLoaded', function(){
       body.querySelectorAll('.tds-input').forEach(function(el){ el.addEventListener('keydown',function(e){ if(e.key==='Enter'&&!e.isComposing){ e.preventDefault(); go(); } }); });
       if(s.type!=='date' && !('ontouchstart' in window)) setTimeout(function(){ inp && inp.focus(); },50);
     }
-    next.onclick=go;
+    next.onclick=function(){ haptic(); go(); };
     back.onclick=function(){
       if(hist.length){ idx=hist.pop(); render(); return; }
       if(cfg.onExit) cfg.onExit(); else if(window.self===window.top) location.href='index.html';

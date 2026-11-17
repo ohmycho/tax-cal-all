@@ -209,7 +209,7 @@ test('질문 넘기기: 취득세 화면을 끝까지 진행하면 결과가 나
   }
   await p.fill('.tds-input', '70000');
   await p.click('#tds-next');
-  await p.waitForTimeout(200);
+  await p.waitForTimeout(1000);   // 결과 금액이 올라가는 애니메이션(0.7초)이 끝날 때까지
   assert.equal(await p.locator('#tds-wiz').count(), 0, '질문 화면이 닫혀야 함');
   assert.match(await p.textContent('#r-total'), /1,285\.9만/, '7억 1주택 85㎡ 이하: 1,169만 + 교육세 116.9만');
   assert.ok(await p.locator('.law-ref').count() >= 3, '계산 줄마다 근거 조문');
@@ -224,10 +224,10 @@ test('질문 넘기기: 취득세 주택 수 제외·일시적 2주택 처분기
   await pick('네');                       // 원래 집 팔 예정 (일시적 2주택)
   await pick('네, 조정대상지역이에요');     // 원래 집 조정
   await pick('조정대상지역이에요');         // 새 집 조정
-  await p.fill('.tds-input', '2026-11-20'); await p.click('#tds-next'); await p.waitForTimeout(250);
+  await p.fill('.tds-input', '2026-11-20'); await p.waitForTimeout(500);   // 날짜는 고르면 자동으로 다음 질문
   await pick('아니요');                   // 8.26까지 계약금 안 냄 → 2년
   await pick('85㎡ 이하');
-  await p.fill('.tds-input', '70000'); await p.click('#tds-next'); await p.waitForTimeout(250);
+  await p.fill('.tds-input', '70000'); await p.click('#tds-next'); await p.waitForTimeout(1000);
   assert.match(await p.textContent('#r-total'), /1,285\.9만/, '제외 후 일시적 2주택 → 일반세율');
   const note = await p.textContent('#note-box');
   assert.match(note, /2년 안\(2028\.11\.20까지\)/, '양쪽 조정·10.1 이후 취득 → 2년');
