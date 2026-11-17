@@ -38,9 +38,10 @@ test('취득세: 지방세법 제11조·제13조의2', async () => {
   }, [mw, house, region, opts]);
 
   assert.equal(await acq(60000, '1', 'normal'), 6_000_000, '6억 1주택 1%');
-  assert.equal(await acq(70000, '1', 'normal'), 11_666_900, '7억 1.6667% (퍼센트 기준 넷째 자리)');
+  // 지방세법 제11조①8호나목: ×1/100 한 세율을 넷째 자리로 반올림 → 7억 1.67%, 8억 2.33% (2026-11-17 정정)
+  assert.equal(await acq(70000, '1', 'normal'), 11_690_000, '7억 1.67%');
   assert.equal(await acq(75000, '1', 'normal'), 15_000_000, '7.5억 2%');
-  assert.equal(await acq(80000, '1', 'normal'), 18_666_400, '8억 2.3333%');
+  assert.equal(await acq(80000, '1', 'normal'), 18_640_000, '8억 2.33%');
   assert.equal(await acq(90000, '1', 'normal'), 27_000_000, '9억 3%');
   assert.equal(await acq(100000, '2', 'normal'), 30_000_000, '2주택 비조정 10억 3%');
   assert.equal(await acq(100000, '2', 'regulated'), 80_000_000, '2주택 조정 10억 8%');
@@ -155,6 +156,11 @@ test('증여세: 10년 합산·할증·신고세액공제', async () => {
   assert.equal(await g({ assetValue: 30000, priorGift: 10000, onTime: false }), 5500, '기한 내 미신고 → 공제 없음');
   assert.equal(await g({ assetValue: 30000, priorGift: 10000, priorDeductUsed: 0 }), 4850, '기사용 공제 0');
   assert.equal(await g({ target: 'grand', isGrand: true, assetValue: 30000 }), 5044, '손주 30% 할증');
+  // 상증법 제53조의2: 10년 내 합산 증여에서 이미 받은 혼인·출산 공제(6천)는 합산 과세표준에서도 빼야 함
+  // 이번 2억 + 과거 1.6억, 공제 = 기본 5천 + 이번 혼인 4천(1억−6천) + 과거 혼인 6천 = 1.5억 → 과표 2.1억 → 3,200만
+  // 과거분: 1.6억 − 5천 − 6천 = 5천 → 500만 ⇒ 2,700만 − 신고공제 81만 = 2,619만
+  assert.equal(await g({ assetValue: 20000, isMarriage: true, priorMarriageDeduct: 6000, priorMarriageInPrior: true, priorGift: 16000 }), 2619,
+    '과거 혼인·출산 공제 사용분 반영');
 });
 
 // ───────────────────────── 상속세 (inheritance.html) — 단위: 만원
@@ -203,6 +209,45 @@ test('질문 넘기기: 취득세 화면을 끝까지 진행하면 결과가 나
   await p.click('#tds-next');
   await p.waitForTimeout(200);
   assert.equal(await p.locator('#tds-wiz').count(), 0, '질문 화면이 닫혀야 함');
-  assert.match(await p.textContent('#r-total'), /1,283/, '7억 1주택: 1.6667% + 교육세');
+  assert.match(await p.textContent('#r-total'), /1,285\.9만/, '7억 1주택 85㎡ 이하: 1,169만 + 교육세 116.9만');
   assert.ok(await p.locator('.law-ref').count() >= 3, '계산 줄마다 근거 조문');
+});
+
+test('질문 넘기기: 취득세 주택 수 제외·일시적 2주택 처분기한', async () => {
+  const p = await open('acquisition.html');
+  const pick = async t => { await p.locator('.tds-choice', { hasText: t }).first().click(); await p.waitForTimeout(250); };
+  await pick('개인'); await pick('주택'); await pick('3주택');
+  await pick('네');                       // 주택 수에서 빠지는 집 있음
+  await pick('2주택');                    // 빼면 2채
+  await pick('네');                       // 원래 집 팔 예정 (일시적 2주택)
+  await pick('네, 조정대상지역이에요');     // 원래 집 조정
+  await pick('조정대상지역이에요');         // 새 집 조정
+  await p.fill('.tds-input', '2026-11-20'); await p.click('#tds-next'); await p.waitForTimeout(250);
+  await pick('아니요');                   // 8.26까지 계약금 안 냄 → 2년
+  await pick('85㎡ 이하');
+  await p.fill('.tds-input', '70000'); await p.click('#tds-next'); await p.waitForTimeout(250);
+  assert.match(await p.textContent('#r-total'), /1,285\.9만/, '제외 후 일시적 2주택 → 일반세율');
+  const note = await p.textContent('#note-box');
+  assert.match(note, /2년 안\(2028\.11\.20까지\)/, '양쪽 조정·10.1 이후 취득 → 2년');
+  assert.match(note, /제28조의4/, '주택 수 제외 전제 안내');
+});
+
+// 상증법 제28조 증여세액공제: 수증자별로 따로 계산 (합쳐서 누진세율 적용하면 공제가 커져 상속세가 과소 표시됨)
+// 배우자 7억 증여 → 과표 1억 → 1천만 / 자녀 3억 → 과표 2.5억 → 4천만 ⇒ 5천만 (합산 방식이면 3.5억 → 6천만)
+test('상속세: 증여세액공제 수증자별·기한 내 신고 여부', async () => {
+  const p = await open('inheritance.html');
+  const run = (extra) => p.evaluate((extra) => {
+    Object.assign(S, { houses: [], nhouses: [], finance: 0, insurance: 0, general: 300000, debt: 0, finDebt: 0,
+      hasSpouse: true, childCount: 1, priorSpouse: 70000, priorSpouseTax: null, priorChildren: [{ amount: 30000, tax: null }],
+      minorCount: 0, minorAges: [], hasCohouse: false, spouseHasHouse: false, cohouseQualifyIdx: [], heirNoHouse: null, onTime: true }, extra);
+    const r = computeInheritance('legal');
+    return { priorTaxPaid: r.priorTaxPaid, reportDeduct: r.reportDeduct, grossTax: r.grossTax, finalTax: r.finalTax };
+  }, extra);
+  const a = await run({});
+  assert.equal(a.priorTaxPaid, 5000, '수증자별 산출세액 합 5천만');
+  const b = await run({ priorSpouseTax: 900 });
+  assert.equal(b.priorTaxPaid, 4900, '실제 낸 증여세를 입력하면 그 금액 사용');
+  const c = await run({ onTime: false });
+  assert.equal(c.reportDeduct, 0, '기한 내 신고 안 하면 신고세액공제 없음');
+  assert.equal(c.finalTax, c.grossTax - c.priorTaxPaid);
 });

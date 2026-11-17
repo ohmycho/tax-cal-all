@@ -36,12 +36,18 @@ body{background:#f2f4f6!important;padding:0 0 48px!important}
         { id:'hasDebt', type:'choice', q:'받는 사람이 떠안는\n빚이 있나요?', sub:'대출이나 전세보증금이 낀 부동산을 주는 경우(부담부증여)예요.', options:YN, row:true },
         { id:'debtAmount', type:'money', unit:'만원', q:'떠안는 빚은 얼마인가요?', when:function(a){return a.hasDebt;},
           validate:function(v,a){ return v<=0?'금액을 입력해 주세요':(v>=a.assetValue?'주는 금액보다 작아야 해요':''); } },
-        { id:'isMarriage', type:'choice', q:'혼인신고나 출산 후\n2년이 안 됐나요?', sub:'해당하면 최대 1억 원을 더 공제받을 수 있어요.', when:kid, options:YN, row:true },
-        { id:'priorMarriageDeduct', type:'money', unit:'만원', q:'혼인·출산 공제를 전에\n받은 적이 있나요?', sub:'평생 합쳐 1억 원까지예요. 받은 적 없으면 비워 두세요.', optional:true,
+        { id:'isMarriage', type:'choice', q:'혼인·출산 공제 대상인가요?', when:kid,
+          sub:'최대 1억 원을 더 공제받을 수 있어요. (상증법 제53조의2)',
+          help:'· 혼인: 혼인신고일 2년 전부터 2년 후까지 받은 증여\n· 출산·입양: 출생일·입양신고일부터 2년 안에 받은 증여',
+          options:[{v:true,l:'네, 해당해요'},{v:false,l:'아니요'}] },
+        { id:'priorMarriageDeduct', type:'money', unit:'만원', q:'혼인·출산 공제를 전에\n받은 적이 있나요?', sub:'혼인·출산 공제는 평생 합쳐 1억 원까지예요. 받은 적 없으면 비워 두세요.', optional:true,
           when:function(a){return kid(a)&&a.isMarriage;}, validate:function(v){ return v>10000?'최대 1억 원(10,000만원)까지예요':''; } },
         { id:'hasPrior', type:'choice', q:'최근 10년 안에 같은 분께\n받은 적이 있나요?', sub:'10년 안에 받은 금액은 합쳐서 세금을 계산해요. 부모님처럼 부부는 한 사람으로 봐요.', options:YN, row:true },
         { id:'priorGift', type:'money', unit:'만원', q:'그때 받은 금액은\n모두 얼마인가요?', when:function(a){return a.hasPrior;}, validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
-        { id:'priorDeduct', type:'money', unit:'만원', q:'그때 공제받은 금액을\n아시나요?', sub:'모르면 비워 두세요. 공제 한도를 모두 쓴 것으로 계산해요.', optional:true, when:function(a){return a.hasPrior;} },
+        { id:'priorMarriageInPrior', type:'choice', q:'전에 받은 혼인·출산 공제가\n이 10년 안 증여에서 받은 건가요?',
+          sub:'같은 분께 10년 안에 받은 증여에서 혼인·출산 공제를 썼다면, 합쳐서 계산할 때도 그 공제를 다시 빼 줘요.',
+          when:function(a){return kid(a)&&a.hasPrior&&a.isMarriage&&(a.priorMarriageDeduct||0)>0;}, options:YN, row:true },
+        { id:'priorDeduct', type:'money', unit:'만원', q:'그때 공제받은 금액을\n아시나요?', sub:'혼인·출산 공제는 빼고 기본 증여재산공제만 적어 주세요. 모르면 비워 두세요. 한도를 모두 쓴 것으로 계산해요.', optional:true, when:function(a){return a.hasPrior;} },
         { id:'onTime', type:'choice', q:'기한 안에 신고하실 건가요?', sub:'받은 달의 말일부터 3개월 안에 신고하면 세금을 3% 줄여 줘요.',
           options:[{v:true,l:'네, 기한 안에 신고할게요'},{v:false,l:'아니요'}] }
       ],
@@ -51,7 +57,8 @@ body{background:#f2f4f6!important;padding:0 0 48px!important}
         Object.assign(userData,{ target:a.target, relation:rel, isGrand:a.target==='grand', isMinor:kid(a)&&!!a.isMinor,
           isMarriage:kid(a)&&!!a.isMarriage, priorMarriageDeduct:(kid(a)&&a.isMarriage)?Math.min(10000,a.priorMarriageDeduct||0):0,
           assetValue:a.assetValue, debtAmount:a.hasDebt?a.debtAmount:0, priorGift:a.hasPrior?a.priorGift:0,
-          priorDeductUsed:(a.hasPrior&&a.priorDeduct)?a.priorDeduct:null, onTime:a.onTime!==false });
+          priorDeductUsed:(a.hasPrior&&a.priorDeduct)?a.priorDeduct:null, onTime:a.onTime!==false,
+          priorMarriageInPrior: kid(a)&&a.hasPrior&&a.isMarriage&&(a.priorMarriageDeduct||0)>0&&!!a.priorMarriageInPrior });
         document.getElementById('landing-screen').classList.add('hidden');
         var mc=document.getElementById('main-calc'); mc.classList.remove('hidden');
         var r=calcGiftFromUserData(userData);

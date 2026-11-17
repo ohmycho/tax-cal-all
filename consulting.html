@@ -596,6 +596,29 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
     return { answers:a, restart:function(){ window.TDSWizard(cfg); } };
   };
 
+  /* AI 상담: 서버(/api/chat)에 묻고 답 글자만 돌려준다. 실패하면 사용자에게 보여 줄 안내 문구. */
+  window.tdsAskAI = function(kind, context, messages){
+    return fetch('/api/chat', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ kind: kind, context: String(context||'').slice(0,3000), messages: messages.slice(-10) }) })
+      .then(function(r){
+        if(r.status===429) return '질문이 너무 많아요. 1분 뒤에 다시 물어봐 주세요.';
+        if(!r.ok) return '지금은 답을 드리기 어려워요. 잠시 후 다시 시도해 주세요.';
+        return r.json().then(function(d){ return d.text || '답을 만들지 못했어요. 다시 물어봐 주세요.'; });
+      }).catch(function(){ return '네트워크 오류가 났어요. 잠시 후 다시 시도해 주세요.'; });
+  };
+  /* 채팅 말풍선: 글자를 HTML로 해석하지 않음 (XSS 방지) */
+  window.tdsBubble = function(cls, text){
+    var b=document.createElement('div'); b.className=cls; b.style.whiteSpace='pre-wrap'; b.textContent=String(text==null?'':text); return b;
+  };
+
+  /* 상담 신청 접수 (Netlify Forms 'consulting'). 서버가 받았을 때만 true.
+     실패하면 false → 화면에서 '접수되지 않았어요'를 보여 줘야 한다 (가짜 성공 금지). */
+  window.tdsSubmitConsult = function(data){
+    var body = new URLSearchParams(Object.assign({ 'form-name':'consulting', page: location.pathname }, data)).toString();
+    return fetch('/', { method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: body })
+      .then(function(r){ return r.ok; }).catch(function(){ return false; });
+  };
+
   /* 결과 화면 상단바 + 하단 '다시 계산하기' 를 붙인다 */
   window.tdsResultChrome = function(container, title, restart){
     if(!container) return;
@@ -615,6 +638,11 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 <!-- TDS:END -->
 </head>
 <body>
+<!-- Netlify Forms가 배포 때 인식하는 숨은 폼 (실제 전송은 tdsSubmitConsult) -->
+<form name="consulting" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field"><input name="name"><input name="phone"><input name="fields"><textarea name="message"></textarea>
+  <input name="asset"><input name="tax"><input name="type"><input name="page">
+</form>
 
 <!-- 상단 바 -->
 <div class="top-bar">
@@ -840,31 +868,18 @@ function submitForm() {
   btn.disabled = true;
   btn.textContent = '신청 중...';
 
-  // ── 서버 전송 로직 자리 ──────────────────────────────
-  // 아래 fetch 코드를 실제 API 엔드포인트에 맞게 연동하세요.
-  //
-  // var payload = {
-  //   name:    document.getElementById('inp-name').value.trim(),
-  //   phone:   document.getElementById('inp-phone').value.trim(),
-  //   fields:  [...document.querySelectorAll('.chip.on')].map(c => c.textContent),
-  //   message: document.getElementById('inp-msg').value.trim(),
-  //   asset:   pAsset,
-  //   tax:     pTax,
-  //   type:    pType,
-  // };
-  // fetch('/api/consulting', {
-  //   method: 'POST',
-  //   headers: { 'Content-Type': 'application/json' },
-  //   body: JSON.stringify(payload)
-  // }).then(r => r.json()).then(showSuccess).catch(showError);
-  // ────────────────────────────────────────────────────
-
-  // 현재는 1초 딜레이 후 성공 모달 표시 (서버 연동 전 임시)
-  setTimeout(function() {
+  tdsSubmitConsult({
+    name:    document.getElementById('inp-name').value.trim(),
+    phone:   document.getElementById('inp-phone').value.trim(),
+    fields:  [].map.call(document.querySelectorAll('.chip.on'), function(c){ return c.textContent.trim(); }).join(', '),
+    message: document.getElementById('inp-msg').value.trim(),
+    asset:   pAsset || '', tax: pTax || '', type: pType || ''
+  }).then(function(ok){
     btn.disabled = false;
     btn.textContent = 'VIP 상담 신청하기';
-    showSuccess();
-  }, 1000);
+    if (ok) showSuccess();
+    else tdsToast('신청이 접수되지 않았어요. 잠시 후 다시 시도해 주세요.');
+  });
 }
 
 function showSuccess() {

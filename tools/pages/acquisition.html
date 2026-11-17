@@ -31,6 +31,10 @@ body{background:#f2f4f6!important;padding:0 16px 48px!important}
 (function(){
   var last = { buyer:'individual', use:'housing' };
   var YN = [{v:true,l:'네'},{v:false,l:'아니요'}];
+  function indivHouse(a){ return a.buyer==='individual'&&a.use==='housing'; }
+  function H(a){ return (a.hasExclude&&a.houseNet) ? a.houseNet : a.house; }        // 제외 후 주택 수
+  function temp(a){ return indivHouse(a)&&H(a)==='2'&&a.tempTwo; }
+  function addYears(d,n){ var p=d.split('-'); return (+p[0]+n)+'.'+p[1]+'.'+p[2]; }
   function start(){
     TDSWizard({
       title:'취득세 계산기', init:last,
@@ -38,15 +42,22 @@ body{background:#f2f4f6!important;padding:0 16px 48px!important}
         { id:'buyer', type:'choice', q:'누가 사시나요?', options:[{v:'individual',l:'개인'},{v:'corp',l:'법인'}] },
         { id:'use', type:'choice', q:'어떤 부동산인가요?', options:[{v:'housing',l:'주택',d:'아파트·빌라·단독주택'},{v:'commercial',l:'상가·업무용',d:'상가·오피스·토지 등'}] },
         { id:'house', type:'choice', q:'이번에 사면\n주택이 모두 몇 채가 되나요?', sub:'세대 전체 기준, 이번에 사는 집을 포함해요.',
-          when:function(a){return a.buyer==='individual'&&a.use==='housing';},
-          options:[{v:'1',l:'1주택'},{v:'2',l:'2주택'},{v:'3',l:'3주택'},{v:'4',l:'4주택 이상'}] },
-        { id:'tempTwo', type:'choice', q:'일시적 2주택에 해당하나요?', sub:'원래 집을 정해진 기한(보통 3년) 안에 팔 예정이면 일반세율(1~3%)을 적용해요.',
-          when:function(a){return a.buyer==='individual'&&a.use==='housing'&&a.house==='2';}, options:YN, row:true },
+          when:indivHouse, options:[{v:'1',l:'1주택'},{v:'2',l:'2주택'},{v:'3',l:'3주택'},{v:'4',l:'4주택 이상'}] },
         { id:'hasExclude', type:'choice', q:'주택 수에서 빠지는 집이 있나요?', sub:'상속받은 지 5년이 안 된 주택, 공시가격 1억 원 이하 주택 등은 주택 수에 넣지 않을 수 있어요.',
-          when:function(a){return a.buyer==='individual'&&a.use==='housing'&&a.house!=='1';}, options:YN, row:true },
+          when:function(a){return indivHouse(a)&&a.house!=='1';}, options:YN, row:true },
+        { id:'houseNet', type:'choice', q:'그 집을 빼면\n모두 몇 채인가요?', sub:'이번에 사는 집을 포함해서 세어 주세요. 이 숫자로 세율을 정해요.',
+          when:function(a){return indivHouse(a)&&a.house!=='1'&&a.hasExclude;},
+          options:[{v:'1',l:'1주택'},{v:'2',l:'2주택',when:function(a){return +a.house>=2;}},{v:'3',l:'3주택',when:function(a){return +a.house>=3;}},{v:'4',l:'4주택 이상',when:function(a){return a.house==='4';}}] },
+        { id:'tempTwo', type:'choice', q:'원래 살던 집을\n팔 예정인가요?', sub:'이사 등으로 잠시 2주택이 된 경우(일시적 2주택)예요. 기한 안에 원래 집을 팔면 일반세율(1~3%)을 적용해요.',
+          when:function(a){return indivHouse(a)&&H(a)==='2';}, options:YN, row:true },
+        { id:'oldRegulated', type:'choice', q:'원래 집도\n조정대상지역에 있나요?', sub:'처분기한이 달라져요.',
+          when:temp, options:[{v:true,l:'네, 조정대상지역이에요'},{v:false,l:'아니요'}] },
         { id:'region', type:'choice', q:'사려는 집이\n조정대상지역에 있나요?', sub:'서울 전역과 경기 일부 지역이 조정대상지역이에요.',
           when:function(a){return a.use==='housing';},
           options:[{v:'regulated',l:'조정대상지역이에요'},{v:'normal',l:'조정대상지역이 아니에요'}] },
+        { id:'newAcqDate', type:'date', q:'새 집은 언제 취득하나요?', sub:'잔금일 기준이에요. 이 날부터 처분기한을 세요.', when:temp },
+        { id:'earlyContract', type:'choice', q:'2026년 8월 26일까지\n계약금을 냈나요?', sub:'그날까지 매매계약을 하고 계약금을 냈으면 예전 기준(3년)을 적용해요.',
+          when:function(a){return temp(a)&&a.oldRegulated&&a.region==='regulated'&&a.newAcqDate>='2026-10-01';}, options:YN, row:true },
         { id:'areaOver', type:'choice', q:'전용면적이 85㎡를 넘나요?', sub:'85㎡ 이하(국민주택 규모)면 농어촌특별세가 없어요.',
           when:function(a){return a.use==='housing';}, options:[{v:true,l:'85㎡ 초과'},{v:false,l:'85㎡ 이하'}], row:true },
         { id:'metro', type:'choice', q:'어느 지역에 있나요?',
@@ -60,7 +71,12 @@ body{background:#f2f4f6!important;padding:0 16px 48px!important}
       ],
       onDone:function(a){
         last=a;
-        Object.assign(S,{ buyer:a.buyer, use:a.use, house:a.house||'1', tempTwo:!!a.tempTwo, hasExclude:!!a.hasExclude,
+        var two = temp(a) && a.oldRegulated && a.region==='regulated' && a.newAcqDate>='2026-10-01' && !a.earlyContract;
+        var reason = !temp(a) ? '' : (two ? '원래 집과 새 집이 모두 조정대상지역이라 2년이에요.'
+          : (a.newAcqDate<'2026-10-01' ? '2026년 10월 1일 전 취득이라 3년이에요.'
+          : (a.earlyContract ? '2026년 8월 26일까지 계약금을 내서 3년이에요.' : '두 집이 모두 조정대상지역은 아니라서 3년이에요.')));
+        Object.assign(S,{ tempYears: two?2:3, tempDeadline: temp(a)&&a.newAcqDate ? addYears(a.newAcqDate, two?2:3) : '', tempReason: reason });
+        Object.assign(S,{ buyer:a.buyer, use:a.use, house:H(a)||'1', houseRaw:a.house||'1', tempTwo:temp(a), hasExclude:indivHouse(a)&&a.house!=='1'&&!!a.hasExclude,
           region:a.region||'regulated', areaOver:!!a.areaOver, metro:a.metro||'metro', corpAge:a.corpAge||'under5' });
         document.getElementById('price').value=a.price;
         updateDyn(); calc();
