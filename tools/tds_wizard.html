@@ -132,6 +132,8 @@ document.addEventListener('DOMContentLoaded', function(){
   function haptic(){
     try{
       if(navigator.vibrate){ navigator.vibrate(8); return; }
+      /* 아이폰 햅틱은 숨은 스위치를 누르는 방식이라 포커스를 빼앗아 키패드가 닫힘 → 글자 입력 중에는 쓰지 않음 */
+      var ae=document.activeElement; if(ae && (ae.tagName==='INPUT'&&ae.type!=='checkbox' || ae.tagName==='TEXTAREA' || ae.isContentEditable)) return;
       if(!hapticEl){ hapticEl=document.createElement('label'); hapticEl.setAttribute('aria-hidden','true');
         hapticEl.style.cssText='position:fixed;left:-9999px;top:0;opacity:0;pointer-events:none';
         var c=document.createElement('input'); c.type='checkbox'; c.setAttribute('switch',''); c.tabIndex=-1; hapticEl.appendChild(c); document.body.appendChild(hapticEl); }

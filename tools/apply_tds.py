@@ -12,7 +12,7 @@ import colorsys, glob, os, re
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ── 계산기 버전 ── 바꿀 때마다 여기만 올리고 CHANGELOG.md에 한 줄 적은 뒤 이 스크립트를 실행한다.
-VERSION = 'v1.9.2'
+VERSION = 'v1.9.3'
 VERSION_DATE = '2026.11.18'
 LAW_DATE = '2026.11.16'   # 세법 확인 기준일 (CLAUDE.md '세법 기준'과 같게)
 

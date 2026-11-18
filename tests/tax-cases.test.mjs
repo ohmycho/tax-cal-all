@@ -344,3 +344,20 @@ test('증여세 질문: 기사용 공제 0원과 빈칸을 구분한다', async 
   assert.equal(blank.r.priorDeductEstimated, true, '비웠을 때만 추정');
   assert.equal(blank.r.finalTax, 5335, '추정(한도 모두 사용) → 5,335만원');
 });
+
+// 아이폰처럼 navigator.vibrate가 없을 때 숫자를 여러 개 입력해도 입력칸 포커스(키패드)가 유지돼야 함 (2026-11-18)
+test('질문 넘기기: 진동 기능이 없는 폰에서도 숫자를 이어서 입력할 수 있다', async () => {
+  const page = await browser.newPage({ viewport: { width: 375, height: 812 } });
+  await page.addInitScript(() => { try { delete Navigator.prototype.vibrate; } catch (e) {} });
+  page.on('pageerror', e => errors.push(`acquisition.html: ${e.message}`));
+  await page.goto(pathToFileURL(path.join(ROOT, 'acquisition.html')).href);
+  await page.waitForTimeout(300);
+  for (let i = 0; i < 8; i++) {
+    if (await page.locator('.tds-input').count()) break;
+    await page.locator('.tds-choice').first().click(); await page.waitForTimeout(450);
+  }
+  await page.click('.tds-input'); await page.keyboard.type('125000', { delay: 50 });
+  const r = await page.evaluate(() => ({ v: document.querySelector('.tds-input').value, f: document.activeElement === document.querySelector('.tds-input') }));
+  assert.equal(r.v, '125,000', '여섯 자리 모두 입력됨');
+  assert.equal(r.f, true, '입력칸 포커스 유지 (키패드 안 닫힘)');
+});
