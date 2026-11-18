@@ -429,10 +429,13 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 .tds-input::placeholder{color:var(--tds-grey300);font-weight:600}
 .tds-input[type=date]{font-size:22px!important;min-height:40px}
 .tds-num{position:relative;flex:1;min-width:0;display:flex}
-.tds-num .tds-input{color:transparent!important;caret-color:var(--tds-blue500)}
+.tds-num .tds-input{color:transparent!important;caret-color:transparent!important}
 .tds-num-view{position:absolute;left:0;top:0;bottom:0;display:flex;align-items:center;pointer-events:none;white-space:pre;font-size:26px;font-weight:700;color:var(--tds-grey900);letter-spacing:-0.01em;overflow:hidden}
 .tds-num-view i{font-style:normal;display:inline-block}
 .tds-num-view i.pop{animation:tdsDigitIn .22s cubic-bezier(.2,.9,.3,1.2)}
+.tds-num-view b.tds-caret{display:none;width:2px;height:30px;margin-left:2px;background:var(--tds-blue500);border-radius:1px;animation:tdsBlink 1s steps(1) infinite}
+.tds-num.focus .tds-num-view b.tds-caret{display:inline-block}
+@keyframes tdsBlink{50%{opacity:0}}
 @keyframes tdsDigitIn{from{transform:translateY(45%);opacity:0}to{transform:none;opacity:1}}
 .tds-hint{transition:opacity .2s}
 .tds-choice.on{animation:tdsTap .18s ease-out}
@@ -505,7 +508,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.9.1', date:'2026.11.18', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.9.2', date:'2026.11.18', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -645,8 +648,14 @@ document.addEventListener('DOMContentLoaded', function(){
       var view=body.querySelector('.tds-num-view');
       if(view){
         var prev=inp.value;
-        var paint=function(grow){ var t=inp.value; view.innerHTML=t.split('').map(function(ch,i){ return '<i'+(grow&&i===t.length-1?' class="pop"':'')+'>'+esc(ch)+'</i>'; }).join(''); };
-        inp.addEventListener('input',function(){ var grow=digits(inp.value).length>digits(prev).length; if(grow||inp.value!==prev) haptic(); paint(grow); prev=inp.value; refresh(); });
+        var paint=function(grow){ var t=inp.value; view.innerHTML=t.split('').map(function(ch,i){ return '<i'+(grow&&i===t.length-1?' class="pop"':'')+'>'+esc(ch)+'</i>'; }).join('')+'<b class="tds-caret"></b>'; };
+        /* 입력은 항상 끝에서만: 커서를 끝으로 고정 (가짜 커서와 위치를 맞춤) */
+        var toEnd=function(){ try{ var n=inp.value.length; inp.setSelectionRange(n,n); }catch(e){} };
+        var wrapNum=inp.parentNode;
+        inp.addEventListener('focus',function(){ wrapNum.classList.add('focus'); setTimeout(toEnd,0); });
+        inp.addEventListener('blur',function(){ wrapNum.classList.remove('focus'); });
+        inp.addEventListener('click',toEnd); inp.addEventListener('keyup',toEnd);
+        inp.addEventListener('input',function(){ var grow=digits(inp.value).length>digits(prev).length; if(grow||inp.value!==prev) haptic(); paint(grow); prev=inp.value; toEnd(); refresh(); });
         paint(false);
       }
       /* 필수 칸이 비어 있으면 [다음]을 흐리게 */
