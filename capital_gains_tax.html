@@ -566,7 +566,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.9.4', date:'2026.11.23', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.9.5', date:'2026.11.23', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
@@ -605,6 +605,9 @@ document.addEventListener('DOMContentLoaded', function(){
     }catch(e){}
   }
   window.tdsHaptic = haptic;
+  /* 두 날짜('YYYY-MM-DD') 사이 개월 수 (꽉 찬 달만) / 개월 → 'N년 M개월' */
+  window.tdsMonthsBetween = function(a,b){ if(!a||!b) return Infinity; var x=new Date(a), y=new Date(b); return (y.getFullYear()-x.getFullYear())*12+(y.getMonth()-x.getMonth())-(y.getDate()<x.getDate()?1:0); };
+  window.tdsYM = function(m){ m=Math.max(0,m|0); var y=Math.floor(m/12), r=m%12; return (y?y+'년':'')+(y&&r?' ':'')+(r||!y?r+'개월':''); };
   /* 결과 금액이 0부터 올라가는 애니메이션 (토스식). 글자 안 첫 숫자만 움직이고 단위는 그대로 */
   window.tdsCountUp = function(el, ms){
     if(!el || el.dataset.counted) return; var txt=el.textContent, m=txt.match(/[\d,]+(\.\d+)?/); if(!m) return;
@@ -2623,7 +2626,8 @@ body{background:#f2f4f6!important;padding:0!important}
         { id:'salePrice', type:'money', unit:'만원', q:'얼마에 파나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
         { id:'live', type:'multi', q:'그 집에 얼마나 살았나요?', sub:'안 살았으면 0으로 두세요.',
           fields:[{id:'liveY',unit:'년'},{id:'liveM',unit:'개월'}],
-          validate:function(v){ return v.liveM>11 ? '개월은 11 이하로 입력해 주세요' : ''; } }
+          validate:function(v,a){ if(v.liveM>11) return '개월은 11 이하로 입력해 주세요'; var hold=tdsMonthsBetween(a.acqDate,a.saleDate);
+            return (v.liveY*12+v.liveM)>hold ? '보유기간('+tdsYM(hold)+')보다 길게 살 수 없어요' : ''; } }
       ],
       onDone:function(a){
         last=a;

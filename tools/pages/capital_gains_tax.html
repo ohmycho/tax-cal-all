@@ -44,7 +44,8 @@ body{background:#f2f4f6!important;padding:0!important}
         { id:'salePrice', type:'money', unit:'만원', q:'얼마에 파나요?', validate:function(v){ return v>0?'':'금액을 입력해 주세요'; } },
         { id:'live', type:'multi', q:'그 집에 얼마나 살았나요?', sub:'안 살았으면 0으로 두세요.',
           fields:[{id:'liveY',unit:'년'},{id:'liveM',unit:'개월'}],
-          validate:function(v){ return v.liveM>11 ? '개월은 11 이하로 입력해 주세요' : ''; } }
+          validate:function(v,a){ if(v.liveM>11) return '개월은 11 이하로 입력해 주세요'; var hold=tdsMonthsBetween(a.acqDate,a.saleDate);
+            return (v.liveY*12+v.liveM)>hold ? '보유기간('+tdsYM(hold)+')보다 길게 살 수 없어요' : ''; } }
       ],
       onDone:function(a){
         last=a;

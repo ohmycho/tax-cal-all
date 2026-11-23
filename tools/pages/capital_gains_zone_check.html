@@ -27,7 +27,8 @@ body{padding:0 16px 48px!important;display:block!important}
         { id:'acqDate', type:'date', q:'언제 취득했나요?', sub:'잔금일 또는 등기접수일 중 빠른 날이에요.\n취득 당시 조정대상지역이었는지에 따라 거주 요건이 달라져요.' },
         { id:'live', type:'multi', q:'그 집에 얼마나 살았나요?', sub:'주민등록 전입 후 실제로 산 기간이에요. 안 살았으면 0으로 두세요.',
           fields:[{id:'liveY',unit:'년'},{id:'liveM',unit:'개월'}],
-          validate:function(v){ return v.liveM>11 ? '개월은 11 이하로 입력해 주세요' : ''; } }
+          validate:function(v,a){ if(v.liveM>11) return '개월은 11 이하로 입력해 주세요'; var t=new Date(), today=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0')+'-'+String(t.getDate()).padStart(2,'0');
+            var hold=tdsMonthsBetween(a.acqDate,today); return (v.liveY*12+v.liveM)>hold ? '취득일부터 오늘까지('+tdsYM(hold)+')보다 길게 살 수 없어요' : ''; } }
       ],
       onDone:function(a){
         last=a;

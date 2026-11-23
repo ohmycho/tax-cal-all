@@ -141,6 +141,9 @@ document.addEventListener('DOMContentLoaded', function(){
     }catch(e){}
   }
   window.tdsHaptic = haptic;
+  /* 두 날짜('YYYY-MM-DD') 사이 개월 수 (꽉 찬 달만) / 개월 → 'N년 M개월' */
+  window.tdsMonthsBetween = function(a,b){ if(!a||!b) return Infinity; var x=new Date(a), y=new Date(b); return (y.getFullYear()-x.getFullYear())*12+(y.getMonth()-x.getMonth())-(y.getDate()<x.getDate()?1:0); };
+  window.tdsYM = function(m){ m=Math.max(0,m|0); var y=Math.floor(m/12), r=m%12; return (y?y+'년':'')+(y&&r?' ':'')+(r||!y?r+'개월':''); };
   /* 결과 금액이 0부터 올라가는 애니메이션 (토스식). 글자 안 첫 숫자만 움직이고 단위는 그대로 */
   window.tdsCountUp = function(el, ms){
     if(!el || el.dataset.counted) return; var txt=el.textContent, m=txt.match(/[\d,]+(\.\d+)?/); if(!m) return;

@@ -361,3 +361,24 @@ test('질문 넘기기: 진동 기능이 없는 폰에서도 숫자를 이어서
   assert.equal(r.v, '125,000', '여섯 자리 모두 입력됨');
   assert.equal(r.f, true, '입력칸 포커스 유지 (키패드 안 닫힘)');
 });
+
+// 거주기간은 보유기간(취득일~양도일)보다 길 수 없다 (2026-11-23, 50000년 입력이 통과되던 문제)
+test('질문 넘기기: 양도세 거주기간이 보유기간보다 길면 다음으로 못 간다', async () => {
+  const p = await open('capital_gains_tax.html');
+  const next = async () => { await p.click('#tds-next'); await p.waitForTimeout(400); };
+  await p.fill('.tds-input', '서울특별시 강남'); await p.waitForTimeout(100);
+  await p.locator('.tds-suggest button', { hasText: '서울특별시 강남구' }).first().click(); await p.waitForTimeout(400);
+  await p.locator('.tds-choice', { hasText: '1주택' }).first().click(); await p.waitForTimeout(400);
+  await p.fill('.tds-input', '2020-03-01'); await p.waitForTimeout(500);          // 취득일 (자동 다음)
+  await p.fill('.tds-input', '50000'); await next();                               // 취득가액
+  await p.fill('.tds-input', '2026-12-01'); await p.waitForTimeout(500);          // 양도일 → 보유 6년 9개월
+  await p.fill('.tds-input', '90000'); await next();                               // 양도가액
+  assert.match(await p.textContent('.tds-q'), /얼마나 살았나요/);
+  await p.fill('[data-f="liveY"]', '50000'); await next();
+  assert.match(await p.textContent('.tds-q'), /얼마나 살았나요/, '50000년 → 진행 불가');
+  assert.match(await p.textContent('.tds-err'), /보유기간\(6년 9개월\)보다 길게/, '오류 문구');
+  await p.fill('[data-f="liveY"]', '6'); await p.fill('[data-f="liveM"]', '10'); await next();
+  assert.match(await p.textContent('.tds-err'), /보유기간/, '6년 10개월도 불가');
+  await p.fill('[data-f="liveM"]', '9'); await next();
+  assert.equal(await p.locator('#tds-wiz').count(), 0, '6년 9개월(보유기간과 같음)은 통과 → 결과');
+});
