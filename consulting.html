@@ -85,7 +85,7 @@ body {
   display: inline-flex; align-items: center; gap: 5px;
   background: rgba(255,255,255,0.2);
   border-radius: 100px; padding: 4px 12px;
-  font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.9);
+  font-size: 13px; font-weight: 600; color: rgba(255,255,255,0.9);
   margin-bottom: 14px;
 }
 .report-name {
@@ -105,7 +105,7 @@ body {
   background: rgba(255,255,255,0.15);
   border-radius: 12px; padding: 10px 14px; flex: 1;
 }
-.report-fig-label { font-size: 11px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+.report-fig-label { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
 .report-fig-val { font-size: 15px; font-weight: 700; color: #fff; }
 
 /* ── 섹션 카드 */
@@ -232,7 +232,7 @@ textarea.field-input {
   justify-content: center; flex-wrap: wrap;
 }
 .trust-badge {
-  font-size: 12px; color: var(--text-3);
+  font-size: 13px; color: var(--text-3);
   display: flex; align-items: center; gap: 4px;
 }
 
@@ -468,7 +468,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 .tds-suggest button:active{background:var(--tds-grey50)}
 .tds-suggest b{color:var(--tds-blue500);font-weight:700}
 /* 하단 고정 버튼 */
-.tds-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:910;padding:12px 20px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(to top,#fff 75%,rgba(255,255,255,0));will-change:transform}
+.tds-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:910;padding:12px 20px calc(16px + env(safe-area-inset-bottom));background:#fff;will-change:transform}
 .tds-cta-bar > div{max-width:520px;margin:0 auto;display:flex;gap:8px}
 .tds-btn{flex:1;height:56px;border:0;border-radius:16px;background:var(--tds-blue500);color:#fff;font-size:17px;font-weight:600;font-family:inherit;cursor:pointer;transition:filter .1s,opacity .15s}
 .tds-btn:active{filter:brightness(.93)}
@@ -484,7 +484,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 .embedded .tds-topbar{height:44px;padding-top:0}
 .embedded .tds-topbar-title{visibility:hidden}
 /* 너무 작은 글자(10~12px) → 13px 이상 */
-[style*="font-size:10px"],[style*="font-size: 10px"],[style*="font-size:11px"],[style*="font-size: 11px"],[style*="font-size:12px"],[style*="font-size: 12px"]{font-size:13px!important}
+[style*="font-size:13px"],[style*="font-size: 13px"],[style*="font-size:13px"],[style*="font-size: 13px"],[style*="font-size:13px"],[style*="font-size: 13px"]{font-size:13px!important}
 /* 계산기 버전 표시 (세무사 검토 시 서로 같은 버전을 보는지 확인용) */
 .tds-ver-badge{flex-shrink:0;font-size:13px;font-weight:600;color:var(--tds-grey500);background:var(--tds-grey100);border-radius:8px;padding:4px 8px;margin-right:8px}
 .tds-ver-foot{text-align:center;font-size:13px;line-height:1.6;color:var(--tds-grey500);padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
@@ -508,7 +508,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.9.3', date:'2026.11.18', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.9.4', date:'2026.11.23', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };

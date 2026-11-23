@@ -63,7 +63,7 @@
     .hero-tag {
       display: inline-flex; align-items: center; gap: 5px;
       background: var(--bg); color: var(--t3);
-      font-size: 11px; font-weight: 600;
+      font-size: 13px; font-weight: 600;
       padding: 4px 10px; border-radius: 100px;
       margin-bottom: 10px;
     }
@@ -121,7 +121,7 @@
     /* 텍스트 */
     .card-body { flex: 1; min-width: 0; }
     .card-title { font-size: 15px; font-weight: 700; color: var(--t1); margin-bottom: 3px; }
-    .card-desc  { font-size: 12px; color: var(--t3); line-height: 1.5; word-break: keep-all; }
+    .card-desc  { font-size: 13px; color: var(--t3); line-height: 1.5; word-break: keep-all; }
 
     /* 화살표 */
     .card-arrow { flex-shrink: 0; }
@@ -135,7 +135,7 @@
       border-radius: 12px;
       display: flex; gap: 10px; align-items: flex-start;
     }
-    .notice-text { font-size: 11px; color: var(--t3); line-height: 1.7; word-break: keep-all; }
+    .notice-text { font-size: 13px; color: var(--t3); line-height: 1.7; word-break: keep-all; }
     .notice-text strong { color: var(--t2); font-weight: 600; }
 
     /* ── 상담 섹션 ── */
@@ -147,7 +147,7 @@
       color: #fff;
     }
     .consult-title { font-size: 16px; font-weight: 700; margin-bottom: 6px; line-height: 1.4; word-break: keep-all; }
-    .consult-desc  { font-size: 12px; opacity: 0.8; line-height: 1.6; margin-bottom: 16px; word-break: keep-all; }
+    .consult-desc  { font-size: 13px; opacity: 0.8; line-height: 1.6; margin-bottom: 16px; word-break: keep-all; }
     .btn-consult {
       width: 100%; padding: 13px;
       background: rgba(255,255,255,0.15);
@@ -320,7 +320,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 .tds-suggest button:active{background:var(--tds-grey50)}
 .tds-suggest b{color:var(--tds-blue500);font-weight:700}
 /* 하단 고정 버튼 */
-.tds-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:910;padding:12px 20px calc(16px + env(safe-area-inset-bottom));background:linear-gradient(to top,#fff 75%,rgba(255,255,255,0));will-change:transform}
+.tds-cta-bar{position:fixed;left:0;right:0;bottom:0;z-index:910;padding:12px 20px calc(16px + env(safe-area-inset-bottom));background:#fff;will-change:transform}
 .tds-cta-bar > div{max-width:520px;margin:0 auto;display:flex;gap:8px}
 .tds-btn{flex:1;height:56px;border:0;border-radius:16px;background:var(--tds-blue500);color:#fff;font-size:17px;font-weight:600;font-family:inherit;cursor:pointer;transition:filter .1s,opacity .15s}
 .tds-btn:active{filter:brightness(.93)}
@@ -336,7 +336,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
 .embedded .tds-topbar{height:44px;padding-top:0}
 .embedded .tds-topbar-title{visibility:hidden}
 /* 너무 작은 글자(10~12px) → 13px 이상 */
-[style*="font-size:10px"],[style*="font-size: 10px"],[style*="font-size:11px"],[style*="font-size: 11px"],[style*="font-size:12px"],[style*="font-size: 12px"]{font-size:13px!important}
+[style*="font-size:13px"],[style*="font-size: 13px"],[style*="font-size:13px"],[style*="font-size: 13px"],[style*="font-size:13px"],[style*="font-size: 13px"]{font-size:13px!important}
 /* 계산기 버전 표시 (세무사 검토 시 서로 같은 버전을 보는지 확인용) */
 .tds-ver-badge{flex-shrink:0;font-size:13px;font-weight:600;color:var(--tds-grey500);background:var(--tds-grey100);border-radius:8px;padding:4px 8px;margin-right:8px}
 .tds-ver-foot{text-align:center;font-size:13px;line-height:1.6;color:var(--tds-grey500);padding:20px 16px calc(24px + env(safe-area-inset-bottom))}
@@ -360,7 +360,7 @@ function lawRef(t, inline){ return t ? '<span class="law-ref'+(inline?' inline':
    - money: unit:'만원'|'원' (값은 그 단위의 숫자) / number: unit, max / multi: fields:[{id,label,unit,max}]
    - date: 'YYYY-MM-DD' / search: suggest(q) → 문자열 배열
    - when(a): false면 건너뜀 / validate(v,a): 오류 문구 / optional: 비워도 다음 / help: 회색 안내 */
-window.TAX_CAL_VERSION = { version:'v1.9.3', date:'2026.11.18', lawDate:'2026.11.16' };
+window.TAX_CAL_VERSION = { version:'v1.9.4', date:'2026.11.23', lawDate:'2026.11.16' };
 window.tdsVersionText = function(long){
   var v=window.TAX_CAL_VERSION; return long ? ('계산기 '+v.version+' · '+v.date+' 배포 · 세법 기준일 '+v.lawDate) : v.version;
 };
